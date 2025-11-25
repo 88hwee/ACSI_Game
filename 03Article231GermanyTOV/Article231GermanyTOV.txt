@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>TOV Article 231 Fill</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+  body{font-family:system-ui,-apple-system,sans-serif;background:#020617;color:#e5e7eb;margin:0;display:flex;justify-content:center;align-items:center;min-height:100vh}
+  .card{background:#0f172a;border-radius:12px;padding:1rem 1.2rem;max-width:600px;width:100%;box-shadow:0 10px 25px rgba(0,0,0,.9);font-size:.95rem}
+  h1{margin:0 0 .4rem;font-size:1.1rem}
+  p{margin:.3rem 0}
+  select{background:#111827;color:inherit;border-radius:8px;border:1px solid #4b5563;padding:.1rem .3rem;font-size:.9rem}
+  #feedback{margin-top:.5rem;font-size:.9rem;min-height:1.3em}
+  button{margin-top:.4rem;border-radius:999px;border:none;background:linear-gradient(90deg,#22c55e,#16a34a);color:#022c22;padding:.35rem .9rem;font-size:.85rem;cursor:pointer}
+</style>
+</head>
+<body>
+<div class="card">
+  <h1>Article 231 &amp; Reparations – Fill the Gaps</h1>
+  <p>Choose the correct words to complete the summary of how Article 231 and reparations affected Germany.</p>
+  <p>
+    Article 231 said that Germany had to accept 
+    <select id="s1">
+      <option value="">– choose –</option>
+      <option value="moral">moral</option>
+      <option value="full">full</option>
+      <option value="no">no</option>
+    </select>
+    <b>responsibility</b> for starting the war. This “war guilt” clause was then used to justify
+    <select id="s2">
+      <option value="">– choose –</option>
+      <option value="reparations">reparations</option>
+      <option value="disarmament">disarmament</option>
+      <option value="alliances">alliances</option>
+    </select>
+    payments.
+  </p>
+  <p>
+    In 1921, reparations were fixed at
+    <select id="s3">
+      <option value="">– choose –</option>
+      <option value="£660 million">£660 million</option>
+      <option value="£6.6 billion">£6.6 billion</option>
+      <option value="£66 billion">£66 billion</option>
+    </select>,
+    which many Germans believed was
+    <select id="s4">
+      <option value="">– choose –</option>
+      <option value="fair and manageable">fair and manageable</option>
+      <option value="too harsh and impossible to pay">too harsh and impossible to pay</option>
+      <option value="too small to matter">too small to matter</option>
+    </select>.
+  </p>
+  <p>
+    As a result, many Germans felt the Treaty was a
+    <select id="s5">
+      <option value="">– choose –</option>
+      <option value="Diktat (dictated peace)">Diktat (dictated peace)</option>
+      <option value="triumph for Germany">triumph for Germany</option>
+      <option value="fair compromise">fair compromise</option>
+    </select>
+    , which increased
+    <select id="s6">
+      <option value="">– choose –</option>
+      <option value="bitterness and desire for revenge">bitterness and desire for revenge</option>
+      <option value="trust in the Allies">trust in the Allies</option>
+      <option value="support for the League of Nations">support for the League of Nations</option>
+    </select>.
+  </p>
+  <div id="feedback"></div>
+  <button id="checkBtn">Check</button>
+</div>
+
+<script>
+const answers = {
+  s1:"full",
+  s2:"reparations",
+  s3:"£6.6 billion",
+  s4:"too harsh and impossible to pay",
+  s5:"Diktat (dictated peace)",
+  s6:"bitterness and desire for revenge"
+};
+const fb=document.getElementById("feedback");
+document.getElementById("checkBtn").addEventListener("click",()=>{
+  let total=0,correct=0,blank=0;
+  Object.keys(answers).forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel.value){blank++;return;}
+    total++;
+    if(sel.value===answers[id]) correct++;
+  });
+  if(blank===Object.keys(answers).length){
+    fb.textContent="Fill in at least one blank first 🙂";
+    return;
+  }
+  fb.innerHTML=`You got <b>${correct}</b> out of <b>${total}</b> filled blanks correct.<br>
+  Discuss: How might these terms affect German attitudes in the 1920s and 1930s?`;
+});
+</script>
+</body>
+</html>

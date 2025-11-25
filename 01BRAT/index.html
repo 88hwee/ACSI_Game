@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Treaty of Versailles – BRAT Trainer</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+  body{
+    font-family:system-ui,-apple-system,sans-serif;
+    background:#020617;
+    color:#e5e7eb;
+    margin:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    min-height:100vh;
+  }
+  .wrapper{
+    max-width:800px;
+    width:100%;
+    padding:1rem;
+  }
+  header{
+    background:#0f172a;
+    border-radius:12px 12px 0 0;
+    padding:.7rem 1rem;
+    box-shadow:0 10px 25px rgba(0,0,0,.8);
+  }
+  header h1{
+    margin:0;
+    font-size:1.25rem;
+  }
+  header p{
+    margin:.25rem 0 0;
+    font-size:.85rem;
+    opacity:.9;
+  }
+  .tabs{
+    display:flex;
+    gap:.4rem;
+    margin-top:.5rem;
+  }
+  .tabBtn{
+    flex:1;
+    border-radius:999px;
+    border:1px solid #4b5563;
+    background:#020617;
+    color:#e5e7eb;
+    font-size:.85rem;
+    padding:.25rem .5rem;
+    cursor:pointer;
+  }
+  .tabBtn.active{
+    background:linear-gradient(90deg,#f97373,#facc15);
+    color:#020617;
+    border-color:transparent;
+    font-weight:600;
+  }
+
+  .card{
+    background:#020617;
+    border-radius:0 0 12px 12px;
+    padding:1rem 1.2rem;
+    box-shadow:0 10px 25px rgba(0,0,0,.8);
+    font-size:.95rem;
+  }
+
+  .gameSection{display:none;}
+  .gameSection.active{display:block;}
+
+  h2{
+    margin:0 0 .4rem;
+    font-size:1.15rem;
+  }
+  h2 span.B{color:#f97373;}
+  h2 span.R{color:#22c55e;}
+  h2 span.A{color:#38bdf8;}
+  h2 span.T{color:#facc15;}
+  p{margin:.35rem 0;}
+
+  select{
+    background:#111827;
+    color:inherit;
+    border-radius:8px;
+    border:1px solid #4b5563;
+    padding:.1rem .3rem;
+    font-size:.9rem;
+  }
+  select.correct{
+    border-color:#22c55e;
+    background:#052e16;
+  }
+  select.incorrect{
+    border-color:#f97373;
+    background:#450a0a;
+  }
+
+  .feedback{
+    margin-top:.6rem;
+    font-size:.9rem;
+    min-height:1.4em;
+  }
+  .checkBtn{
+    margin-top:.5rem;
+    border-radius:999px;
+    border:none;
+    padding:.35rem .9rem;
+    font-size:.85rem;
+    cursor:pointer;
+  }
+  #checkB{background:linear-gradient(90deg,#f97373,#fb7185);color:#450a0a;}
+  #checkR{background:linear-gradient(90deg,#22c55e,#16a34a);color:#022c22;}
+  #checkA{background:linear-gradient(90deg,#38bdf8,#6366f1);color:#020617;}
+  #checkT{background:linear-gradient(90deg,#facc15,#f97316);color:#451a03;}
+
+  @media (max-width:640px){
+    .card{font-size:.9rem;}
+  }
+</style>
+</head>
+<body>
+<div class="wrapper">
+  <header>
+    <h1>Treaty of Versailles – BRAT Trainer</h1>
+    <p>BRAT = <b>B</b>lame, <b>R</b>eparations, <b>A</b>rmy, <b>T</b>erritories. Choose a tab and fill in the blanks.</p>
+    <div class="tabs">
+      <button class="tabBtn active" data-target="gameB">B – Blame</button>
+      <button class="tabBtn" data-target="gameR">R – Reparations</button>
+      <button class="tabBtn" data-target="gameA">A – Army</button>
+      <button class="tabBtn" data-target="gameT">T – Territories</button>
+    </div>
+  </header>
+
+  <div class="card">
+    <!-- B: BLAME -->
+    <section id="gameB" class="gameSection active">
+      <h2><span class="B">B</span> – Blame (War Guilt)</h2>
+      <p><b>BRAT: B = Blame.</b> Article 231 became known as the “war guilt clause”. Complete the summary:</p>
+
+      <p>
+        Under the Treaty of Versailles, Germany had to accept
+        <select data-answer="full blame">
+          <option value="">– choose –</option>
+          <option value="shared blame">shared blame with the other powers</option>
+          <option value="full blame">full blame for starting the war</option>
+          <option value="no blame">no blame because it was self-defence</option>
+        </select>
+        for starting the First World War.
+      </p>
+
+      <p>
+        This statement is often called the
+        <select data-answer="War Guilt Clause">
+          <option value="">– choose –</option>
+          <option value="Reparations Clause">Reparations Clause</option>
+          <option value="Disarmament Clause">Disarmament Clause</option>
+          <option value="War Guilt Clause">War Guilt Clause</option>
+        </select>
+        and was extremely disliked in Germany.
+      </p>
+
+      <p>
+        In the actual wording, the responsibility was placed on
+        <select data-answer="Germany and her allies">
+          <option value="">– choose –</option>
+          <option value="Germany alone">Germany alone</option>
+          <option value="Germany and her allies">Germany and her allies</option>
+          <option value="all major powers equally">all major powers equally</option>
+        </select>
+        , but many Germans felt that they were being singled out.
+      </p>
+
+      <div id="feedbackB" class="feedback"></div>
+      <button id="checkB" class="checkBtn">Check</button>
+    </section>
+
+    <!-- R: REPARATIONS -->
+    <section id="gameR" class="gameSection">
+      <h2><span class="R">R</span> – Reparations</h2>
+      <p><b>BRAT: R = Reparations.</b> These were payments to repair war damage. Complete the summary:</p>
+
+      <p>
+        In 1921, the reparations bill was set at
+        <select data-answer="£6.6 billion">
+          <option value="">– choose –</option>
+          <option value="£660 million">£660 million</option>
+          <option value="£6.6 billion">£6.6 billion</option>
+          <option value="£66 billion">£66 billion</option>
+        </select>
+        , an amount that shocked many Germans.
+      </p>
+
+      <p>
+        The decision on the final reparations figure was made by the
+        <select data-answer="Allied Reparations Commission">
+          <option value="">– choose –</option>
+          <option value="League of Nations Council">League of Nations Council</option>
+          <option value="Allied Reparations Commission">Allied Reparations Commission</option>
+          <option value="German Reichstag">German Reichstag</option>
+        </select>
+        , not by the German government.
+      </p>
+
+      <p>
+        Many Germans argued that such payments would cause
+        <select data-answer="economic hardship and inflation">
+          <option value="">– choose –</option>
+          <option value="economic hardship and inflation">economic hardship and inflation</option>
+          <option value="a quick economic recovery">a quick economic recovery</option>
+          <option value="no real impact on the economy">no real impact on the economy</option>
+        </select>
+        and were therefore unfair.
+      </p>
+
+      <div id="feedbackR" class="feedback"></div>
+      <button id="checkR" class="checkBtn">Check</button>
+    </section>
+
+    <!-- A: ARMY -->
+    <section id="gameA" class="gameSection">
+      <h2><span class="A">A</span> – Army (Disarmament)</h2>
+      <p><b>BRAT: A = Army.</b> The Treaty tried to prevent Germany from threatening her neighbours again. Complete the summary:</p>
+
+      <p>
+        Germany’s army was limited to
+        <select data-answer="100,000 men">
+          <option value="">– choose –</option>
+          <option value="50,000 men">50,000 men</option>
+          <option value="100,000 men">100,000 men</option>
+          <option value="250,000 men">250,000 men</option>
+        </select>
+        and conscription was
+        <select data-answer="banned">
+          <option value="">– choose –</option>
+          <option value="encouraged">encouraged</option>
+          <option value="allowed with limits">allowed with limits</option>
+          <option value="banned">banned</option>
+        </select>.
+      </p>
+
+      <p>
+        Germany was not allowed to have
+        <select data-answer="tanks, submarines and military aircraft">
+          <option value="">– choose –</option>
+          <option value="tanks, submarines and military aircraft">tanks, submarines and military aircraft</option>
+          <option value="any infantry soldiers at all">any infantry soldiers at all</option>
+          <option value="defensive weapons like rifles">defensive weapons like rifles</option>
+        </select>
+        which many Germans saw as humiliating.
+      </p>
+
+      <p>
+        The navy was limited to a small fleet, including only
+        <select data-answer="6 battleships">
+          <option value="">– choose –</option>
+          <option value="no battleships">no battleships</option>
+          <option value="6 battleships">6 battleships</option>
+          <option value="20 battleships">20 battleships</option>
+        </select>
+        , making it much weaker than the British Royal Navy.
+      </p>
+
+      <div id="feedbackA" class="feedback"></div>
+      <button id="checkA" class="checkBtn">Check</button>
+    </section>
+
+    <!-- T: TERRITORIES -->
+    <section id="gameT" class="gameSection">
+      <h2><span class="T">T</span> – Territories</h2>
+      <p><b>BRAT: T = Territories.</b> Germany lost land in Europe and all of her overseas colonies. Complete the summary:</p>
+
+      <p>
+        The province of
+        <select data-answer="Alsace-Lorraine">
+          <option value="">– choose –</option>
+          <option value="Alsace-Lorraine">Alsace-Lorraine</option>
+          <option value="Sudetenland">Sudetenland</option>
+          <option value="Tyrol">Tyrol</option>
+        </select>
+        was returned to France, undoing Germany’s gain from 1871.
+      </p>
+
+      <p>
+        In the east, a
+        <select data-answer="Polish Corridor">
+          <option value="">– choose –</option>
+          <option value="Polish Corridor">Polish Corridor</option>
+          <option value="Suez Corridor">Suez Corridor</option>
+          <option value="Balkan Corridor">Balkan Corridor</option>
+        </select>
+        gave the new state of Poland access to the sea and cut East Prussia off from the rest of Germany.
+      </p>
+
+      <p>
+        Germany’s African and Pacific colonies were taken away and turned into
+        <select data-answer="mandates run by the Allied powers">
+          <option value="">– choose –</option>
+          <option value="independent republics">independent republics</option>
+          <option value="mandates run by the Allied powers">mandates run by the Allied powers</option>
+          <option value="neutral trading zones">neutral trading zones</option>
+        </select>
+        under the League of Nations.
+      </p>
+
+      <div id="feedbackT" class="feedback"></div>
+      <button id="checkT" class="checkBtn">Check</button>
+    </section>
+  </div>
+</div>
+
+<script>
+/* ----- Tab switching (no arrow functions) ----- */
+var tabButtons = document.getElementsByClassName("tabBtn");
+var sections   = document.getElementsByClassName("gameSection");
+
+function showSection(id){
+  // activate correct tab
+  for(var i=0;i<tabButtons.length;i++){
+    var btn = tabButtons[i];
+    if(btn.getAttribute("data-target") === id){
+      btn.classList.add("active");
+    }else{
+      btn.classList.remove("active");
+    }
+  }
+  // show correct section
+  for(var j=0;j<sections.length;j++){
+    var sec = sections[j];
+    if(sec.id === id){
+      sec.classList.add("active");
+    }else{
+      sec.classList.remove("active");
+    }
+  }
+}
+
+for(var i=0;i<tabButtons.length;i++){
+  tabButtons[i].addEventListener("click", function(){
+    var targetId = this.getAttribute("data-target");
+    showSection(targetId);
+  });
+}
+
+/* ----- Generic checker for each BRAT block ----- */
+function attachChecker(buttonId, feedbackId, sectionId){
+  var btn = document.getElementById(buttonId);
+  var fb  = document.getElementById(feedbackId);
+  var sec = document.getElementById(sectionId);
+
+  btn.addEventListener("click", function(){
+    var selects = sec.querySelectorAll("select[data-answer]");
+    var total = selects.length;
+    var correct = 0;
+    var blank = 0;
+
+    selects.forEach(function(sel){
+      sel.classList.remove("correct","incorrect");
+      var ans = sel.getAttribute("data-answer");
+      var val = sel.value;
+      if(!val){
+        blank++;
+        return;
+      }
+      if(val === ans){
+        correct++;
+        sel.classList.add("correct");
+      }else{
+        sel.classList.add("incorrect");
+      }
+    });
+
+    if(blank > 0){
+      fb.textContent = "Fill in all blanks first, then check again 🙂";
+    }else{
+      fb.textContent = "You got " + correct + " out of " + total + " blanks correct.";
+    }
+  });
+}
+
+attachChecker("checkB","feedbackB","gameB");
+attachChecker("checkR","feedbackR","gameR");
+attachChecker("checkA","feedbackA","gameA");
+attachChecker("checkT","feedbackT","gameT");
+</script>
+</body>
+</html>

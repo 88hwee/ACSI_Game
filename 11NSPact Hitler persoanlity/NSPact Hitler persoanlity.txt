@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nazi–Soviet Pact: Be Hitler for a Day</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: 'Inter', system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #1A1A1A 0%, #333333 40%, #D4AF37 100%); /* Darker, slightly golden theme */
+    color: #F8F8F8;
+    min-height: 100vh;
+  }
+  header {
+    padding: 1.6rem 1rem;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  header h1 {
+    margin: 0 0 0.4rem;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #FAD02E;
+  }
+  header p {
+    margin: 0.2rem auto;
+    max-width: 700px;
+    font-size: 1rem;
+    opacity: 0.9;
+  }
+  main {
+    max-width: 900px;
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 1rem 2rem;
+  }
+  .card {
+    background: rgba(30, 30, 30, 0.95);
+    border-radius: 12px;
+    padding: 1.3rem 1.5rem;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+    margin-bottom: 1.5rem;
+  }
+  .note {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    color: #E0E0E0;
+  }
+  .question {
+    margin-bottom: 1.1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .question:last-child {
+    border-bottom: none;
+  }
+  .question p {
+    margin: 0 0 0.6rem;
+    font-size: 1rem;
+    font-weight: 500;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.2rem;
+    font-size: 0.9rem;
+  }
+  .options label {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: color 0.2s;
+  }
+  .options label:hover {
+      color: #FAD02E;
+  }
+  .options input[type="radio"] {
+    accent-color: #FAD02E;
+    width: 1rem;
+    height: 1rem;
+  }
+  .btn-row {
+    display: flex;
+    gap: 0.8rem;
+    flex-wrap: wrap;
+    margin-top: 1.2rem;
+  }
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.6rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  button:active {
+      transform: scale(0.98);
+  }
+  #submitBtn {
+    background: linear-gradient(90deg, #FAD02E, #FFD700);
+    color: #1A1A1A;
+    box-shadow: 0 4px 8px rgba(250, 208, 46, 0.4);
+  }
+  #submitBtn:hover { filter: brightness(1.05); }
+  .secondary-btn {
+    background: transparent;
+    color: #eeeeee;
+    border: 1px solid rgba(238,238,238,0.4);
+  }
+  .secondary-btn:hover {
+    background: rgba(238,238,238,0.1);
+  }
+  #resultCard {
+    display: none;
+    border-left: 5px solid #FAD02E;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 0.4rem;
+    color: #1A1A1A;
+  }
+  .badge-high { background: #FAD02E; }
+  .badge-mid { background: #FFC300; }
+  .badge-low { background: #FF5733; }
+  #scoreDisplay {
+    font-size: 1rem;
+    opacity: 0.9;
+    margin-top: 0.5rem;
+    font-weight: 500;
+  }
+  #hitlerAnswer {
+    background: rgba(0,0,0,0.4);
+    border-radius: 10px;
+    padding: 1rem;
+    margin-top: 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  #hitlerExplanationText ul {
+      margin-top: 0.5rem;
+      padding-left: 1.5rem;
+  }
+  #hitlerExplanationText li {
+      margin-bottom: 0.4rem;
+  }
+  #answerKeyCard {
+    display: none;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  #answerKeyTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.6rem;
+  }
+  #answerKeyTable th,
+  #answerKeyTable td {
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 0.5rem 0.6rem;
+    text-align: left;
+    font-size: 0.85rem;
+  }
+  #answerKeyTable th {
+    background: rgba(0,0,0,0.4);
+    color: #FAD02E;
+  }
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.6rem; }
+    .options { gap: 0.5rem; }
+    .btn-row button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nazi–Soviet Pact: Be Hitler for a Day</h1>
+  <p>
+    Imagine you are **Adolf Hitler in August 1939**. Answer these 25 questions as he might have thought, focused on the immediate invasion of Poland.
+    At the end, you get a “Hitler profile” and the historical explanation of why he signed the Nazi–Soviet Pact.
+  </p>
+</header>
+
+<main>
+  <section class="card">
+    <p class="note">
+      **Scale:** 4 = Strongly agree, 3 = Agree, 2 = Not sure, 1 = Disagree, 0 = Strongly disagree.
+      Answer as **Hitler**, prioritizing the success of *Fall Weiss* (Case White).
+    </p>
+  </section>
+
+  <form id="quizForm" class="card">
+    <!-- Updated 25 questions for Hitler's perspective -->
+    <div class="question">
+      <p><strong>Q1.</strong> I fully intend to keep this treaty with the Soviet Union in the long run.</p>
+      <div class="options">
+        <label><input type="radio" name="q1" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q1" value="3">Agree (3)</label>
+        <label><input type="radio" name="q1" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q1" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q1" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q2.</strong> I expect Britain and France to fight a long, hard war to defend Poland.</p>
+      <div class="options">
+        <label><input type="radio" name="q2" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q2" value="3">Agree (3)</label>
+        <label><input type="radio" name="q2" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q2" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q2" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q3.</strong> My top priority is to conquer Poland and secure the eastern border immediately.</p>
+      <div class="options">
+        <label><input type="radio" name="q3" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q3" value="3">Agree (3)</label>
+        <label><input type="radio" name="q3" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q3" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q3" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q4.</strong> The Soviet military is strong enough to pose an immediate threat if I attack Poland.</p>
+      <div class="options">
+        <label><input type="radio" name="q4" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q4" value="3">Agree (3)</label>
+        <label><input type="radio" name="q4" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q4" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q4" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q5.</strong> This pact buys me crucial time and resources before the inevitable war with the Soviet Union.</p>
+      <div class="options">
+        <label><input type="radio" name="q5" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q5" value="3">Agree (3)</label>
+        <label><input type="radio" name="q5" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q5" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q5" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q6.</strong> The biggest tactical gain is avoiding a costly two-front war against East and West simultaneously.</p>
+      <div class="options">
+        <label><input type="radio" name="q6" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q6" value="3">Agree (3)</label>
+        <label><input type="radio" name="q6" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q6" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q6" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q7.</strong> This pact provides immediate access to resources and a share of Polish territory.</p>
+      <div class="options">
+        <label><input type="radio" name="q7" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q7" value="3">Agree (3)</label>
+        <label><input type="radio" name="q7" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q7" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q7" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q8.</strong> Poland is an undeserving nation that must be immediately destroyed and partitioned.</p>
+      <div class="options">
+        <label><input type="radio" name="q8" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q8" value="3">Agree (3)</label>
+        <label><input type="radio" name="q8" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q8" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q8" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q9.</strong> I fear a two-front war: attacking Poland while also having to fight the USSR.</p>
+      <div class="options">
+        <label><input type="radio" name="q9" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q9" value="3">Agree (3)</label>
+        <label><input type="radio" name="q9" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q9" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q9" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q10.</strong> Signing a pact with my ideological enemy (the USSR) will shock and confuse Britain and France.</p>
+      <div class="options">
+        <label><input type="radio" name="q10" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q10" value="3">Agree (3)</label>
+        <label><input type="radio" name="q10" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q10" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q10" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q11.</strong> Ideology must be completely set aside when it serves the immediate needs of the German state.</p>
+      <div class="options">
+        <label><input type="radio" name="q11" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q11" value="3">Agree (3)</label>
+        <label><input type="radio" name="q11" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q11" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q11" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q12.</strong> Britain and France are morally weak and fundamentally unwilling to fight for Poland.</p>
+      <div class="options">
+        <label><input type="radio" name="q12" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q12" value="3">Agree (3)</label>
+        <label><input type="radio" name="q12" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q12" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q12" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q13.</strong> Looking cynical or hypocritical doesn't matter, only the security and strength of the Reich matters.</p>
+      <div class="options">
+        <label><input type="radio" name="q13" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q13" value="3">Agree (3)</label>
+        <label><input type="radio" name="q13" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q13" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q13" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q14.</strong> German security is paramount; the destruction of Bolshevism is a long-term goal.</p>
+      <div class="options">
+        <label><input type="radio" name="q14" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q14" value="3">Agree (3)</label>
+        <label><input type="radio" name="q14" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q14" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q14" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q15.</strong> If I don't sign this pact, the USSR might form an alliance with the West, complicating my plans.</p>
+      <div class="options">
+        <label><input type="radio" name="q15" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q15" value="3">Agree (3)</label>
+        <label><input type="radio" name="q15" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q15" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q15" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q16.</strong> I have no choice but to start the war now; any delay is a strategic loss.</p>
+      <div class="options">
+        <label><input type="radio" name="q16" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q16" value="3">Agree (3)</label>
+        <label><input type="radio" name="q16" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q16" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q16" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q17.</strong> I am content to let the USSR have its sphere of influence for now, as it serves my immediate goals.</p>
+      <div class="options">
+        <label><input type="radio" name="q17" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q17" value="3">Agree (3)</label>
+        <label><input type="radio" name="q17" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q17" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q17" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q18.</strong> The successful re-militarisation of the Rhineland confirms the weakness of the Western powers.</p>
+      <div class="options">
+        <label><input type="radio" name="q18" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q18" value="3">Agree (3)</label>
+        <label><input type="radio" name="q18" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q18" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q18" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q19.</strong> An alliance with the Soviet Union is better than a diplomatic stalemate with the West.</p>
+      <div class="options">
+        <label><input type="radio" name="q19" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q19" value="3">Agree (3)</label>
+        <label><input type="radio" name="q19" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q19" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q19" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q20.</strong> I must immediately start secret preparations for the future invasion of the Soviet Union (Operation Barbarossa).</p>
+      <div class="options">
+        <label><input type="radio" name="q20" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q20" value="3">Agree (3)</label>
+        <label><input type="radio" name="q20" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q20" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q20" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q21.</strong> I am confident that I can outplay Stalin and defeat the Soviet Union when the time is right.</p>
+      <div class="options">
+        <label><input type="radio" name="q21" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q21" value="3">Agree (3)</label>
+        <label><input type="radio" name="q21" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q21" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q21" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q22.</strong> I believe the Soviet purges have severely weakened their military leadership.</p>
+      <div class="options">
+        <label><input type="radio" name="q22" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q22" value="3">Agree (3)</label>
+        <label><input type="radio" name="q22" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q22" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q22" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q23.</strong> Foreign public opinion is irrelevant; only the immediate success of the German war machine matters.</p>
+      <div class="options">
+        <label><input type="radio" name="q23" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q23" value="3">Agree (3)</label>
+        <label><input type="radio" name="q23" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q23" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q23" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q24.</strong> It is acceptable to surprise the world with this massive diplomatic shock if it enables the invasion of Poland.</p>
+      <div class="options">
+        <label><input type="radio" name="q24" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q24" value="3">Agree (3)</label>
+        <label><input type="radio" name="q24" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q24" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q24" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q25.</strong> Overall, a temporary pact with the USSR is the best way to guarantee victory over Poland and the West.</p>
+      <div class="options">
+        <label><input type="radio" name="q25" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q25" value="3">Agree (3)</label>
+        <label><input type="radio" name="q25" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q25" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q25" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" id="submitBtn">Get my Hitler profile</button>
+      <button type="button" class="secondary-btn" id="resetBtn">Clear all answers</button>
+    </div>
+  </form>
+
+  <section id="resultCard" class="card">
+    <span id="resultBadge" class="badge">Profile</span>
+    <h2 id="resultTitle" class="text-xl font-bold mt-2"></h2>
+    <p id="scoreDisplay"></p>
+    <p id="profileExplanation" class="mt-3"></p>
+
+    <div id="hitlerAnswer">
+      <strong>So why did Hitler sign the Nazi–Soviet Pact?</strong>
+      <p id="hitlerExplanationText"></p>
+    </div>
+
+    <div class="btn-row" style="margin-top:0.8rem;">
+      <button type="button" class="secondary-btn" id="toggleAnswerKeyBtn">
+        Show / hide Hitler's “ideal” answers
+      </button>
+    </div>
+  </section>
+
+  <section id="answerKeyCard" class="card">
+    <h3 style="margin-top:0;">Hitler’s likely answers (answer key)</h3>
+    <p class="note">
+      Use this to compare your choices with how historians think Hitler was thinking in August 1939.
+    </p>
+    <table id="answerKeyTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Statement</th>
+          <th>Hitler’s likely response</th>
+        </tr>
+      </thead>
+      <tbody id="answerKeyBody"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+  // Hitler's "ideal" answers for each question (0–4) in August 1939
+  const idealAnswers = [
+    0, // Q1: I fully intend to keep this treaty... (False, it was purely tactical)
+    1, // Q2: I expect Britain and France to fight hard... (Disagree, he was confident they were weak)
+    4, // Q3: My top priority is to conquer Poland... (Strongly agree)
+    3, // Q4: The Soviet military is strong enough to pose an immediate threat... (Agree, they were a major power he had to neutralize)
+    4, // Q5: This pact buys me crucial time and resources... (Strongly agree)
+    4, // Q6: The biggest tactical gain is avoiding a costly two-front war... (Strongly agree, core motivation)
+    4, // Q7: This pact provides immediate access to resources and a share of Polish territory. (Strongly agree)
+    4, // Q8: Poland is an undeserving nation that must be destroyed... (Strongly agree)
+    4, // Q9: I fear a two-front war... (Strongly agree, the problem the pact solved)
+    4, // Q10: Signing a pact with my ideological enemy... will shock and confuse the West. (Strongly agree, major diplomatic win)
+    4, // Q11: Ideology must be completely set aside when it serves the immediate needs... (Strongly agree, short-term pragmatism)
+    3, // Q12: Britain and France are morally weak and fundamentally unwilling to fight... (Agree, based on Munich, though he was prepared for war)
+    4, // Q13: Looking cynical or hypocritical doesn't matter... (Strongly agree, utilitarian/cynical)
+    4, // Q14: German security is paramount; the destruction of Bolshevism is a long-term goal. (Strongly agree)
+    4, // Q15: If I don't sign this pact, the USSR might form an alliance with the West... (Strongly agree, he was in a race)
+    4, // Q16: I have no choice but to start the war now... (Strongly agree, determined to strike in 1939)
+    3, // Q17: I am content to let the USSR have its sphere of influence for now... (Agree, a necessary evil for now)
+    4, // Q18: The successful re-militarisation of the Rhineland confirms the weakness of the Western powers. (Strongly agree)
+    4, // Q19: An alliance with the Soviet Union is better than a diplomatic stalemate with the West. (Strongly agree)
+    4, // Q20: I must immediately start secret preparations for the future invasion... (Strongly agree)
+    4, // Q21: I am confident that I can outplay Stalin and defeat the Soviet Union... (Strongly agree, extreme overconfidence)
+    4, // Q22: I believe the Soviet purges have severely weakened their military leadership. (Strongly agree, a key calculation)
+    4, // Q23: Foreign public opinion is irrelevant... (Strongly agree)
+    4, // Q24: It is acceptable to surprise the world with this massive diplomatic shock... (Strongly agree)
+    4  // Q25: Overall, a temporary pact with the USSR is the best way to guarantee victory... (Strongly agree)
+  ];
+
+  const questionTexts = [
+    "I fully intend to keep this treaty with the Soviet Union in the long run.",
+    "I expect Britain and France to fight a long, hard war to defend Poland.",
+    "My top priority is to conquer Poland and secure the eastern border immediately.",
+    "The Soviet military is strong enough to pose an immediate threat if I attack Poland.",
+    "This pact buys me crucial time and resources before the inevitable war with the Soviet Union.",
+    "The biggest tactical gain is avoiding a costly two-front war against East and West simultaneously.",
+    "This pact provides immediate access to resources and a share of Polish territory.",
+    "Poland is an undeserving nation that must be immediately destroyed and partitioned.",
+    "I fear a two-front war: attacking Poland while also having to fight the USSR.",
+    "Signing a pact with my ideological enemy (the USSR) will shock and confuse Britain and France.",
+    "Ideology must be completely set aside when it serves the immediate needs of the German state.",
+    "Britain and France are morally weak and fundamentally unwilling to fight for Poland.",
+    "Looking cynical or hypocritical doesn't matter, only the security and strength of the Reich matters.",
+    "German security is paramount; the destruction of Bolshevism is a long-term goal.",
+    "If I don't sign this pact, the USSR might form an alliance with the West, complicating my plans.",
+    "I have no choice but to start the war now; any delay is a strategic loss.",
+    "I am content to let the USSR have its sphere of influence for now, as it serves my immediate goals.",
+    "The successful re-militarisation of the Rhineland confirms the weakness of the Western powers.",
+    "An alliance with the Soviet Union is better than a diplomatic stalemate with the West.",
+    "I must immediately start secret preparations for the future invasion of the Soviet Union (Operation Barbarossa).",
+    "I am confident that I can outplay Stalin and defeat the Soviet Union when the time is right.",
+    "I believe the Soviet purges have severely weakened their military leadership.",
+    "Foreign public opinion is irrelevant; only the immediate success of the German war machine matters.",
+    "It is acceptable to surprise the world with this massive diplomatic shock if it enables the invasion of Poland.",
+    "Overall, a temporary pact with the USSR is the best way to guarantee victory over Poland and the West."
+  ];
+
+
+  const quizForm = document.getElementById("quizForm");
+  const resultCard = document.getElementById("resultCard");
+  const resultTitle = document.getElementById("resultTitle");
+  const resultBadge = document.getElementById("resultBadge");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const profileExplanation = document.getElementById("profileExplanation");
+  const hitlerExplanationText = document.getElementById("hitlerExplanationText");
+  const resetBtn = document.getElementById("resetBtn");
+  const toggleAnswerKeyBtn = document.getElementById("toggleAnswerKeyBtn");
+  const answerKeyCard = document.getElementById("answerKeyCard");
+  const answerKeyBody = document.getElementById("answerKeyBody");
+
+  quizForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let answers = [];
+    let allAnswered = true;
+
+    for (let i = 1; i <= 25; i++) {
+      const selected = document.querySelector('input[name="q' + i + '"]:checked');
+      if (!selected) {
+        // Show alert if not all questions are answered
+        const questionElement = document.querySelector(`.question:nth-child(${i})`);
+        questionElement.style.border = '2px solid #FF5733'; // Highlight unanswered question
+        questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => questionElement.style.border = '1px solid rgba(255,255,255,0.15)', 2000); // Remove highlight
+        allAnswered = false;
+        break;
+      }
+      answers.push(parseInt(selected.value, 10));
+    }
+
+    if (!allAnswered) {
+      alert("Please answer all 25 questions as Hitler before getting your profile.");
+      return;
+    }
+
+    const maxScore = 25 * 4; // Each question max alignment 4
+    let totalScore = 0;
+
+    for (let i = 0; i < 25; i++) {
+      const diff = Math.abs(answers[i] - idealAnswers[i]);
+      const qScore = 4 - diff; // perfect match = 4, opposite = 0
+      totalScore += qScore;
+    }
+
+    showResult(totalScore, maxScore);
+    // Scroll to the result card
+    window.scrollTo({ top: resultCard.offsetTop - 20, behavior: "smooth" });
+  });
+
+  function showResult(score, maxScore) {
+    const percentage = Math.round((score / maxScore) * 100);
+    let title, badgeClass, badgeText, profileText;
+
+    if (percentage >= 85) {
+      title = "You think almost exactly like Hitler in 1939";
+      badgeClass = "badge-high";
+      badgeText = "High Hitler alignment";
+      profileText =
+        "You prioritised avoiding a two-front war, seizing Poland immediately, and using the pact purely for tactical gain. " +
+        "You showed the necessary pragmatism to temporarily discard anti-communist ideology. This is very close to Hitler’s actual motives.";
+    } else if (percentage >= 60) {
+      title = "You partly think like Hitler, but you still have doubts";
+      badgeClass = "badge-mid";
+      badgeText = "Medium alignment";
+      profileText =
+        "You understand the immediate military necessity (avoiding two fronts) but may be overestimating Hitler’s belief in Western strength " +
+        "or underestimating his willingness to betray the USSR immediately. You grasp the cynicism but not the full extent of his ruthless strategy.";
+    } else {
+      title = "You do not think like Hitler in 1939 – and that’s okay!";
+      badgeClass = "badge-low";
+      badgeText = "Low alignment";
+      profileText =
+        "You seem to be valuing ideological consistency or diplomatic caution more than Hitler did. " +
+        "That helps you see how shocking and cynical his real choice was. Use the explanation below to understand his pragmatic strategy for exams.";
+    }
+
+    resultTitle.textContent = title;
+    resultBadge.className = "badge " + badgeClass;
+    resultBadge.textContent = badgeText;
+    scoreDisplay.textContent = "Your Hitler-alignment score: " + score + "/" + maxScore + " (" + percentage + "%)";
+    profileExplanation.textContent = profileText;
+
+    hitlerExplanationText.innerHTML =
+      "For Hitler, the **Nazi–Soviet Pact (August 1939)** was a **short-term, tactical manoeuvre** to enable the invasion of Poland and secure immediate victory in the West. It was absolutely not an alliance of friendship. " +
+      "<ul>" +
+      "<li>**Avoided a Two-Front War:** His primary fear was repeating Germany's WWI mistake of fighting major powers in the East and West simultaneously. The Pact neutralised the East.</li>" +
+      "<li>**Guaranteed Poland's Fall:** The Pact guaranteed the USSR would not interfere when Germany invaded Poland, and the secret clause ensured Polish territory would be divided.</li>" +
+      "<li>**Gained Time and Resources:** It secured vital Soviet resources (oil, grain) for the war effort and gave Hitler time to defeat France and Britain before turning his attention East.</li>" +
+      "<li>**Exploited Ideological Conflict:** Hitler believed that the Western democracies (Britain and France) were weak and that an alliance with his ideological enemy would confuse and paralyze them.</li>" +
+      "<li>**Fueled Overconfidence:** He strongly believed the Soviet purges had crippled the Red Army and that he could easily defeat the USSR after dealing with the West (Operation Barbarossa).</li>" +
+      "</ul>" +
+      "Thus, the Pact was a **temporary diplomatic success** that was necessary to launch World War II in 1939, but was always intended to be broken when the time was right.";
+
+    resultCard.style.display = "block";
+  }
+
+  resetBtn.addEventListener("click", function() {
+    quizForm.reset();
+    resultCard.style.display = "none";
+    answerKeyCard.style.display = "none";
+  });
+
+  function buildAnswerKey() {
+    const mapLabel = function(v) {
+      if (v === 4) return "Strongly agree (4)";
+      if (v === 3) return "Agree (3)";
+      if (v === 2) return "Not sure (2)";
+      if (v === 1) return "Disagree (1)";
+      return "Strongly disagree (0)";
+    };
+
+    answerKeyBody.innerHTML = "";
+    for (let i = 0; i < 25; i++) {
+      const tr = document.createElement("tr");
+      const tdNum = document.createElement("td");
+      const tdText = document.createElement("td");
+      const tdIdeal = document.createElement("td");
+
+      tdNum.textContent = (i + 1);
+      tdText.textContent = questionTexts[i];
+      tdIdeal.textContent = mapLabel(idealAnswers[i]);
+
+      tr.appendChild(tdNum);
+      tr.appendChild(tdText);
+      tr.appendChild(tdIdeal);
+      answerKeyBody.appendChild(tr);
+    }
+  }
+
+  buildAnswerKey();
+
+  toggleAnswerKeyBtn.addEventListener("click", function() {
+    if (answerKeyCard.style.display === "none" || answerKeyCard.style.display === "") {
+      answerKeyCard.style.display = "block";
+    } else {
+      answerKeyCard.style.display = "none";
+    }
+  });
+</script>
+</body>
+</html>

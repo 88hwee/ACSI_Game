@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Rise of Hitler – PEEL Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1f3a93, #2c3e50);
+      min-height: 100vh;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      color: #fff;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header h1 {
+      margin: 0 0 .4rem;
+      font-size: 1.8rem;
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    main {
+      flex: 1;
+      padding: 1rem;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto 1rem;
+    }
+
+    .panel {
+      background: #f5f7fb;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.15);
+      margin-bottom: 1rem;
+    }
+
+    .panel h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1.15rem;
+      color: #1a2a4a;
+    }
+
+    .panel p {
+      margin: 0 0 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      background: #e0e5ff;
+      color: #1a2a4a;
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #c3c8e8;
+    }
+
+    tbody td {
+      padding: 0.4rem;
+      border-bottom: 1px solid #e1e5f2;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #f8f9ff;
+    }
+
+    .row-label {
+      font-weight: 600;
+      color: #1a2a4a;
+      width: 70px;
+      white-space: nowrap;
+    }
+
+    select, textarea {
+      width: 100%;
+      font-size: 0.9rem;
+      padding: 0.35rem 0.4rem;
+      border-radius: 6px;
+      border: 1px solid #c3c8e8;
+      font-family: inherit;
+      resize: vertical;
+    }
+
+    textarea {
+      min-height: 48px;
+    }
+
+    .cell-correct {
+      background: #e3f9e5 !important;
+      border-color: #2e7d32 !important;
+    }
+
+    .cell-incorrect {
+      background: #ffebee !important;
+      border-color: #c62828 !important;
+    }
+
+    .controls {
+      margin-top: 0.7rem;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1f3a93;
+      color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+      transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
+    }
+
+    button.secondary {
+      background: #6c757d;
+    }
+
+    button:hover {
+      background: #162b6b;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 7px rgba(0,0,0,0.25);
+    }
+
+    button.secondary:hover {
+      background: #545b62;
+    }
+
+    #feedback {
+      font-size: 0.9rem;
+      min-height: 1.2rem;
+    }
+
+    #feedback.good { color: #1b5e20; }
+    #feedback.ok { color: #f57f17; }
+    #feedback.bad { color: #b71c1c; }
+
+    .hint {
+      font-size: 0.8rem;
+      color: #555;
+      margin-top: 0.2rem;
+    }
+
+    .hint span {
+      font-weight: 600;
+      color: #1a2a4a;
+    }
+
+    .toggle-section {
+      margin-top: 0.5rem;
+      font-size: 0.85rem;
+    }
+
+    .toggle-link {
+      color: #1f3a93;
+      text-decoration: underline;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .model-answer {
+      margin-top: 0.5rem;
+      padding: 0.5rem 0.6rem;
+      background: #eef2ff;
+      border-radius: 8px;
+      border: 1px solid #c3c8e8;
+      display: none;
+      font-size: 0.85rem;
+    }
+
+    .model-answer p {
+      margin: 0.1rem 0;
+    }
+
+    footer {
+      text-align: center;
+      color: #e0e4ff;
+      font-size: 0.75rem;
+      padding-bottom: 0.5rem;
+      opacity: 0.75;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Rise of Hitler – PEEL Paragraph Builder</h1>
+      <p>Build three PEEL paragraphs to answer: <strong>“Why did Hitler become Chancellor in January 1933?”</strong></p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Instructions</h2>
+      <p>
+        For each paragraph (Row 1–3):
+      </p>
+      <ul style="margin:0 0 0.5rem 1.1rem;font-size:0.9rem;">
+        <li><strong>P – Point:</strong> Choose the main reason.</li>
+        <li><strong>E – Evidence:</strong> Match a specific fact.</li>
+        <li><strong>E – Explanation:</strong> Show how the evidence proves the point.</li>
+        <li><strong>L – Link:</strong> Type your own linking sentence (no auto-marking here).</li>
+      </ul>
+      <p style="margin:0;">Then click <strong>“Check PEEL”</strong> to see which combinations work well for an essay.</p>
+    </section>
+
+    <section class="panel">
+      <h2>PEEL Builder</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:70px;">Row</th>
+            <th>P – Point (reason)</th>
+            <th>E – Evidence (fact)</th>
+            <th>E – Explanation (how it helps Hitler)</th>
+            <th>L – Link (your own sentence)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <!-- Row 1 -->
+          <tr data-row="r1">
+            <td class="row-label">1</td>
+            <td class="cell-point">
+              <select data-role="point">
+                <option value="">— Select a point —</option>
+                <option value="p_econ">Economic crisis was crucial.</option>
+                <option value="p_backstairs">Backstairs intrigue & conservative elites were key.</option>
+                <option value="p_versailles">Anger over the Treaty of Versailles was key.</option>
+                <option value="p_hitler">Hitler’s personality & propaganda were crucial.</option>
+              </select>
+            </td>
+            <td class="cell-evidence">
+              <select data-role="evidence">
+                <option value="">— Select evidence —</option>
+                <option value="e_unemployed">By 1932, about 6 million Germans were unemployed.</option>
+                <option value="e_vonpapen">Von Papen and other conservatives persuaded Hindenburg to appoint Hitler Chancellor in Jan 1933.</option>
+                <option value="e_versailles">Many Germans saw the Treaty of Versailles as a humiliating “Diktat”.</option>
+                <option value="e_propaganda">Goebbels used radio, posters and mass rallies to present Hitler as Germany’s saviour.</option>
+              </select>
+            </td>
+            <td class="cell-explanation">
+              <select data-role="explanation">
+                <option value="">— Select explanation —</option>
+                <option value="ex_econ">Economic misery from the Depression pushed voters towards extreme parties like the Nazis, who promised jobs and action.</option>
+                <option value="ex_backstairs">Without deals by conservative elites, Hitler would not have gained power legally despite lacking a majority.</option>
+                <option value="ex_versailles">Resentment about Versailles made people support parties that promised to tear up the treaty, including the Nazis.</option>
+                <option value="ex_hitler">Hitler’s image as a strong, charismatic leader made his promises believable and attracted many Germans.</option>
+              </select>
+            </td>
+            <td>
+              <textarea data-role="link" placeholder="Link back to the question or compare importance with another factor."></textarea>
+            </td>
+          </tr>
+
+          <!-- Row 2 -->
+          <tr data-row="r2">
+            <td class="row-label">2</td>
+            <td class="cell-point">
+              <select data-role="point">
+                <option value="">— Select a point —</option>
+                <option value="p_econ">Economic crisis was crucial.</option>
+                <option value="p_backstairs">Backstairs intrigue & conservative elites were key.</option>
+                <option value="p_versailles">Anger over the Treaty of Versailles was key.</option>
+                <option value="p_hitler">Hitler’s personality & propaganda were crucial.</option>
+              </select>
+            </td>
+            <td class="cell-evidence">
+              <select data-role="evidence">
+                <option value="">— Select evidence —</option>
+                <option value="e_unemployed">By 1932, about 6 million Germans were unemployed.</option>
+                <option value="e_vonpapen">Von Papen and other conservatives persuaded Hindenburg to appoint Hitler Chancellor in Jan 1933.</option>
+                <option value="e_versailles">Many Germans saw the Treaty of Versailles as a humiliating “Diktat”.</option>
+                <option value="e_propaganda">Goebbels used radio, posters and mass rallies to present Hitler as Germany’s saviour.</option>
+              </select>
+            </td>
+            <td class="cell-explanation">
+              <select data-role="explanation">
+                <option value="">— Select explanation —</option>
+                <option value="ex_econ">Economic misery from the Depression pushed voters towards extreme parties like the Nazis, who promised jobs and action.</option>
+                <option value="ex_backstairs">Without deals by conservative elites, Hitler would not have gained power legally despite lacking a majority.</option>
+                <option value="ex_versailles">Resentment about Versailles made people support parties that promised to tear up the treaty, including the Nazis.</option>
+                <option value="ex_hitler">Hitler’s image as a strong, charismatic leader made his promises believable and attracted many Germans.</option>
+              </select>
+            </td>
+            <td>
+              <textarea data-role="link" placeholder="Link back to the question or compare importance with another factor."></textarea>
+            </td>
+          </tr>
+
+          <!-- Row 3 -->
+          <tr data-row="r3">
+            <td class="row-label">3</td>
+            <td class="cell-point">
+              <select data-role="point">
+                <option value="">— Select a point —</option>
+                <option value="p_econ">Economic crisis was crucial.</option>
+                <option value="p_backstairs">Backstairs intrigue & conservative elites were key.</option>
+                <option value="p_versailles">Anger over the Treaty of Versailles was key.</option>
+                <option value="p_hitler">Hitler’s personality & propaganda were crucial.</option>
+              </select>
+            </td>
+            <td class="cell-evidence">
+              <select data-role="evidence">
+                <option value="">— Select evidence —</option>
+                <option value="e_unemployed">By 1932, about 6 million Germans were unemployed.</option>
+                <option value="e_vonpapen">Von Papen and other conservatives persuaded Hindenburg to appoint Hitler Chancellor in Jan 1933.</option>
+                <option value="e_versailles">Many Germans saw the Treaty of Versailles as a humiliating “Diktat”.</option>
+                <option value="e_propaganda">Goebbels used radio, posters and mass rallies to present Hitler as Germany’s saviour.</option>
+              </select>
+            </td>
+            <td class="cell-explanation">
+              <select data-role="explanation">
+                <option value="">— Select explanation —</option>
+                <option value="ex_econ">Economic misery from the Depression pushed voters towards extreme parties like the Nazis, who promised jobs and action.</option>
+                <option value="ex_backstairs">Without deals by conservative elites, Hitler would not have gained power legally despite lacking a majority.</option>
+                <option value="ex_versailles">Resentment about Versailles made people support parties that promised to tear up the treaty, including the Nazis.</option>
+                <option value="ex_hitler">Hitler’s image as a strong, charismatic leader made his promises believable and attracted many Germans.</option>
+              </select>
+            </td>
+            <td>
+              <textarea data-role="link" placeholder="Link back to the question or compare importance with another factor."></textarea>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="hint">
+        Hint: a strong essay usually has one paragraph on <span>economic crisis</span>, one on
+        <span>backstairs intrigue / elites</span>, and one on <span>Hitler / Nazi strengths</span>.
+      </div>
+
+      <div class="controls">
+        <button id="check-btn">Check PEEL</button>
+        <button id="reset-btn" class="secondary">Reset</button>
+        <div id="feedback"></div>
+      </div>
+
+      <div class="toggle-section">
+        <span id="toggle-model" class="toggle-link">Show model PEEL ideas</span>
+        <div id="model-answer" class="model-answer">
+          <p><strong>1. Economic crisis:</strong> The Great Depression left around 6 million Germans unemployed by 1932. This desperation made people turn to extreme parties like the Nazis, who promised jobs and strong action, boosting Hitler’s votes.</p>
+          <p><strong>2. Backstairs intrigue:</strong> Despite not winning a majority, Hitler became Chancellor because conservative elites like von Papen persuaded President Hindenburg to appoint him, thinking they could control him. Without this deal, Hitler might not have gained power legally.</p>
+          <p><strong>3. Hitler & propaganda:</strong> Hitler’s powerful speeches and Goebbels’ modern propaganda (radio, posters, rallies) made him appear as Germany’s saviour. This image attracted many Germans and turned Nazi support into real political power.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    PEEL practice: turning “Rise of Hitler” content into clear exam paragraphs.
+  </footer>
+
+  <script>
+    // Correct combinations for each row:
+    // r1: Economic crisis (p_econ, e_unemployed, ex_econ)
+    // r2: Backstairs intrigue (p_backstairs, e_vonpapen, ex_backstairs)
+    // r3: Hitler/propaganda (p_hitler, e_propaganda, ex_hitler)
+    const correctConfig = {
+      r1: { point: "p_econ",      evidence: "e_unemployed", explanation: "ex_econ" },
+      r2: { point: "p_backstairs", evidence: "e_vonpapen",   explanation: "ex_backstairs" },
+      r3: { point: "p_hitler",    evidence: "e_propaganda", explanation: "ex_hitler" }
+    };
+
+    const feedbackEl = document.getElementById("feedback");
+    const checkBtn = document.getElementById("check-btn");
+    const resetBtn = document.getElementById("reset-btn");
+    const toggleModel = document.getElementById("toggle-model");
+    const modelAnswer = document.getElementById("model-answer");
+
+    function clearFeedback() {
+      feedbackEl.textContent = "";
+      feedbackEl.classList.remove("good", "ok", "bad");
+    }
+
+    function setFeedback(msg, type) {
+      feedbackEl.textContent = msg;
+      feedbackEl.classList.remove("good", "ok", "bad");
+      if (type) feedbackEl.classList.add(type);
+    }
+
+    function clearCellClasses() {
+      document.querySelectorAll(".cell-point, .cell-evidence, .cell-explanation").forEach(cell => {
+        cell.classList.remove("cell-correct", "cell-incorrect");
+      });
+    }
+
+    function checkPEEL() {
+      clearCellClasses();
+      clearFeedback();
+
+      const rows = document.querySelectorAll("tbody tr[data-row]");
+      let fullCorrectRows = 0;
+      let partiallyCorrectRows = 0;
+
+      rows.forEach(row => {
+        const rowId = row.dataset.row;
+        const config = correctConfig[rowId];
+
+        const pointCell = row.querySelector(".cell-point");
+        const evCell = row.querySelector(".cell-evidence");
+        const exCell = row.querySelector(".cell-explanation");
+
+        const pointSelect = row.querySelector('select[data-role="point"]');
+        const evSelect = row.querySelector('select[data-role="evidence"]');
+        const exSelect = row.querySelector('select[data-role="explanation"]');
+
+        const chosenPoint = pointSelect.value;
+        const chosenEvidence = evSelect.value;
+        const chosenExplanation = exSelect.value;
+
+        let rowCorrectCount = 0;
+
+        if (chosenPoint === config.point) {
+          pointCell.classList.add("cell-correct");
+          rowCorrectCount++;
+        } else if (chosenPoint) {
+          pointCell.classList.add("cell-incorrect");
+        }
+
+        if (chosenEvidence === config.evidence) {
+          evCell.classList.add("cell-correct");
+          rowCorrectCount++;
+        } else if (chosenEvidence) {
+          evCell.classList.add("cell-incorrect");
+        }
+
+        if (chosenExplanation === config.explanation) {
+          exCell.classList.add("cell-correct");
+          rowCorrectCount++;
+        } else if (chosenExplanation) {
+          exCell.classList.add("cell-incorrect");
+        }
+
+        if (rowCorrectCount === 3) {
+          fullCorrectRows++;
+        } else if (rowCorrectCount > 0) {
+          partiallyCorrectRows++;
+        }
+      });
+
+      if (fullCorrectRows === 3) {
+        setFeedback("Excellent – you’ve built three strong PEEL paragraphs with well-matched points, evidence and explanation. 🎉", "good");
+      } else if (fullCorrectRows >= 1 || partiallyCorrectRows >= 1) {
+        setFeedback(`You have ${fullCorrectRows} paragraph(s) fully correct and ${partiallyCorrectRows} partially correct. Adjust the red cells – think about which fact best proves each point.`, "ok");
+      } else {
+        setFeedback("Nothing matches well yet. Rethink which <Point> each <Evidence> and <Explanation> fits. Start by matching the Great Depression to economic crisis, and von Papen to backstairs intrigue.", "bad");
+      }
+    }
+
+    function resetAll() {
+      clearFeedback();
+      clearCellClasses();
+      document.querySelectorAll("select[data-role]").forEach(sel => {
+        sel.value = "";
+      });
+      document.querySelectorAll("textarea[data-role='link']").forEach(t => {
+        t.value = "";
+      });
+    }
+
+    checkBtn.addEventListener("click", checkPEEL);
+    resetBtn.addEventListener("click", resetAll);
+
+    toggleModel.addEventListener("click", () => {
+      const isVisible = modelAnswer.style.display === "block";
+      modelAnswer.style.display = isVisible ? "none" : "block";
+      toggleModel.textContent = isVisible ? "Show model PEEL ideas" : "Hide model PEEL ideas";
+    });
+  </script>
+</body>
+</html>

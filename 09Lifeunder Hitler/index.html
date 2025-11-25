@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Life Under the Nazis – Judgement & Critical Thinking Practice</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: linear-gradient(135deg, #1f3a93, #2c3e50);
+      min-height: 100vh;
+      color: #222;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      color: #fff;
+      padding: 1.5rem 1rem;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    header h1 {
+      margin: 0 0 .4rem;
+      font-size: 1.9rem;
+    }
+
+    header p {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    main {
+      flex: 1;
+      padding: 1rem;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto 1rem;
+    }
+
+    .panel {
+      background: #f5f7fb;
+      border-radius: 12px;
+      padding: 1rem 1.1rem;
+      box-shadow: 0 2px 7px rgba(0,0,0,0.15);
+      margin-bottom: 1rem;
+    }
+
+    .panel h2 {
+      margin: 0 0 0.4rem;
+      font-size: 1.2rem;
+      color: #1a2a4a;
+    }
+
+    .panel p {
+      margin: 0 0 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 0.5rem;
+      font-size: 0.9rem;
+    }
+
+    thead th {
+      background: #e0e5ff;
+      color: #1a2a4a;
+      padding: 0.5rem;
+      text-align: left;
+      border-bottom: 1px solid #c3c8e8;
+    }
+
+    tbody td {
+      padding: 0.4rem;
+      border-bottom: 1px solid #e1e5f2;
+      vertical-align: top;
+    }
+
+    tbody tr:nth-child(even) td {
+      background: #f8f9ff;
+    }
+
+    .row-label {
+      font-weight: 600;
+      color: #1a2a4a;
+      width: 90px;
+      white-space: nowrap;
+    }
+
+    ul.details-list {
+      margin: 0.2rem 0 0.2rem 1rem;
+      padding-left: 0;
+    }
+
+    ul.details-list li {
+      margin-bottom: 0.15rem;
+    }
+
+    .benefit-text {
+      color: #1b5e20;
+    }
+
+    .harm-text {
+      color: #b71c1c;
+    }
+
+    .cell-judgement {
+      width: 260px;
+    }
+
+    .judgement-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #1a2a4a;
+      margin-bottom: 0.2rem;
+    }
+
+    .judgement-hint {
+      font-size: 0.75rem;
+      color: #555;
+      margin-bottom: 0.25rem;
+    }
+
+    textarea.judgement-input {
+      width: 100%;
+      min-height: 70px;
+      border-radius: 6px;
+      border: 1px solid #c3c8e8;
+      font-size: 0.85rem;
+      font-family: inherit;
+      padding: 0.35rem 0.4rem;
+      resize: vertical;
+    }
+
+    .cell-judgement.thinking-strong {
+      box-shadow: 0 0 0 2px rgba(46,125,50,0.6);
+      border-radius: 8px;
+    }
+
+    .cell-judgement.thinking-medium {
+      box-shadow: 0 0 0 2px rgba(249,168,37,0.8);
+      border-radius: 8px;
+    }
+
+    .cell-judgement.thinking-weak {
+      box-shadow: 0 0 0 2px rgba(198,40,40,0.6);
+      border-radius: 8px;
+    }
+
+    .thinking-tags {
+      margin-top: 0.2rem;
+      font-size: 0.7rem;
+      color: #555;
+    }
+
+    .thinking-tags span {
+      display: inline-block;
+      margin-right: 0.25rem;
+      padding: 0.05rem 0.3rem;
+      border-radius: 999px;
+      background: #e0e5ff;
+      color: #1a2a4a;
+    }
+
+    .controls-main {
+      margin: 0.6rem 0 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+      align-items: center;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      background: #1f3a93;
+      color: #fff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.18);
+      transition: background 0.15s, transform 0.1s, box-shadow 0.1s;
+    }
+
+    button.secondary {
+      background: #6c757d;
+    }
+
+    button:hover {
+      background: #162b6b;
+      transform: translateY(-1px);
+      box-shadow: 0 3px 7px rgba(0,0,0,0.25);
+    }
+
+    button.secondary:hover {
+      background: #545b62;
+    }
+
+    #feedback {
+      font-size: 0.9rem;
+      min-height: 1.2rem;
+    }
+
+    #feedback.good { color: #1b5e20; }
+    #feedback.ok { color: #f57f17; }
+    #feedback.bad { color: #b71c1c; }
+
+    .legend {
+      font-size: 0.8rem;
+      margin-top: 0.3rem;
+      color: #444;
+    }
+
+    .legend span {
+      font-weight: 600;
+    }
+
+    footer {
+      text-align: center;
+      color: #e0e4ff;
+      font-size: 0.75rem;
+      padding-bottom: 0.5rem;
+      opacity: 0.75;
+    }
+
+    @media (max-width: 750px) {
+      thead th:nth-child(3),
+      thead th:nth-child(4),
+      tbody td:nth-child(3),
+      tbody td:nth-child(4) {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-inner">
+      <h1>Life Under the Nazis – Judgement & Critical Thinking</h1>
+      <p>
+        For each policy, <strong>write your own judgement</strong>: who benefited, who suffered, and
+        whether it mostly helped or harmed Germans in the long run.
+      </p>
+    </div>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>How to Develop Critical Thinking in Your Answers</h2>
+      <p style="margin-bottom:0.3rem;">In each judgement box, try to include these 3 thinking moves:</p>
+      <ul style="margin:0 0 0.5rem 1.1rem;font-size:0.9rem;">
+        <li><strong>Time:</strong> Use phrases like <em>“in the short term…”</em> vs <em>“in the long term…”</em></li>
+        <li><strong>Different groups:</strong> Mention who is affected differently (e.g. <em>workers, women, Jews, youth, industrialists</em>).</li>
+        <li><strong>Overall judgement:</strong> Use words like <em>“overall”</em>, <em>“on balance”</em>, <em>“however”</em> to weigh both sides.</li>
+      </ul>
+      <p style="margin:0;">
+        After you write, click <strong>“Check Thinking Skills”</strong> to see if you used these moves.
+        The computer does <em>not</em> mark right or wrong – it only checks how sophisticated your thinking is.
+      </p>
+    </section>
+
+    <!-- POLITICAL CONTROL – P.I.S.S. -->
+    <section class="panel">
+      <h2>🏛️ Political Control – “P.I.S.S.”</h2>
+      <table>
+        <thead>
+          <tr>
+            <th style="width:90px;">Policy</th>
+            <th>Details</th>
+            <th>Benefited Germans</th>
+            <th>Did Not Benefit Germans</th>
+            <th style="width:260px;">Your Judgement (type full sentence)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-id="p_propaganda">
+            <td class="row-label">P – Propaganda</td>
+            <td>
+              <ul class="details-list">
+                <li>Goebbels controlled all media, radio, and film.</li>
+                <li>Nuremberg rallies glorified Hitler.</li>
+                <li>Cult of the Führer promoted unity.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Created national pride and unity.</td>
+            <td class="harm-text">Misled people and spread lies; no freedom of thought.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Try: short vs long term + which groups + “overall…”
+              </div>
+              <textarea class="judgement-input"
+                placeholder="E.g. In the short term propaganda made many Germans feel proud and united, but in the long term it harmed them because it stopped people thinking for themselves and allowed dangerous ideas to spread."></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="p_ideology">
+            <td class="row-label">I – Ideology & Indoctrination</td>
+            <td>
+              <ul class="details-list">
+                <li>Schools taught Nazi beliefs and loyalty to Hitler.</li>
+                <li>Hitler Youth trained for obedience.</li>
+                <li>Textbooks rewritten to promote nationalism.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Gave direction and purpose to youth.</td>
+            <td class="harm-text">Destroyed independent thinking; spread hatred and racism.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Mention youth vs other groups, and long-term impact.
+              </div>
+              <textarea class="judgement-input"
+                placeholder="Explain for different groups, then decide if overall it helped or harmed German society."></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="p_singleparty">
+            <td class="row-label">S – Single Party State</td>
+            <td>
+              <ul class="details-list">
+                <li>Enabling Act (1933) let Hitler rule by decree.</li>
+                <li>All other parties banned.</li>
+                <li>Trade unions replaced by DAF.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Ended political instability and unrest.</td>
+            <td class="harm-text">Destroyed democracy; no political freedom.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Think: stability vs loss of freedom – which is more important?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="p_secretpolice">
+            <td class="row-label">S – Secret Police</td>
+            <td>
+              <ul class="details-list">
+                <li>Gestapo arrested and tortured opponents.</li>
+                <li>SS ran camps and enforced loyalty.</li>
+                <li>Citizens spied on each other.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Maintained law and order on the surface.</td>
+            <td class="harm-text">Created fear; no personal safety or privacy.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Think about fear, safety and trust between neighbours.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="legend">
+        <span>Tip:</span> Good answers don’t just say “good” or “bad” – they explain for which Germans and in which time frame.
+      </div>
+    </section>
+
+    <!-- ECONOMIC CONTROL – A.R.M.S. -->
+    <section class="panel">
+      <h2>💰 Economic Control – “A.R.M.S.”</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Policy</th>
+            <th>Details</th>
+            <th>Benefited Germans</th>
+            <th>Did Not Benefit Germans</th>
+            <th>Your Judgement (type full sentence)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-id="e_autarky">
+            <td class="row-label">A – Autarky</td>
+            <td>
+              <ul class="details-list">
+                <li>Reduced imports; aimed for a war economy.</li>
+                <li>Promoted coal, steel, synthetic fuel.</li>
+                <li>Controlled food production.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Created jobs and revived industries.</td>
+            <td class="harm-text">Limited goods for consumers; economic strain.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Compare workers vs consumers; short vs long term.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="e_reemployment">
+            <td class="row-label">R – Reemployment & Public Works</td>
+            <td>
+              <ul class="details-list">
+                <li>Built autobahns and factories.</li>
+                <li>RAD (Labour Service) reduced joblessness.</li>
+                <li>Rearmament boosted employment.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Reduced unemployment and restored pride.</td>
+            <td class="harm-text">Jobs served war aims; low wages, poor rights.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Ask: were jobs worth it if they prepared for war?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="e_industrialists">
+            <td class="row-label">M – Major Industrialists & Four-Year Plan</td>
+            <td>
+              <ul class="details-list">
+                <li>Göring’s plan expanded heavy industry.</li>
+                <li>Firms like Krupp, IG Farben thrived.</li>
+                <li>Private business under Nazi control.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Revived economy; boosted exports.</td>
+            <td class="harm-text">Helped rich industrialists; exploited workers.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Differentiate between rich business owners and ordinary workers.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="e_kdf">
+            <td class="row-label">S – Strength Through Joy (KdF)</td>
+            <td>
+              <ul class="details-list">
+                <li>Organised leisure trips and concerts.</li>
+                <li>Volkswagen “people’s car” saving scheme.</li>
+                <li>Controlled workers’ leisure under DAF.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Provided recreation and hope.</td>
+            <td class="harm-text">Manipulated workers; few got promised rewards.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Think: propaganda + real benefit or just empty promises?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="legend">
+        <span>Tip:</span> Use words like “on balance” to show you have weighed both benefits and harms.
+      </div>
+    </section>
+
+    <!-- SOCIAL CONTROL – PROPAGANDA -->
+    <section class="panel">
+      <h2>👥 Social Control – “P.R.O.P.A.G.A.N.D.A.”</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Policy</th>
+            <th>Details</th>
+            <th>Benefited Germans</th>
+            <th>Did Not Benefit Germans</th>
+            <th>Your Judgement (type full sentence)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-id="s_propaganda">
+            <td class="row-label">P – Propaganda & Rallies</td>
+            <td>
+              <ul class="details-list">
+                <li>Ministry of Propaganda controlled radio and press.</li>
+                <li>Nuremberg rallies showed strength.</li>
+                <li>Uniforms and symbols built loyalty.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Boosted national pride and unity.</td>
+            <td class="harm-text">Brainwashed population; no critical thinking.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Pride vs propaganda – which matters more in the long run?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="s_racial">
+            <td class="row-label">R – Racial Laws & Anti-Semitism</td>
+            <td>
+              <ul class="details-list">
+                <li>Nuremberg Laws (1935) stripped Jews of rights.</li>
+                <li>Kristallnacht (1938) violence against Jews.</li>
+                <li>Jews forced to wear the Star of David.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Appealed to racists; gave some Aryans privileges.</td>
+            <td class="harm-text">Discriminated, terrorised, and murdered minorities.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Make sure you include minorities like Jews – did this really “benefit Germans”?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="s_oppression">
+            <td class="row-label">O – Oppression & Censorship</td>
+            <td>
+              <ul class="details-list">
+                <li>“Un-German” books banned.</li>
+                <li>Press and universities strictly controlled.</li>
+                <li>Critics imprisoned.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Maintained Nazi control; reduced open dissent.</td>
+            <td class="harm-text">Ended free speech and creativity.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Consider students, teachers, writers – whose voices were silenced?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="s_persecution">
+            <td class="row-label">P – Persecution of Minorities</td>
+            <td>
+              <ul class="details-list">
+                <li>Targeted Roma, disabled, homosexuals.</li>
+                <li>Sterilisation and euthanasia policies.</li>
+                <li>Sent to camps as “undesirables”.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">None.</td>
+            <td class="harm-text">Widespread suffering and death.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Make a clear moral judgement here – do not sit on the fence.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="s_aryan">
+            <td class="row-label">A – Aryan Ideals & Role of Women</td>
+            <td>
+              <ul class="details-list">
+                <li>“Kinder, Küche, Kirche” (Children, Kitchen, Church).</li>
+                <li>Medals for large Aryan families.</li>
+                <li>Women pushed out of jobs.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Rewarded mothers; increased birth rates.</td>
+            <td class="harm-text">Limited education and careers for women.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Contrast Nazi ideal women vs women who wanted careers or study.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="s_youth">
+            <td class="row-label">G – German Youth Indoctrination</td>
+            <td>
+              <ul class="details-list">
+                <li>Hitler Youth trained boys for war.</li>
+                <li>League of German Maidens trained girls for motherhood.</li>
+                <li>Schools glorified Hitler.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Created belonging and national pride.</td>
+            <td class="harm-text">Destroyed individuality; encouraged blind obedience.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Think about what kind of adults these young people would grow into.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="legend">
+        <span>Tip:</span> Critical thinking means you question whose voices are missing and who pays the price.
+      </div>
+    </section>
+
+    <!-- MILITARY CONTROL – R.A.D.A.R. -->
+    <section class="panel">
+      <h2>⚔️ Military Control – “R.A.D.A.R.”</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Policy</th>
+            <th>Details</th>
+            <th>Benefited Germans</th>
+            <th>Did Not Benefit Germans</th>
+            <th>Your Judgement (type full sentence)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr data-id="m_rearmament">
+            <td class="row-label">R – Rearmament</td>
+            <td>
+              <ul class="details-list">
+                <li>Expanded army and weapons industry.</li>
+                <li>Violated Versailles limits.</li>
+                <li>Boosted national morale.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Restored pride and jobs.</td>
+            <td class="harm-text">Increased militarism; prepared for war.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Pride now vs risk of future war – which is more important?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="m_airforce">
+            <td class="row-label">A – Air Force (Luftwaffe)</td>
+            <td>
+              <ul class="details-list">
+                <li>Built under Göring.</li>
+                <li>Tested in Spain (1936).</li>
+                <li>Key to Nazi propaganda.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Displayed national strength.</td>
+            <td class="harm-text">Used for aggression and destruction.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Consider civilians in other countries as well as Germans.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="m_draft">
+            <td class="row-label">D – Draft / Conscription</td>
+            <td>
+              <ul class="details-list">
+                <li>Compulsory service for men 18–25.</li>
+                <li>Army expanded to ~1 million by 1939.</li>
+                <li>Trained youth in discipline.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Reduced unemployment; fostered unity.</td>
+            <td class="harm-text">Prepared youth for war, not peace.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Think about the choices (or lack of choices) young men had.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="m_aggression">
+            <td class="row-label">A – Aggression Abroad</td>
+            <td>
+              <ul class="details-list">
+                <li>Remilitarised Rhineland (1936).</li>
+                <li>Annexed Austria (1938).</li>
+                <li>Took Sudetenland and Czechoslovakia.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Regained pride and land.</td>
+            <td class="harm-text">Brought Europe closer to war.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Ask: did ordinary Germans understand the risks of this aggression?
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+          <tr data-id="m_readiness">
+            <td class="row-label">R – Readiness for War</td>
+            <td>
+              <ul class="details-list">
+                <li>Industry geared for weapons.</li>
+                <li>Propaganda glorified conquest.</li>
+                <li>Plans for invasion of Poland.</li>
+              </ul>
+            </td>
+            <td class="benefit-text">Boosted production and morale.</td>
+            <td class="harm-text">Led directly to WWII and destruction.</td>
+            <td class="cell-judgement">
+              <div class="judgement-label">Write your judgement:</div>
+              <div class="judgement-hint">
+                Link this clearly to the outbreak of WWII.
+              </div>
+              <textarea class="judgement-input"></textarea>
+              <div class="thinking-tags" data-tags=""></div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="legend">
+        <span>Tip:</span> Strong answers link these policies forward to the war and its consequences.
+      </div>
+    </section>
+
+    <!-- Overall controls -->
+    <section class="panel">
+      <h2>Check Your Thinking Skills (Not Right/Wrong)</h2>
+      <p style="margin-bottom:0.4rem;">
+        Click <strong>“Check Thinking Skills”</strong>. The computer will scan your sentences for:
+        <strong>time words</strong> (short/long term), <strong>group words</strong> (different types of people),
+        and <strong>evaluation words</strong> (“overall”, “however”, “on balance”…).
+      </p>
+      <p style="margin-bottom:0.4rem;">
+        It will colour your judgement boxes:
+        <span style="color:#1b5e20;font-weight:600;">Green</span> = strong thinking,
+        <span style="color:#f57f17;font-weight:600;">Yellow</span> = okay, can be deeper,
+        <span style="color:#b71c1c;font-weight:600;">Red</span> = mostly description, needs more evaluation.
+      </p>
+      <div class="controls-main">
+        <button id="check-btn">Check Thinking Skills</button>
+        <button id="reset-btn" class="secondary">Clear All Judgements</button>
+        <div id="feedback"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Life under the Nazis: using evidence to make balanced, critical judgements.
+  </footer>
+
+  <script>
+    const feedbackEl = document.getElementById("feedback");
+    const checkBtn = document.getElementById("check-btn");
+    const resetBtn = document.getElementById("reset-btn");
+
+    // Simple keyword sets for “thinking moves”
+    const timeWords = ["short term", "short-term", "long term", "long-term", "before", "after", "eventually", "in the end"];
+    const groupWords = ["workers", "women", "youth", "young", "Jews", "Jewish", "minorities", "business", "industrialists", "soldiers", "farmers", "middle class", "Aryans", "Germans"];
+    const evalWords = ["overall", "on balance", "however", "although", "therefore", "so", "in conclusion", "mainly", "mostly"];
+
+    function clearFeedback() {
+      feedbackEl.textContent = "";
+      feedbackEl.classList.remove("good", "ok", "bad");
+    }
+
+    function setFeedback(msg, type) {
+      feedbackEl.textContent = msg;
+      feedbackEl.classList.remove("good", "ok", "bad");
+      if (type) feedbackEl.classList.add(type);
+    }
+
+    function resetThinkingClasses() {
+      document.querySelectorAll(".cell-judgement").forEach(cell => {
+        cell.classList.remove("thinking-strong", "thinking-medium", "thinking-weak");
+        const tagBox = cell.querySelector(".thinking-tags");
+        if (tagBox) {
+          tagBox.dataset.tags = "";
+          tagBox.textContent = "";
+        }
+      });
+    }
+
+    function containsAny(text, words) {
+      const lower = text.toLowerCase();
+      return words.some(w => lower.includes(w.toLowerCase()));
+    }
+
+    function checkThinking() {
+      clearFeedback();
+      resetThinkingClasses();
+
+      const judgements = document.querySelectorAll(".cell-judgement");
+      let filled = 0;
+      let strong = 0;
+      let medium = 0;
+      let weak = 0;
+
+      judgements.forEach(cell => {
+        const textarea = cell.querySelector(".judgement-input");
+        if (!textarea) return;
+
+        const text = textarea.value.trim();
+        if (!text) return;
+
+        filled++;
+
+        const hasTime = containsAny(text, timeWords);
+        const hasGroups = containsAny(text, groupWords);
+        const hasEval = containsAny(text, evalWords);
+
+        let level = 0;
+        if (hasTime) level++;
+        if (hasGroups) level++;
+        if (hasEval) level++;
+
+        const tagBox = cell.querySelector(".thinking-tags");
+        let tags = [];
+        if (hasTime) tags.push("⏳ Time");
+        if (hasGroups) tags.push("👥 Groups");
+        if (hasEval) tags.push("⚖️ Evaluation");
+
+        if (tagBox) {
+          if (tags.length > 0) {
+            tagBox.textContent = "Thinking moves: " + tags.join(" · ");
+          } else {
+            tagBox.textContent = "Thinking moves: (mainly description – add time, groups, and overall judgement)";
+          }
+        }
+
+        if (level === 3) {
+          cell.classList.add("thinking-strong");
+          strong++;
+        } else if (level === 2) {
+          cell.classList.add("thinking-medium");
+          medium++;
+        } else {
+          cell.classList.add("thinking-weak");
+          weak++;
+        }
+      });
+
+      if (filled === 0) {
+        setFeedback("You haven’t typed any judgements yet. Write at least one, then click again.", "bad");
+        return;
+      }
+
+      if (strong === filled) {
+        setFeedback(`Excellent – ${strong}/${filled} of your answers use time, different groups AND overall evaluation. This is very strong critical thinking. 🎉`, "good");
+      } else if (strong + medium === filled) {
+        setFeedback(`Good job – most of your ${filled} answers already use 2–3 thinking moves. Strengthen the yellow boxes by adding one more move (time, groups, or evaluation).`, "ok");
+      } else {
+        setFeedback(`You wrote ${filled} judgements. Some are still mostly descriptive. Improve the red boxes by adding: (1) short vs long term, (2) different groups, and (3) an overall judgement word like “overall” or “on balance”.`, "bad");
+      }
+    }
+
+    function resetAll() {
+      clearFeedback();
+      resetThinkingClasses();
+      document.querySelectorAll(".judgement-input").forEach(t => {
+        t.value = "";
+      });
+    }
+
+    checkBtn.addEventListener("click", checkThinking);
+    resetBtn.addEventListener("click", resetAll);
+  </script>
+</body>
+</html>

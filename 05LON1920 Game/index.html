@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>League of Nations: Peace Defender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700&display=swap');
+
+        body {
+            background-color: #0f172a;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden; /* Prevent scrolling while playing */
+            touch-action: none;
+        }
+
+        .game-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            border: 4px solid #334155;
+            background: radial-gradient(circle, #1e293b 0%, #020617 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        /* UI Overlays */
+        .overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background: #1e293b;
+            padding: 2rem;
+            border-radius: 1rem;
+            border: 2px solid #475569;
+            max-width: 600px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            font-family: 'Press Start 2P', cursive;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+
+        .btn:hover { background: #2563eb; transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+
+        .mcq-option {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            background: #334155;
+            border: 2px solid #475569;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            color: white;
+            font-size: 0.95rem;
+        }
+
+        .mcq-option:hover {
+            background: #475569;
+            border-color: #60a5fa;
+        }
+
+        .hidden { display: none !important; }
+
+        /* HUD */
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 800px;
+            max-width: 95%;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 5;
+            gap: 10px;
+        }
+
+        .hud-item {
+            background: rgba(15, 23, 42, 0.8);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            min-width: 120px;
+            text-align: center;
+        }
+        
+        #feedback-msg {
+            color: #ef4444;
+            font-weight: bold;
+            height: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        
+        <!-- Canvas -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- HUD -->
+        <div id="hud">
+            <div class="hud-item">
+                <div class="text-xs text-slate-400 uppercase">Score</div>
+                <div id="scoreDisplay" class="text-xl font-bold text-yellow-400 game-font">0</div>
+            </div>
+            <div class="hud-item">
+                <div class="text-xs text-slate-400 uppercase">High Score</div>
+                <div id="highScoreDisplay" class="text-xl font-bold text-blue-400 game-font">0</div>
+            </div>
+            <div class="hud-item">
+                <div class="text-xs text-slate-400 uppercase">Time</div>
+                <div id="timeDisplay" class="text-xl font-bold text-white game-font">02:00</div>
+            </div>
+        </div>
+
+        <!-- Start Screen -->
+        <div id="startScreen" class="overlay">
+            <div class="modal border-blue-500">
+                <h1 class="text-2xl md:text-3xl text-blue-400 mb-4 game-font" style="line-height: 1.5;">LEAGUE OF NATIONS<br>DEFENDER</h1>
+                <p class="text-gray-300 mb-6 leading-relaxed text-sm md:text-base">
+                    Defend the peace! Shoot the falling orbs.<br><br>
+                    <span class="text-blue-400 font-bold">BLUE ORBS</span> = Learn a Fact (+10 pts)<br>
+                    <span class="text-red-400 font-bold">RED ORBS</span> = Answer a Quiz (+50 pts)
+                </p>
+                <div class="text-xs md:text-sm text-slate-400 mb-8">
+                    Controls: &larr; &rarr; to Move | SPACE to Shoot
+                </div>
+                <button class="btn" onclick="startGame()">START MISSION</button>
+            </div>
+        </div>
+
+        <!-- Fact Modal -->
+        <div id="factModal" class="overlay hidden">
+            <div class="modal border-blue-400">
+                <div class="text-blue-400 font-bold mb-2 uppercase tracking-widest text-sm">Historical Fact</div>
+                <h2 class="text-xl font-bold text-white mb-4" id="factTitle">Title</h2>
+                <p class="text-gray-300 mb-6" id="factText">Content goes here.</p>
+                <button class="btn" onclick="resumeGame()">CONFIRM</button>
+            </div>
+        </div>
+
+        <!-- MCQ Modal -->
+        <div id="mcqModal" class="overlay hidden">
+            <div class="modal border-red-500">
+                <div class="text-red-400 font-bold mb-2 uppercase tracking-widest text-sm">Crisis Alert</div>
+                <h2 class="text-lg font-bold text-white mb-4" id="questionText">Question goes here?</h2>
+                <div id="feedback-msg"></div>
+                <div id="optionsContainer">
+                    <!-- Options injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Over Modal -->
+        <div id="gameOverModal" class="overlay hidden">
+            <div class="modal border-yellow-500">
+                <h1 class="text-3xl text-yellow-400 mb-4 game-font">GAME OVER</h1>
+                <p class="text-gray-300 mb-2">Your Score</p>
+                <div id="finalScore" class="text-4xl font-bold text-white mb-2 game-font">0</div>
+                <div id="newHighScoreMsg" class="text-green-400 font-bold mb-6 hidden game-font text-sm">NEW HIGH SCORE!</div>
+                <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- 50 QUESTION REPOSITORY (FOCUSED ON LON) ---
+        const MASTER_QUESTION_BANK = [
+            // Major Crises (Successes)
+            { q: "Which two countries were involved in the Aaland Islands dispute (1921)?", options: ["Germany and Poland", "Sweden and Finland", "Greece and Bulgaria", "Italy and Albania"], answer: 1 },
+            { q: "What was the result of the Aaland Islands dispute, deemed a success for the League?", options: ["The islands were demilitarised and given to Finland", "War broke out between Sweden and Finland", "The League refused to intervene", "The islands were given to Sweden"], answer: 0 },
+            { q: "The League successfully organised a plebiscite (vote) to partition which region in 1921?", options: ["Vilna", "The Rhineland", "Upper Silesia", "Corfu"], answer: 2 },
+            { q: "In the Greece-Bulgaria Crisis (1925), which action did the League take that was followed?", options: ["Ordered Greece to withdraw troops and pay compensation", "Ordered Bulgaria to surrender", "Sent a large peacekeeping force", "Imposed military sanctions on both"], answer: 0 },
+            
+            // Major Crises (Failures)
+            { q: "Which country seized Vilna (capital of Lithuania) in 1920?", options: ["Germany", "Poland", "Russia", "Latvia"], answer: 1 },
+            { q: "Why was the Vilna dispute considered a failure for the League?", options: ["The Council couldn't agree on sanctions", "Poland was a permanent member", "Britain and France refused to send troops to remove Poland", "Lithuania was too weak to fight"], answer: 2 },
+            { q: "Who bombarded Corfu in 1923 after an Italian general's murder?", options: ["Greece", "Albania", "Italy (Mussolini)", "Turkey"], answer: 2 },
+            { q: "In the Corfu Crisis, who overruled the League's decision, forcing Greece to pay compensation to Italy?", options: ["The Permanent Court of Justice", "The Conference of Ambassadors", "The USA Senate", "The British Parliament"], answer: 1 },
+
+            // Structure & Membership Weaknesses
+            { q: "Which three powerful nations were NOT members of the League at its start in 1920?", options: ["Britain, France, Italy", "USA, Germany, USSR", "Japan, China, Brazil", "Spain, Poland, Sweden"], answer: 1 },
+            { q: "Why did the USA not join the League?", options: ["Woodrow Wilson refused the invitation", "The Senate rejected the Treaty of Versailles and Isolationism was preferred", "The USA was expelled by Britain", "They were too busy fighting a war"], answer: 1 },
+            { q: "Germany was initially excluded from the League due to its role in WWI. When did it eventually join?", options: ["1920", "1926", "1933", "1939"], answer: 1 },
+            { q: "When was the USSR (Russia) finally admitted to the League?", options: ["1920", "1926", "1930", "1934"], answer: 3 },
+            { q: "Why was the League ultimately ineffective in major crises involving its own members?", options: ["It had too much money", "Self-interest of Britain & France undermined Collective Security", "It had too many soldiers", "The Assembly met too often"], answer: 1 },
+            { q: "What was the League's most significant tool that it lacked?", options: ["A budget", "An army of its own", "A headquarters", "A court"], answer: 1 },
+            { q: "What was required for the Assembly (the main meeting body) to make a decision?", options: ["Majority vote", "Unanimous vote", "2/3 Majority", "Council approval"], answer: 1 },
+            
+            // Commissions & Strengths
+            { q: "Which specialized body worked to improve working conditions by campaigning for an 8-hour day?", options: ["The Health Committee", "The International Labour Organisation (ILO)", "The Council", "The Mandates Commission"], answer: 1 },
+            { q: "Which committee successfully led campaigns to defeat diseases like leprosy and malaria?", options: ["The Slavery Commission", "The Health Committee", "The Refugees Commission", "The Disarmament Commission"], answer: 1 },
+            { q: "Which Commission was responsible for running former colonies of defeated powers (Mandates)?", options: ["The Mandates Commission", "The Slavery Commission", "The Council", "The Assembly"], answer: 0 },
+            { q: "The League used 'Moral Condemnation' as a tool. What does this mean?", options: ["Ordering military action", "Publicly naming and shaming an aggressor", "Stopping all trade", "Sending money to victims"], answer: 1 },
+            
+            // Additional LON Context
+            { q: "Which organ of the League met approximately 4-5 times a year and in emergencies?", options: ["The Assembly", "The Council", "The Secretariat", "The Permanent Court"], answer: 1 },
+            { q: "Which country was expelled from the League in 1939 for invading Finland?", options: ["Germany", "Italy", "USSR", "Japan"], answer: 2 },
+            { q: "What key principle of the League meant that all members agreed to defend one another if attacked?", options: ["Isolationism", "Unanimous Voting", "Collective Security", "Mandates"], answer: 2 },
+            { q: "Why did Japan leave the League in 1933?", options: ["They were too friendly with Germany", "The League criticised their invasion of Manchuria", "They won the WWII", "The USA asked them to leave"], answer: 1 }
+        ];
+
+        // --- FACTS REPOSITORY (CONTEXT ONLY - NO DIRECT ANSWERS TO QUIZ) ---
+        const facts = [
+            { title: "The Secretariat", text: "The League's civil service; they prepared the reports, organized meetings, and kept all the records in Geneva." },
+            { title: "The Assembly", text: "The 'parliament' of the League. Every member nation had one vote, and it met only once a year." },
+            { title: "The Council", text: "The smaller executive body that could meet quickly in emergencies. Its permanent members held the power to veto decisions." },
+            { title: "The League's Location", text: "The League of Nations was based in Geneva, Switzerland, a neutral country, to avoid suspicion of bias." },
+            { title: "Mandates Commission", text: "Oversaw the territories taken from Germany and the Ottoman Empire, ensuring the controlling powers (UK/France) prepared them for independence." },
+            { title: "Refugees Commission", text: "After WWI, this group organized the return of 400,000 prisoners of war and helped stateless people find new homes." },
+            { title: "International Labour Org (ILO)", text: "Its successes included persuading 77 countries to adopt the 48-hour working week and campaigning against child labor." },
+            { title: "Upper Silesia Solution", text: "The dispute was handled by an expert commission. After a plebiscite, the industrial area was peacefully partitioned between Germany and Poland." },
+            { title: "Vilna Failure", text: "The League asked Poland to withdraw, but Poland refused. Britain and France refused to send troops, showing the League's lack of enforcement power." },
+            { title: "Corfu Outcome", text: "Mussolini's successful bullying showed that when a powerful country was determined to ignore the League, it could do so, especially when backed by the Conference of Ambassadors." },
+            { title: "Greece-Bulgaria Success", text: "The League reacted quickly, ordering Greece to pay compensation and withdraw. Greece complied because it was a small nation that couldn't defy the powerful members." },
+            { q: "The USA's Absence", text: "The US Senate voted against the League, believing joining would involve the US in endless European disputes (Isolationism)." }
+        ];
+
+        // --- Game Variables ---
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let gameState = 'start'; // start, playing, paused, gameover
+        let score = 0;
+        let timeLeft = 120; // 2 minutes
+        let lastTime = 0;
+        let spawnTimer = 0;
+        let keys = { ArrowLeft: false, ArrowRight: false, Space: false };
+        let highScore = localStorage.getItem('lon_highscore') || 0;
+
+        // Session Question Management
+        let availableQuestions = [...MASTER_QUESTION_BANK];
+        let currentQuestion = null; // Stores the current active question
+        let retryQuestion = null; // Stores a question if user got it wrong
+
+        // Resize Canvas
+        function resize() {
+            canvas.width = 800;
+            canvas.height = 600;
+            // Update High Score Display on load
+            document.getElementById('highScoreDisplay').innerText = highScore;
+        }
+        resize();
+
+        // Entities
+        const player = { x: 375, y: 540, width: 50, height: 40, speed: 7, color: '#3b82f6' };
+        let bullets = [];
+        let enemies = [];
+        let particles = [];
+
+        // --- Input Handling ---
+        window.addEventListener('keydown', e => {
+            if(e.code === 'ArrowLeft') keys.ArrowLeft = true;
+            if(e.code === 'ArrowRight') keys.ArrowRight = true;
+            if(e.code === 'Space') {
+                if (!keys.Space && gameState === 'playing') shoot();
+                keys.Space = true;
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            if(e.code === 'ArrowLeft') keys.ArrowLeft = false;
+            if(e.code === 'ArrowRight') keys.ArrowRight = false;
+            if(e.code === 'Space') keys.Space = false;
+        });
+
+        // --- Game Logic ---
+        function shoot() {
+            bullets.push({ x: player.x + player.width/2 - 2, y: player.y, width: 4, height: 10, speed: 10, color: '#facc15' });
+        }
+
+        function createEnemy() {
+            const type = Math.random() > 0.7 ? 'red' : 'blue'; // 30% chance for Quiz
+            const size = type === 'red' ? 25 : 20;
+            const x = Math.random() * (canvas.width - size * 2) + size;
+            enemies.push({
+                x: x,
+                y: -30,
+                radius: size,
+                speed: Math.random() * 2 + 1,
+                type: type,
+                color: type === 'red' ? '#ef4444' : '#3b82f6'
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for(let i=0; i<8; i++) {
+                particles.push({
+                    x: x, y: y,
+                    vx: (Math.random() - 0.5) * 5,
+                    vy: (Math.random() - 0.5) * 5,
+                    life: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            score = 0;
+            timeLeft = 120; // Reset to 2 minutes
+            bullets = [];
+            enemies = [];
+            // Reset question pool if empty
+            if (availableQuestions.length === 0) availableQuestions = [...MASTER_QUESTION_BANK];
+            retryQuestion = null;
+            
+            gameState = 'playing';
+            updateScore();
+            requestAnimationFrame(gameLoop);
+            
+            // Timer Interval
+            const timerInterval = setInterval(() => {
+                if(gameState === 'playing') {
+                    timeLeft--;
+                    updateTimer();
+                    if(timeLeft <= 0) {
+                        endGame();
+                        clearInterval(timerInterval);
+                    }
+                } else if (gameState === 'gameover') {
+                    clearInterval(timerInterval);
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            gameState = 'gameover';
+            document.getElementById('finalScore').innerText = score;
+            
+            const newHighScoreDiv = document.getElementById('newHighScoreMsg');
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('lon_highscore', highScore);
+                document.getElementById('highScoreDisplay').innerText = highScore;
+                newHighScoreDiv.classList.remove('hidden');
+            } else {
+                newHighScoreDiv.classList.add('hidden');
+            }
+            
+            document.getElementById('gameOverModal').classList.remove('hidden');
+        }
+
+        function pauseGame() {
+            gameState = 'paused';
+        }
+
+        function resumeGame() {
+            document.getElementById('factModal').classList.add('hidden');
+            document.getElementById('mcqModal').classList.add('hidden');
+            gameState = 'playing';
+            lastTime = performance.now(); // reset delta time to prevent huge jumps
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- Interaction Handlers ---
+        function triggerFact() {
+            pauseGame();
+            const fact = facts[Math.floor(Math.random() * facts.length)];
+            document.getElementById('factTitle').innerText = fact.title;
+            document.getElementById('factText').innerText = fact.text;
+            document.getElementById('factModal').classList.remove('hidden');
+            score += 10;
+            updateScore();
+        }
+
+        function triggerMCQ() {
+            pauseGame();
+            
+            // LOGIC: Check if there is a 'retryQuestion' pending (user got it wrong previously)
+            if (retryQuestion) {
+                currentQuestion = retryQuestion;
+            } else {
+                // If pool is empty, reset it
+                if (availableQuestions.length === 0) availableQuestions = [...MASTER_QUESTION_BANK];
+                // Pick random question from pool
+                const randIndex = Math.floor(Math.random() * availableQuestions.length);
+                currentQuestion = availableQuestions[randIndex];
+            }
+
+            document.getElementById('questionText').innerText = currentQuestion.q;
+            document.getElementById('feedback-msg').innerText = ""; // Clear feedback
+            
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = ''; // Clear old options
+
+            currentQuestion.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'mcq-option';
+                btn.innerText = opt;
+                btn.onclick = () => handleMCQAnswer(index, currentQuestion.answer, btn);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('mcqModal').classList.remove('hidden');
+        }
+
+        function handleMCQAnswer(selectedIndex, correctIndex, btnElement) {
+            // Disable all buttons to prevent double clicking
+            const allBtns = document.querySelectorAll('.mcq-option');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedIndex === correctIndex) {
+                // CORRECT
+                btnElement.style.background = '#22c55e'; // Green
+                btnElement.style.borderColor = '#15803d';
+                score += 50;
+                document.getElementById('feedback-msg').innerText = "CORRECT!";
+                document.getElementById('feedback-msg').style.color = "#22c55e";
+                
+                // If this was a fresh question, remove it from the pool
+                if (!retryQuestion) {
+                    const idx = availableQuestions.indexOf(currentQuestion);
+                    if (idx > -1) availableQuestions.splice(idx, 1);
+                }
+                
+                // Clear retry queue
+                retryQuestion = null;
+
+                setTimeout(() => {
+                    resumeGame();
+                }, 800);
+
+            } else {
+                // WRONG
+                btnElement.style.background = '#ef4444'; // Red
+                btnElement.style.borderColor = '#991b1b';
+                
+                // Highlight the correct answer for learning
+                allBtns[correctIndex].style.background = '#22c55e';
+                allBtns[correctIndex].style.borderColor = '#15803d';
+                
+                score = Math.max(0, score - 10);
+                document.getElementById('feedback-msg').innerText = "INCORRECT! This question will appear again.";
+                document.getElementById('feedback-msg').style.color = "#ef4444";
+                
+                // Set this question to appear next time
+                retryQuestion = currentQuestion;
+
+                setTimeout(() => {
+                    resumeGame();
+                }, 1500); // Longer delay to read correct answer
+            }
+            updateScore();
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').innerText = score;
+        }
+
+        function updateTimer() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            document.getElementById('timeDisplay').innerText = 
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        // --- Main Loop ---
+        function gameLoop(timestamp) {
+            if(gameState !== 'playing') return;
+
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            // Update Player
+            if(keys.ArrowLeft && player.x > 0) player.x -= player.speed;
+            if(keys.ArrowRight && player.x + player.width < canvas.width) player.x += player.speed;
+
+            // Update Bullets
+            for(let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= bullets[i].speed;
+                if(bullets[i].y < 0) bullets.splice(i, 1);
+            }
+
+            // Spawn Enemies
+            spawnTimer++;
+            if(spawnTimer > 60) { // Approx every 1 second
+                createEnemy();
+                spawnTimer = 0;
+            }
+
+            // Update Enemies & Collision
+            for(let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                e.y += e.speed;
+
+                // Hit Floor?
+                if(e.y > canvas.height) {
+                    enemies.splice(i, 1);
+                    continue;
+                }
+
+                // Check Bullet Collision
+                for(let j = bullets.length - 1; j >= 0; j--) {
+                    const b = bullets[j];
+                    const dist = Math.hypot(e.x - b.x, e.y - b.y);
+                    
+                    if(dist < e.radius + b.width) {
+                        // HIT!
+                        createExplosion(e.x, e.y, e.color);
+                        if(e.type === 'blue') triggerFact();
+                        else triggerMCQ();
+
+                        enemies.splice(i, 1);
+                        bullets.splice(j, 1);
+                        break; // Stop checking bullets for this dead enemy
+                    }
+                }
+            }
+
+            // Update Particles
+            for(let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.05;
+                if(p.life <= 0) particles.splice(i, 1);
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            // Clear
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw Stars (Static Background Effect)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            for(let i=0; i<10; i++) {
+                ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
+            }
+
+            // Draw Player
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y + player.height);
+            ctx.lineTo(player.x + player.width / 2, player.y);
+            ctx.lineTo(player.x + player.width, player.y + player.height);
+            ctx.fill();
+            // Engine flame
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath();
+            ctx.moveTo(player.x + 15, player.y + player.height);
+            ctx.lineTo(player.x + 25, player.y + player.height + 15 + Math.random()*5);
+            ctx.lineTo(player.x + 35, player.y + player.height);
+            ctx.fill();
+
+            // Draw Bullets
+            ctx.fillStyle = '#facc15';
+            bullets.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+
+            // Draw Enemies
+            enemies.forEach(e => {
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+                ctx.fillStyle = e.color;
+                ctx.fill();
+                
+                // Shine
+                ctx.beginPath();
+                ctx.arc(e.x - e.radius/3, e.y - e.radius/3, e.radius/4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                // Symbol
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(e.type === 'red' ? '?' : '!', e.x, e.y);
+            });
+
+            // Draw Particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1.0;
+            });
+        }
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nazi–Soviet Pact: Be Stalin for a Day</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #222831 0%, #393E46 40%, #00ADB5 100%);
+    color: #f7f7f7;
+    min-height: 100vh;
+  }
+  header {
+    padding: 1.6rem 1rem;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  header h1 {
+    margin: 0 0 0.4rem;
+    font-size: 1.8rem;
+  }
+  header p {
+    margin: 0.2rem auto;
+    max-width: 700px;
+    font-size: 0.95rem;
+    opacity: 0.9;
+  }
+  main {
+    max-width: 900px;
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 1rem 2rem;
+  }
+  .card {
+    background: rgba(15, 20, 30, 0.92);
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    margin-bottom: 1.1rem;
+  }
+  .note {
+    font-size: 0.85rem;
+    opacity: 0.9;
+  }
+  .question {
+    margin-bottom: 0.8rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid rgba(255,255,255,0.15);
+  }
+  .question:last-child {
+    border-bottom: none;
+  }
+  .question p {
+    margin: 0 0 0.4rem;
+    font-size: 0.94rem;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.9rem;
+    font-size: 0.86rem;
+  }
+  .options label {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+  }
+  .options input[type="radio"] {
+    accent-color: #00ADB5;
+  }
+  .btn-row {
+    display: flex;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+    margin-top: 0.8rem;
+  }
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.5rem 1.2rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  #submitBtn {
+    background: linear-gradient(135deg, #00ADB5, #08d1db);
+    color: #021015;
+  }
+  #submitBtn:hover { filter: brightness(1.1); }
+  .secondary-btn {
+    background: transparent;
+    color: #eeeeee;
+    border: 1px solid rgba(238,238,238,0.6);
+  }
+  .secondary-btn:hover {
+    background: rgba(238,238,238,0.08);
+  }
+  #resultCard {
+    display: none;
+    border-left: 4px solid #00ADB5;
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(255,255,255,0.4);
+    margin-bottom: 0.25rem;
+  }
+  .badge-high { border-color: #00ffbf; }
+  .badge-mid { border-color: #ffd369; }
+  .badge-low { border-color: #ff6b6b; }
+  #scoreDisplay {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+  #stalinAnswer {
+    background: rgba(0,0,0,0.32);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    margin-top: 0.75rem;
+    font-size: 0.9rem;
+  }
+  #answerKeyCard {
+    display: none;
+    margin-top: 1rem;
+    font-size: 0.88rem;
+  }
+  #answerKeyTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.4rem;
+  }
+  #answerKeyTable th,
+  #answerKeyTable td {
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 0.35rem 0.45rem;
+    text-align: left;
+    font-size: 0.8rem;
+  }
+  #answerKeyTable th {
+    background: rgba(0,0,0,0.4);
+  }
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nazi–Soviet Pact: Be Stalin for a Day</h1>
+  <p>
+    Imagine you are <strong>Stalin in 1939</strong>. Answer these 25 questions as he might have thought.  
+    At the end, you get a “Stalin profile” and the correct explanation of why he signed the Nazi–Soviet Pact.
+  </p>
+</header>
+
+<main>
+  <section class="card">
+    <p class="note">
+      <strong>Scale:</strong> 4 = Strongly agree, 3 = Agree, 2 = Not sure, 1 = Disagree, 0 = Strongly disagree.  
+      Answer as <strong>Stalin</strong>, not as yourself.
+    </p>
+  </section>
+
+  <form id="quizForm" class="card">
+    <!-- 25 questions, static HTML to avoid any script issues -->
+    <div class="question">
+      <p><strong>Q1.</strong> I believe Hitler will always keep his promises in international agreements.</p>
+      <div class="options">
+        <label><input type="radio" name="q1" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q1" value="3">Agree (3)</label>
+        <label><input type="radio" name="q1" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q1" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q1" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q2.</strong> I trust Britain and France to stand firmly against Hitler and defend the USSR.</p>
+      <div class="options">
+        <label><input type="radio" name="q2" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q2" value="3">Agree (3)</label>
+        <label><input type="radio" name="q2" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q2" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q2" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q3.</strong> My top priority is to keep the USSR out of a major war for as long as possible.</p>
+      <div class="options">
+        <label><input type="radio" name="q3" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q3" value="3">Agree (3)</label>
+        <label><input type="radio" name="q3" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q3" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q3" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q4.</strong> In 1939 my Red Army is fully ready and well-led for a modern European war.</p>
+      <div class="options">
+        <label><input type="radio" name="q4" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q4" value="3">Agree (3)</label>
+        <label><input type="radio" name="q4" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q4" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q4" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q5.</strong> Buying time is more important than honouring old friendships or treaties.</p>
+      <div class="options">
+        <label><input type="radio" name="q5" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q5" value="3">Agree (3)</label>
+        <label><input type="radio" name="q5" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q5" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q5" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q6.</strong> It is useful if the capitalist powers in the West fight each other while I stay safe.</p>
+      <div class="options">
+        <label><input type="radio" name="q6" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q6" value="3">Agree (3)</label>
+        <label><input type="radio" name="q6" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q6" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q6" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q7.</strong> I want to regain and expand territories lost after the First World War and Civil War.</p>
+      <div class="options">
+        <label><input type="radio" name="q7" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q7" value="3">Agree (3)</label>
+        <label><input type="radio" name="q7" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q7" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q7" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q8.</strong> Poland is a trusted friend that I must never divide or invade under any circumstances.</p>
+      <div class="options">
+        <label><input type="radio" name="q8" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q8" value="3">Agree (3)</label>
+        <label><input type="radio" name="q8" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q8" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q8" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q9.</strong> I fear a two-front war, against Hitler in the west and Japan in the east.</p>
+      <div class="options">
+        <label><input type="radio" name="q9" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q9" value="3">Agree (3)</label>
+        <label><input type="radio" name="q9" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q9" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q9" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q10.</strong> Signing a pact with Hitler will shock and confuse my enemies, which helps me.</p>
+      <div class="options">
+        <label><input type="radio" name="q10" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q10" value="3">Agree (3)</label>
+        <label><input type="radio" name="q10" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q10" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q10" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q11.</strong> I must never compromise my communist ideology, even if the USSR is in danger.</p>
+      <div class="options">
+        <label><input type="radio" name="q11" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q11" value="3">Agree (3)</label>
+        <label><input type="radio" name="q11" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q11" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q11" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q12.</strong> I suspect Britain and France want to push Hitler eastwards to attack the USSR.</p>
+      <div class="options">
+        <label><input type="radio" name="q12" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q12" value="3">Agree (3)</label>
+        <label><input type="radio" name="q12" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q12" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q12" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q13.</strong> I am willing to look cynical if it keeps the USSR safer and buys time.</p>
+      <div class="options">
+        <label><input type="radio" name="q13" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q13" value="3">Agree (3)</label>
+        <label><input type="radio" name="q13" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q13" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q13" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q14.</strong> Right now, Soviet security is more important than spreading world revolution.</p>
+      <div class="options">
+        <label><input type="radio" name="q14" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q14" value="3">Agree (3)</label>
+        <label><input type="radio" name="q14" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q14" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q14" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q15.</strong> If I refuse Hitler, I risk him attacking the USSR very soon.</p>
+      <div class="options">
+        <label><input type="radio" name="q15" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q15" value="3">Agree (3)</label>
+        <label><input type="radio" name="q15" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q15" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q15" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q16.</strong> If possible, I would prefer to avoid war altogether, at least for the next few years.</p>
+      <div class="options">
+        <label><input type="radio" name="q16" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q16" value="3">Agree (3)</label>
+        <label><input type="radio" name="q16" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q16" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q16" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q17.</strong> Creating a Soviet-controlled buffer zone in Eastern Europe will protect the USSR.</p>
+      <div class="options">
+        <label><input type="radio" name="q17" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q17" value="3">Agree (3)</label>
+        <label><input type="radio" name="q17" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q17" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q17" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q18.</strong> The Spanish Civil War showed me that Western democracies will not really fight fascism.</p>
+      <div class="options">
+        <label><input type="radio" name="q18" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q18" value="3">Agree (3)</label>
+        <label><input type="radio" name="q18" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q18" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q18" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q19.</strong> A quick alliance with Britain and France is still my best and safest option in 1939.</p>
+      <div class="options">
+        <label><input type="radio" name="q19" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q19" value="3">Agree (3)</label>
+        <label><input type="radio" name="q19" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q19" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q19" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q20.</strong> If I sign with Hitler, I can still secretly prepare for a future war against him.</p>
+      <div class="options">
+        <label><input type="radio" name="q20" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q20" value="3">Agree (3)</label>
+        <label><input type="radio" name="q20" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q20" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q20" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q21.</strong> I am confident that in the long run I can outplay Hitler and turn the situation to my advantage.</p>
+      <div class="options">
+        <label><input type="radio" name="q21" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q21" value="3">Agree (3)</label>
+        <label><input type="radio" name="q21" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q21" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q21" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q22.</strong> The purges of my army have not weakened Soviet military strength at all.</p>
+      <div class="options">
+        <label><input type="radio" name="q22" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q22" value="3">Agree (3)</label>
+        <label><input type="radio" name="q22" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q22" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q22" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q23.</strong> Foreign public opinion does not matter as much as the security of the USSR.</p>
+      <div class="options">
+        <label><input type="radio" name="q23" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q23" value="3">Agree (3)</label>
+        <label><input type="radio" name="q23" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q23" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q23" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q24.</strong> It is acceptable to surprise the world with a sudden change of policy if it helps Soviet interests.</p>
+      <div class="options">
+        <label><input type="radio" name="q24" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q24" value="3">Agree (3)</label>
+        <label><input type="radio" name="q24" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q24" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q24" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="question">
+      <p><strong>Q25.</strong> Overall, a temporary pact with Nazi Germany is the best way to protect the USSR in 1939.</p>
+      <div class="options">
+        <label><input type="radio" name="q25" value="4">Strongly agree (4)</label>
+        <label><input type="radio" name="q25" value="3">Agree (3)</label>
+        <label><input type="radio" name="q25" value="2">Not sure (2)</label>
+        <label><input type="radio" name="q25" value="1">Disagree (1)</label>
+        <label><input type="radio" name="q25" value="0">Strongly disagree (0)</label>
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button type="submit" id="submitBtn">Get my Stalin profile</button>
+      <button type="button" class="secondary-btn" id="resetBtn">Clear all answers</button>
+    </div>
+  </form>
+
+  <section id="resultCard" class="card">
+    <span id="resultBadge" class="badge">Profile</span>
+    <h2 id="resultTitle"></h2>
+    <p id="scoreDisplay"></p>
+    <p id="profileExplanation"></p>
+
+    <div id="stalinAnswer">
+      <strong>So why did Stalin sign the Nazi–Soviet Pact?</strong>
+      <p id="stalinExplanationText"></p>
+    </div>
+
+    <div class="btn-row" style="margin-top:0.8rem;">
+      <button type="button" class="secondary-btn" id="toggleAnswerKeyBtn">
+        Show / hide Stalin's “ideal” answers
+      </button>
+    </div>
+  </section>
+
+  <section id="answerKeyCard" class="card">
+    <h3 style="margin-top:0;">Stalin’s likely answers (answer key)</h3>
+    <p class="note">
+      Use this to compare your choices with how historians think Stalin was thinking in 1939.
+    </p>
+    <table id="answerKeyTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Statement</th>
+          <th>Stalin’s likely response</th>
+        </tr>
+      </thead>
+      <tbody id="answerKeyBody"></tbody>
+    </table>
+  </section>
+</main>
+
+<script>
+  // Stalin's "ideal" answers for each question (0–4)
+  const idealAnswers = [
+    0, // Q1
+    0, // Q2
+    4, // Q3
+    1, // Q4
+    4, // Q5
+    4, // Q6
+    4, // Q7
+    0, // Q8
+    4, // Q9
+    4, // Q10
+    1, // Q11
+    4, // Q12
+    4, // Q13
+    4, // Q14
+    4, // Q15
+    3, // Q16
+    4, // Q17
+    4, // Q18
+    1, // Q19
+    4, // Q20
+    4, // Q21
+    0, // Q22
+    4, // Q23
+    4, // Q24
+    4  // Q25
+  ];
+
+  const textShort = [
+    "Trust Hitler’s promises",
+    "Trust Britain & France",
+    "Keep USSR out of war",
+    "Red Army fully ready",
+    "Buying time > friendships",
+    "Let West fight each other",
+    "Regain/expand territories",
+    "Poland must never be divided",
+    "Fear two-front war",
+    "Pact shocks my enemies",
+    "Never compromise ideology",
+    "West pushes Hitler east",
+    "Look cynical to gain safety",
+    "Security > world revolution",
+    "Refusing Hitler risks attack",
+    "Prefer to avoid war for now",
+    "Create buffer zone in East Europe",
+    "Spanish Civil War lesson",
+    "Alliance with Britain & France best",
+    "Sign then prepare vs Hitler",
+    "Confident I can outplay Hitler",
+    "Purges did not weaken army",
+    "Security > foreign opinion",
+    "Sudden policy change is OK",
+    "Pact best way to protect USSR"
+  ];
+
+  const quizForm = document.getElementById("quizForm");
+  const resultCard = document.getElementById("resultCard");
+  const resultTitle = document.getElementById("resultTitle");
+  const resultBadge = document.getElementById("resultBadge");
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const profileExplanation = document.getElementById("profileExplanation");
+  const stalinExplanationText = document.getElementById("stalinExplanationText");
+  const resetBtn = document.getElementById("resetBtn");
+  const toggleAnswerKeyBtn = document.getElementById("toggleAnswerKeyBtn");
+  const answerKeyCard = document.getElementById("answerKeyCard");
+  const answerKeyBody = document.getElementById("answerKeyBody");
+
+  quizForm.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    let answers = [];
+    let allAnswered = true;
+
+    for (let i = 1; i <= 25; i++) {
+      const selected = document.querySelector('input[name="q' + i + '"]:checked');
+      if (!selected) {
+        allAnswered = false;
+        break;
+      }
+      answers.push(parseInt(selected.value, 10));
+    }
+
+    if (!allAnswered) {
+      alert("Please answer all 25 questions as Stalin before getting your profile.");
+      return;
+    }
+
+    const maxScore = 25 * 4; // Each question max alignment 4
+    let totalScore = 0;
+
+    for (let i = 0; i < 25; i++) {
+      const diff = Math.abs(answers[i] - idealAnswers[i]);
+      const qScore = 4 - diff; // perfect match = 4, opposite = 0
+      totalScore += qScore;
+    }
+
+    showResult(totalScore, maxScore);
+    window.scrollTo({ top: resultCard.offsetTop - 20, behavior: "smooth" });
+  });
+
+  function showResult(score, maxScore) {
+    const percentage = Math.round((score / maxScore) * 100);
+    let title, badgeClass, badgeText, profileText;
+
+    if (percentage >= 80) {
+      title = "You think almost exactly like Stalin in 1939";
+      badgeClass = "badge-high";
+      badgeText = "High Stalin alignment";
+      profileText =
+        "You prioritised buying time, distrusted Britain and France, wanted a buffer zone and " +
+        "accepted a cynical deal with Hitler. This is very close to Stalin’s real thinking when he signed the Nazi–Soviet Pact.";
+    } else if (percentage >= 50) {
+      title = "You partly think like Stalin, but still have doubts";
+      badgeClass = "badge-mid";
+      badgeText = "Medium alignment";
+      profileText =
+        "You understand some of Stalin’s fears and aims but you still put more trust in Britain, France or ideology than he did. " +
+        "You are starting to see why he signed the Pact, but you may still underestimate how ruthless and practical he was.";
+    } else {
+      title = "You do not think like Stalin in 1939 – and that’s okay!";
+      badgeClass = "badge-low";
+      badgeText = "Low alignment";
+      profileText =
+        "You show more idealism or more faith in collective security than Stalin had. " +
+        "That helps you notice how shocking and cynical his real choice was. Use the explanation below to correct your view for exams.";
+    }
+
+    resultTitle.textContent = title;
+    resultBadge.className = "badge " + badgeClass;
+    resultBadge.textContent = badgeText;
+    scoreDisplay.textContent = "Your Stalin-alignment score: " + score + "/" + maxScore + " (" + percentage + "%)";
+    profileExplanation.textContent = profileText;
+
+    stalinExplanationText.innerHTML =
+      "From Stalin’s perspective, the <strong>Nazi–Soviet Pact (August 1939)</strong> was not about friendship with Hitler, " +
+      "but about <strong>survival and advantage for the USSR</strong>:" +
+      "<ul>" +
+      "<li>He <strong>distrusted Britain and France</strong>, believing they were weak and preferred Hitler to attack the USSR.</li>" +
+      "<li>The <strong>Red Army was not fully ready</strong> after the purges, so he needed <strong>time to rearm</strong>.</li>" +
+      "<li>He feared a <strong>two-front war</strong> against Germany and Japan.</li>" +
+      "<li>He wanted a <strong>buffer zone</strong> by taking eastern Poland and influence over the Baltic states.</li>" +
+      "<li>He hoped that <strong>Germany and the Western powers would fight first</strong>, while the USSR watched and prepared.</li>" +
+      "</ul>" +
+      "So for Stalin, the Pact was a <strong>temporary, cynical deal</strong> to buy time, gain territory and protect the USSR, " +
+      "even though it shocked the world and went against communist ideals.";
+
+    resultCard.style.display = "block";
+  }
+
+  resetBtn.addEventListener("click", function() {
+    quizForm.reset();
+    resultCard.style.display = "none";
+    answerKeyCard.style.display = "none";
+  });
+
+  function buildAnswerKey() {
+    const mapLabel = function(v) {
+      if (v === 4) return "Strongly agree (4)";
+      if (v === 3) return "Agree (3)";
+      if (v === 2) return "Not sure (2)";
+      if (v === 1) return "Disagree (1)";
+      return "Strongly disagree (0)";
+    };
+
+    answerKeyBody.innerHTML = "";
+    for (let i = 0; i < 25; i++) {
+      const tr = document.createElement("tr");
+      const tdNum = document.createElement("td");
+      const tdText = document.createElement("td");
+      const tdIdeal = document.createElement("td");
+
+      tdNum.textContent = (i + 1);
+      tdText.textContent = textShort[i];
+      tdIdeal.textContent = mapLabel(idealAnswers[i]);
+
+      tr.appendChild(tdNum);
+      tr.appendChild(tdText);
+      tr.appendChild(tdIdeal);
+      answerKeyBody.appendChild(tr);
+    }
+  }
+
+  buildAnswerKey();
+
+  toggleAnswerKeyBtn.addEventListener("click", function() {
+    if (answerKeyCard.style.display === "none" || answerKeyCard.style.display === "") {
+      answerKeyCard.style.display = "block";
+    } else {
+      answerKeyCard.style.display = "none";
+    }
+  });
+</script>
+</body>
+</html>

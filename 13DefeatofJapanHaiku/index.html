@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haiku Conflict: East vs. West</title>
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            background-color: #f4f4f9;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        #game-container {
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #8b0000;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px dashed #aaa;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover:not([disabled]) {
+            background-color: #0056b3;
+        }
+        #topic-display {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #d9534f;
+            margin: 15px 0;
+        }
+        textarea {
+            width: 90%;
+            height: 80px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            resize: none;
+            font-family: 'Georgia', serif;
+        }
+        #result-area {
+            text-align: left;
+            margin-top: 20px;
+            border: 2px solid #8b0000;
+            padding: 15px;
+            background-color: #fff0f0;
+            border-radius: 8px;
+        }
+        .haiku-line {
+            display: block;
+            margin: 5px 0;
+            font-style: italic;
+        }
+        .japanese { color: #cc0000; }
+        .american { color: #000080; }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>🌸 Haiku Conflict: East vs. West</h1>
+        <p>A round-by-round poetry challenge based on WWII themes.</p>
+
+        <div class="section" id="choice-section">
+            <h2>1. Choose Your Side</h2>
+            <button onclick="setPlayerSide('Japan')">Represent Imperial Japan</button>
+            <button onclick="setPlayerSide('USA')">Represent the United States</button>
+            <p id="player-choice-display"></p>
+        </div>
+
+        <div class="section" id="haiku-section" style="display:none;">
+            <h2>2. The Challenge</h2>
+            <p>Your Topic: <span id="topic-display"></span></p>
+            <p>Write a Haiku (5-7-5 syllables) from your side's perspective:</p>
+            <textarea id="player-haiku" placeholder="Line 1 (5 syllables)&#10;Line 2 (7 syllables)&#10;Line 3 (5 syllables)"></textarea>
+            <button onclick="submitHaiku()">Submit and See the Response</button>
+            <button onclick="skipRound()">I Give Up / Skip Round</button>
+        </div>
+
+        <div class="section" id="result-section" style="display:none;">
+            <h2>3. Conflict Result</h2>
+            <div id="result-area">
+                </div>
+            <button onclick="startNewRound()">Start Next Round</button>
+        </div>
+    </div>
+
+    <script>
+       let playerSide = '';
+    let computerSide = '';
+    let currentTopic = null; // Changed to an object
+
+    // --- TOPICS FOR THE DICE ROLL (INDEX = Roll - 1) ---
+    const topics = [
+        { roll: 1, name: "USA Leaders (Roosevelt/Truman)", key: "LEADER_USA" },
+        { roll: 2, name: "Japanese Leaders (Emperor/Tojo)", key: "LEADER_JPN" },
+        { roll: 3, name: "Midway Pilot (USA)", key: "PILOT_USA_MIDWAY" },
+        { roll: 4, name: "Midway Pilot (Japan Carrier)", key: "PILOT_JPN_MIDWAY" },
+        { roll: 5, name: "Kamikaze Pilot / Japanese Soldier", key: "KAMIKAZE_SOLDIER" },
+        { roll: 6, name: "Pilot for Atomic Bomb / Japanese Citizen (Tokyo)", key: "ATOMIC_CITIZEN" }
+    ];
+
+    // --- CORE GAME FUNCTIONS ---
+
+    function setPlayerSide(side) {
+        playerSide = side;
+        computerSide = (side === 'Japan' ? 'USA' : 'Japan');
+        document.getElementById('player-choice-display').innerHTML = `You are representing: <span class="${side === 'Japan' ? 'japanese' : 'american'}"><strong>${side}</strong></span>.`;
+        
+        // Hide choice, show Haiku section
+        document.getElementById('choice-section').style.display = 'none';
+        document.getElementById('haiku-section').style.display = 'block';
+
+        startNewRound();
+    }
+
+    function startNewRound() {
+        // --- DICE ROLL IMPLEMENTATION ---
+        const roll = Math.floor(Math.random() * 6);
+        currentTopic = topics[roll];
+        
+        // Visual representation of the roll
+        document.getElementById('topic-display').innerHTML = `
+            🚨 **Roll ${currentTopic.roll}** 🚨: ${currentTopic.name}
+        `;
+
+        document.getElementById('player-haiku').value = '';
+        document.getElementById('haiku-section').style.display = 'block';
+        document.getElementById('result-section').style.display = 'none';
+    }
+
+    function submitHaiku() {
+        const playerHaikuText = document.getElementById('player-haiku').value.trim();
+        if (!playerHaikuText) {
+            alert("Please write your Haiku!");
+            return;
+        }
+
+        const computerHaiku = generateComputerHaiku(currentTopic.key);
+        
+        displayResults(playerHaikuText, computerHaiku);
+    }
+
+    function skipRound() {
+        const computerHaiku = generateComputerHaiku(currentTopic.key);
+        displayResults(`The ${playerSide} side falls silent.`, computerHaiku);
+    }
+    
+    function displayResults(playerHaiku, computerHaiku) {
+        const resultArea = document.getElementById('result-area');
+        const playerClass = (playerSide === 'Japan' ? 'japanese' : 'american');
+        const computerClass = (computerSide === 'Japan' ? 'japanese' : 'american');
+        
+        // Format Haiku lines (replacing the manual split with a line break character for cleaner user input)
+        const playerLines = playerHaiku.replace(/\n/g, '<br>').split('<br>').map(line => `<span class="haiku-line">${line}</span>`).join('');
+        const computerLines = computerHaiku.replace(/\n/g, '<br>').split('<br>').map(line => `<span class="haiku-line">${line}</span>`).join('');
+        
+        resultArea.innerHTML = `
+            <h3>${playerSide}'s Voice (Topic: ${currentTopic.name})</h3>
+            <div class="${playerClass}">
+                ${playerLines}
+            </div>
+            
+            <hr style="border-top: 1px dotted #ccc; margin: 15px 0;">
+
+            <h3>${computerSide}'s Reflection (The Counter)</h3>
+            <div class="${computerClass}">
+                ${computerLines}
+            </div>
+        `;
+        
+        document.getElementById('haiku-section').style.display = 'none';
+        document.getElementById('result-section').style.display = 'block';
+    }
+
+
+    // --- COMPUTER HAiKU GENERATION LOGIC ---
+    function generateComputerHaiku(topicKey) {
+        // The function returns a haiku from the OPPOSITE side.
+        
+        switch (topicKey) {
+            case "LEADER_USA": 
+                // Japan's view of US Leaders
+                return "Will of iron fails\nStars and stripes blot out the sun\nHonor lost in fire";
+
+            case "LEADER_JPN": 
+                // USA's view of Japanese Leaders
+                return "The endless harvest\nMachines build the steel future\nYour thin lines will break";
+            
+            case "PILOT_USA_MIDWAY": 
+                // Japan's view of the US pilot victory
+                return "Kaga's deck now burns\nOur great fleet is broken now\nPacific runs red";
+
+            case "PILOT_JPN_MIDWAY":
+                // USA's view of the Japanese pilot's loss
+                return "Revenge for the dead\nOur bombs find the oil tanks true\nVictory is ours";
+                
+            case "KAMIKAZE_SOLDIER":
+                // USA's view of Kamikaze/Soldier fanaticism
+                return "Futility's ghost\nIron shells crash on steel hulls\nWe steam toward your home";
+
+            case "ATOMIC_CITIZEN":
+                // USA's view of the Atomic Bomb horror
+                return "A terrible light\nFuture's price demanded now\nSo the war may cease";
+
+            default:
+                return "The world is watching\nHistory records the cost\nSilence fills the air";
+        }
+    }
+    
+    // --- INITIAL SETUP ---
+    document.getElementById('player-choice-display').textContent = 'Please select a side to begin the challenge.';
+    </script>
+
+</body>
+</html>

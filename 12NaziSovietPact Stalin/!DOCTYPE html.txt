@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nazi–Soviet Pact: “Be Stalin for a Day” Personality Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+    background: linear-gradient(135deg, #222831 0%, #393E46 40%, #00ADB5 100%);
+    color: #f7f7f7;
+    min-height: 100vh;
+  }
+  header {
+    padding: 1.8rem 1rem;
+    text-align: center;
+    background: rgba(0, 0, 0, 0.35);
+    box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+  }
+  header h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.9rem;
+  }
+  header p {
+    margin: 0.3rem 0;
+    max-width: 700px;
+    margin-inline: auto;
+    font-size: 0.96rem;
+    opacity: 0.9;
+  }
+  main {
+    max-width: 900px;
+    margin: 1.5rem auto 2.5rem;
+    padding: 0 1rem 2rem;
+  }
+  .card {
+    background: rgba(15, 20, 30, 0.92);
+    border-radius: 12px;
+    padding: 1.2rem 1.4rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+    margin-bottom: 1.2rem;
+  }
+  .intro-list {
+    padding-left: 1.1rem;
+    margin: 0.4rem 0 0.2rem;
+    font-size: 0.93rem;
+  }
+  .intro-list li {
+    margin-bottom: 0.15rem;
+  }
+  .question-card {
+    margin-bottom: 1rem;
+    padding: 0.9rem 1rem;
+    border-radius: 10px;
+    background: radial-gradient(circle at top left, rgba(0,173,181,0.18), rgba(15,20,30,0.9));
+    border: 1px solid rgba(0,173,181,0.2);
+  }
+  .question-card h3 {
+    margin: 0 0 0.4rem;
+    font-size: 1rem;
+  }
+  .question-card p {
+    margin: 0 0 0.5rem;
+    font-size: 0.95rem;
+  }
+  .options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1rem;
+    font-size: 0.88rem;
+  }
+  .options label {
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .options input[type="radio"] {
+    accent-color: #00ADB5;
+  }
+  .scale-legend {
+    font-size: 0.86rem;
+    opacity: 0.9;
+    margin-bottom: 0.4rem;
+  }
+  .btn-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    margin-top: 0.8rem;
+  }
+  button {
+    border: none;
+    border-radius: 999px;
+    padding: 0.55rem 1.25rem;
+    font-size: 0.95rem;
+    cursor: pointer;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  #submitBtn {
+    background: linear-gradient(135deg, #00ADB5, #08d1db);
+    color: #021015;
+  }
+  #submitBtn:hover {
+    filter: brightness(1.1);
+  }
+  .secondary-btn {
+    background: transparent;
+    color: #eeeeee;
+    border: 1px solid rgba(238,238,238,0.5);
+  }
+  .secondary-btn:hover {
+    background: rgba(238,238,238,0.08);
+  }
+  #resultCard {
+    display: none;
+    border-left: 4px solid #00ADB5;
+  }
+  #resultTitle {
+    font-size: 1.2rem;
+    margin-bottom: 0.3rem;
+  }
+  #scoreDisplay {
+    font-size: 0.92rem;
+    opacity: 0.9;
+  }
+  #stalinAnswer {
+    background: rgba(0,0,0,0.32);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    margin-top: 0.75rem;
+    font-size: 0.92rem;
+  }
+  #answerKeyCard {
+    display: none;
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  #answerKeyTable {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 0.4rem;
+  }
+  #answerKeyTable th,
+  #answerKeyTable td {
+    border: 1px solid rgba(255,255,255,0.18);
+    padding: 0.35rem 0.4rem;
+    text-align: left;
+    font-size: 0.83rem;
+  }
+  #answerKeyTable th {
+    background: rgba(0,0,0,0.4);
+  }
+  .badge {
+    display: inline-block;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    border: 1px solid rgba(255,255,255,0.4);
+    margin-bottom: 0.25rem;
+  }
+  .badge-high { border-color: #00ffbf; }
+  .badge-mid { border-color: #ffd369; }
+  .badge-low { border-color: #ff6b6b; }
+
+  .note {
+    font-size: 0.8rem;
+    opacity: 0.9;
+    margin-top: 0.4rem;
+  }
+
+  @media (max-width: 600px) {
+    header h1 { font-size: 1.5rem; }
+    .question-card {
+      padding: 0.8rem 0.75rem;
+    }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nazi–Soviet Pact: Be Stalin for a Day</h1>
+  <p>
+    It is the summer of 1939. You are Joseph Stalin, leader of the USSR. 
+    Hitler is threatening Poland and the world is on edge. Answer these questions as Stalin
+    <em>might</em> have, and see how closely your thinking matches his – then learn why he chose to sign the Nazi–Soviet Pact.
+  </p>
+</header>
+
+<main>
+  <section class="card">
+    <h2 style="margin-top:0; font-size:1.2rem;">How to use this activity</h2>
+    <ul class="intro-list">
+      <li>Imagine you are Stalin in 1939, not yourself.</li>
+      <li>For each statement, choose how strongly “Stalin” would agree or disagree.</li>
+      <li>At the end you get a “Stalin profile” and a clear explanation of why he signed the Nazi–Soviet Pact.</li>
+    </ul>
+    <p class="note"><strong>Scale:</strong> 4 = Strongly agree, 3 = Agree, 2 = Not sure, 1 = Disagree, 0 = Strongly disagree.</p>
+  </section>
+
+  <form id="quizForm" class="card">
+    <div class="scale-legend"><strong>Answer as Stalin in 1939:</strong> choose one option for each of the 25 statements.</div>
+
+    <div id="questionsContainer"></div>
+
+    <div class="btn-row">
+      <button type="submit" id="submitBtn">Get my Stalin profile</button>
+      <button type="button" class="secondary-btn" id="resetBtn">Clear all answers</button>
+    </div>
+    <p class="note">
+      Tip for revision: after you see your result, read the explanation carefully. 
+      That is the <strong>exam-style answer</strong> for Stalin’s perspective on the Nazi–Soviet Pact.
+    </p>
+  </form>
+
+  <section id="resultCard" class="card">
+    <div id="resultBadge" class="badge">Profile</div>
+    <h2 id="resultTitle"></h2>
+    <p id="scoreDisplay"></p>
+
+    <div id="profileExplanation"></div>
+
+    <div id="stalinAnswer">
+      <strong>So why did Stalin sign the Nazi–Soviet Pact?</strong>
+      <p id="stalinExplanationText"></p>
+    </div>
+
+    <div class="btn-row" style="margin-top:0.8rem;">
+      <button type="button" class="secondary-btn" id="toggleAnswerKeyBtn">
+        Show / hide Stalin's “ideal” answers
+      </button>
+    </div>
+  </section>
+
+  <section id="answerKeyCard" class="card">
+    <h3 style="margin-top:0;">Stalin’s likely answers (answer key)</h3>
+    <p class="note">
+      This shows how historians think Stalin was probably thinking in 1939.
+      Use it to compare your choices and refine your understanding.
+    </p>
+    <table id="answerKeyTable">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Statement (summarised)</th>
+          <th>Stalin’s likely response</th>
+        </tr>
+      </thead>
+      <tbody id="answerKeyBody"></tbody>
+ta

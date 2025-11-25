@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash of Laws: James Birch vs. The Chiefs</title>
+    <style>
+        /* --- General Styles --- */
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #e6e6fa; /* Light Lavender Background */
+            color: #333;
+            margin: 20px;
+            text-align: center;
+        }
+
+        #game-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #8b0000; /* Dark Red - Colonial Conflict */
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 10px;
+        }
+        
+        /* --- Game Grid --- */
+        #card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); /* 10 cards total: 5 pairs */
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #f0f0f0;
+            border: 3px solid #6a5acd; /* Slate Blue */
+            border-radius: 8px;
+            height: 120px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.6s;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            backface-visibility: hidden;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            text-align: center;
+            box-sizing: border-box;
+            border-radius: 5px;
+        }
+
+        .card-front {
+            background-color: #fff8dc; /* Cornsilk */
+            font-size: 30px;
+        }
+        
+        .card-back {
+            background-color: #fff;
+            color: #333;
+            transform: rotateY(180deg);
+            font-size: 13px;
+            line-height: 1.2;
+        }
+
+        .card.matched {
+            border-color: #228b22; /* Forest Green */
+            opacity: 0.5;
+            cursor: default;
+        }
+
+        .malay-law {
+            color: #cc0000; /* Red for Adat/Malay Authority */
+        }
+        
+        .birch-edict {
+            color: #000080; /* Navy Blue for British Authority */
+        }
+
+        /* --- UI Elements --- */
+        #stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            padding: 10px;
+            border: 1px dashed #aaa;
+        }
+
+        #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        #game-over-screen button {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin-top: 20px;
+            cursor: pointer;
+            background-color: #f0ad4e;
+            border: none;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>Clash of Laws: James Birch vs. The Chiefs</h1>
+        <p>Match the **Traditional Malay Law (Adat)** to the **New British Edict** that directly replaced or challenged it. Find all five conflicts before the time runs out!</p>
+
+        <div id="stats-bar">
+            <span>Time Left: <span id="timer-display">60</span>s</span>
+            <span>Matches: <span id="matches-display">0</span>/5</span>
+        </div>
+
+        <div id="card-grid">
+            </div>
+    </div>
+
+    <div id="game-over-screen">
+        <h2 id="game-over-title"></h2>
+        <p id="game-over-message"></p>
+        <p>You matched <span id="final-matches">0</span> conflicts in <span id="final-time">0</span> seconds.</p>
+        <button onclick="window.location.reload()">Play Again</button>
+    </div>
+
+    <script>
+        // --- GAME DATA ---
+        const CONFLICTS = [
+            { 
+                id: 1, 
+                group: "JUDICIAL AUTHORITY", 
+                malay: "Chiefs and Sultans hold all judicial power.", 
+                birch: "All judicial proceedings must be heard by the Resident (Birch)." 
+            },
+            { 
+                id: 2, 
+                group: "REVENUE/TAXATION", 
+                malay: "Chiefs collect taxes and customs at river mouths.", 
+                birch: "All revenue collection must be centralized under British officials." 
+            },
+            { 
+                id: 3, 
+                group: "ABOLITION OF SLAVERY", 
+                malay: "Debt slavery is customary and a key source of local manpower.", 
+                birch: "Slavery is abolished, undermining the Chiefs' social power." 
+            },
+            { 
+                id: 4, 
+                group: "TIN MINING/LAND", 
+                malay: "Sultan grants licenses for mining and controls land use.", 
+                birch: "The British Resident issues all land and mining permits." 
+            },
+            { 
+                id: 5, 
+                group: "COMMUNICATION/ADMIN", 
+                malay: "Official edicts (written notices) come only from the Sultan's court.", 
+                birch: "The Resident posts new laws on his own authority (controversial move)." 
+            }
+        ];
+
+        // --- GAME STATE ---
+        let cards = [];
+        let flippedCards = [];
+        let matchesFound = 0;
+        let timer;
+        let timeElapsed = 0;
+        const TIME_LIMIT = 60; // seconds
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('card-grid');
+        const timerDisplay = document.getElementById('timer-display');
+        const matchesDisplay = document.getElementById('matches-display');
+        const gameOverScreen = document.getElementById('game-over-screen');
+
+        // --- CORE GAME FUNCTIONS ---
+
+        function initGame() {
+            // 1. Create the full deck of cards
+            let deck = [];
+            CONFLICTS.forEach(c => {
+                // Add Malay Law Card (Type: Malay)
+                deck.push({ id: c.id, type: 'malay', text: c.malay, group: c.group });
+                // Add British Edict Card (Type: Birch)
+                deck.push({ id: c.id, type: 'birch', text: c.birch, group: c.group });
+            });
+
+            // 2. Shuffle the deck (Fisher-Yates)
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            cards = deck;
+
+            // 3. Render the grid
+            grid.innerHTML = '';
+            cards.forEach((card, index) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = card.id;
+                cardElement.dataset.type = card.type;
+                cardElement.dataset.index = index;
+
+                cardElement.innerHTML = `
+                    <div class="card-face card-front">?</div>
+                    <div class="card-face card-back ${card.type === 'malay' ? 'malay-law' : 'birch-edict'}">
+                        ${card.text}
+                        <br><br>
+                        <small>(${card.group})</small>
+                    </div>
+                `;
+
+                cardElement.addEventListener('click', () => flipCard(cardElement));
+                grid.appendChild(cardElement);
+            });
+
+            // 4. Start the timer
+            startTimer();
+            matchesDisplay.textContent = '0/5';
+        }
+
+        function startTimer() {
+            timeElapsed = 0;
+            timerDisplay.textContent = TIME_LIMIT;
+            timer = setInterval(() => {
+                timeElapsed++;
+                timerDisplay.textContent = TIME_LIMIT - timeElapsed;
+
+                if (TIME_LIMIT - timeElapsed <= 0) {
+                    clearInterval(timer);
+                    endGame(false); // Loss: Time ran out
+                }
+            }, 1000);
+        }
+
+        function flipCard(cardElement) {
+            // Check if card is already matched, flipped, or if two are already flipped
+            if (cardElement.classList.contains('flipped') || 
+                cardElement.classList.contains('matched') || 
+                flippedCards.length === 2) {
+                return;
+            }
+
+            cardElement.classList.add('flipped');
+            flippedCards.push(cardElement);
+
+            if (flippedCards.length === 2) {
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+
+            // Check if IDs are the same AND Types are different (Malay vs. Birch)
+            const isMatch = (card1.dataset.id === card2.dataset.id && 
+                             card1.dataset.type !== card2.dataset.type);
+
+            if (isMatch) {
+                // Match found!
+                matchesFound++;
+                matchesDisplay.textContent = `${matchesFound}/5`;
+                
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                
+                flippedCards = [];
+
+                if (matchesFound === 5) {
+                    clearInterval(timer);
+                    endGame(true); // Win!
+                }
+            } else {
+                // Not a match, flip back after a delay
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                }, 1000);
+            }
+        }
+
+        function endGame(isWin) {
+            const finalTime = timeElapsed;
+            const finalTitle = isWin ? "VICTORY! Authority Restored (or Revolution Understood!)" : "DEFEAT! Time Ran Out.";
+            let finalMessage = "";
+
+            if (isWin) {
+                // Winning message focuses on the core conflict that caused the revolt
+                finalMessage = `Congratulations! You successfully identified the 5 points of conflict. 
+                                The ultimate flashpoint leading to the assassination of James Birch was 
+                                the **Judicial Authority** and his **posting of new edicts** (Card 5), 
+                                which completely bypassed the Sultan and Chiefs' traditional powers and led to the murder at Pasir Salak.`;
+            } else {
+                // Losing message
+                finalMessage = `The clock ran out! The tensions in Perak escalated too quickly. 
+                                The British inability to understand the significance of **revenue control** and 
+                                the **abolition of debt slavery** were crucial factors in the Malay Chiefs' decision to rebel.`;
+            }
+
+            document.getElementById('game-over-title').textContent = finalTitle;
+            document.getElementById('game-over-message').innerHTML = finalMessage;
+            document.getElementById('final-matches').textContent = matchesFound;
+            document.getElementById('final-time').textContent = finalTime;
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>

@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clash of Laws: James Birch vs. The Chiefs (Perak)</title>
+    <style>
+        /* --- General Styles --- */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff; /* Alice Blue */
+            color: #333;
+            margin: 20px;
+            text-align: center;
+        }
+
+        #game-container {
+            max-width: 700px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            color: #4a235a; /* Dark Purple */
+            border-bottom: 3px solid #ccc;
+            padding-bottom: 10px;
+        }
+        
+        /* --- Stats and Controls --- */
+        #stats-bar {
+            display: flex;
+            justify-content: space-around;
+            margin: 15px 0;
+            font-size: 1.2em;
+            font-weight: bold;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 8px;
+        }
+
+        /* --- Game Grid (4x4) --- */
+        #card-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr); 
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .card {
+            background-color: #eee;
+            border: 2px solid #5d6d7e; /* Gray Blue */
+            border-radius: 8px;
+            height: 100px;
+            cursor: pointer;
+            transition: transform 0.6s;
+            position: relative;
+            transform-style: preserve-3d;
+            box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .card.flipped {
+            transform: rotateY(180deg);
+        }
+
+        .card-face {
+            position: absolute;
+            backface-visibility: hidden;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 5px;
+            text-align: center;
+            box-sizing: border-box;
+            border-radius: 8px;
+            font-size: 0.85em; /* Adjusted for better fit */
+            line-height: 1.1;
+        }
+
+        /* Card Front (The Hidden Side - now without category hint) */
+        .card-front {
+            background-color: #d1e5f8; /* Light Blue Backing */
+            font-size: 1.1em;
+            font-weight: bold;
+            color: #333;
+            padding: 0;
+            justify-content: space-around; /* Space out the text and '?' */
+        }
+        
+        .card-label {
+            display: block;
+            font-size: 0.8em;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin-top: 5px; /* Adjust spacing */
+        }
+
+        /* Card Back (The Content) */
+        .card-back {
+            background-color: #fff;
+            color: #333;
+            transform: rotateY(180deg);
+            padding: 5px;
+            font-size: 0.75em; /* Make text a bit smaller to fit */
+            line-height: 1.1;
+            display: flex; /* Use flex for content alignment */
+            flex-direction: column;
+            justify-content: space-between; /* Push category to bottom */
+        }
+
+        /* Thematic Coloring for labels on the front */
+        .malay-law .card-label {
+            background-color: #d9534f; /* Red */
+            color: white;
+        }
+        
+        .birch-edict .card-label {
+            background-color: #428bca; /* Blue */
+            color: white;
+        }
+
+        /* Thematic Coloring for category on the back */
+        .card-back .category-tag {
+            font-size: 0.9em;
+            font-weight: bold;
+            color: #555; /* Darker gray for category */
+            margin-top: 5px; /* Push category to bottom */
+            border-top: 1px solid #eee;
+            padding-top: 3px;
+        }
+
+        .card.matched {
+            border-color: #28a745; /* Success Green */
+            opacity: 0.7;
+            cursor: default;
+        }
+        
+        .card.matched .card-front {
+            display: none; /* Hide the front completely on match */
+        }
+        .card.matched .card-back {
+            background-color: #d4edda; /* Light Green */
+            color: #155724;
+            transform: rotateY(0deg); /* Show the back permanently */
+        }
+        /* Ensure flipped state looks good even on match */
+        .card.matched:not(.flipped) {
+             transform: rotateY(0deg); 
+        }
+
+        /* --- Game Over Screen --- */
+        #game-over-screen {
+            position: fixed; /* Use fixed for full viewport coverage */
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(139, 0, 0, 0.9); /* Dark Red Overlay */
+            color: white;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+            z-index: 100;
+        }
+
+        #game-over-screen button {
+            padding: 12px 25px;
+            font-size: 18px;
+            margin-top: 25px;
+            cursor: pointer;
+            background-color: #ffc107; /* Amber/Yellow */
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <h1>📜 Laws & Edicts Matching Game (Perak, 1875)</h1>
+        <p>Match the **Malay Law** to the **British Edict** that created the conflict. Find the 4 pairs of tension!</p>
+
+        <div id="stats-bar">
+            <span>Time Left: <span id="timer-display">90</span>s</span>
+            <span>Matches: <span id="matches-display">0</span>/4</span>
+        </div>
+
+        <div id="card-grid">
+            </div>
+    </div>
+
+    <div id="game-over-screen">
+        <h2 id="game-over-title"></h2>
+        <p id="game-over-message" style="max-width: 600px; line-height: 1.4;"></p>
+        <p>You solved <span id="final-matches">0</span> conflicts in <span id="final-time">0</span> seconds.</p>
+        <button onclick="window.location.reload()">Restart Challenge</button>
+    </div>
+
+    <script>
+        // --- GAME DATA (4 pairs for 4x4 grid) ---
+        const CONFLICTS = [
+            { 
+                id: 1, 
+                group: "JUDICIAL AUTHORITY", 
+                malay: "Chiefs held power to judge all cases, including capital offenses, and punish offenders.", 
+                birch: "All court proceedings must now be heard by the Resident, invalidating Malay judgments and sentencing." 
+            },
+            { 
+                id: 2, 
+                group: "REVENUE/TAXATION", 
+                malay: "Chiefs collected customs duties, fees, and taxes at river checkpoints, their traditional income.", 
+                birch: "All revenue collection is centralized and managed exclusively by British officials, stripping Chiefs of income." 
+            },
+            { 
+                id: 3, 
+                group: "ABOLITION OF SLAVERY", 
+                malay: "Debt slavery was a customary practice (adat) and key source of agricultural and mining labor.", 
+                birch: "Slavery is abolished by edict, directly undermining the Chiefs' social standing and economic power base." 
+            },
+            { 
+                id: 4, 
+                group: "LAND & LICENSES", 
+                malay: "The Sultan granted all licenses for tin mining and controlled all land use within his territory.", 
+                birch: "The Resident issues all mining and land permits, seizing control of Perak's primary resource allocation." 
+            }
+        ];
+
+        // --- GAME STATE ---
+        let cards = [];
+        let flippedCards = [];
+        let matchesFound = 0;
+        let timer;
+        let timeElapsed = 0;
+        const TIME_LIMIT = 90; // seconds
+
+        // --- DOM ELEMENTS ---
+        const grid = document.getElementById('card-grid');
+        const timerDisplay = document.getElementById('timer-display');
+        const matchesDisplay = document.getElementById('matches-display');
+        const gameOverScreen = document.getElementById('game-over-screen');
+
+        // --- CORE GAME FUNCTIONS ---
+
+        function initGame() {
+            // 1. Create the full deck of cards (8 cards total)
+            let deck = [];
+            CONFLICTS.forEach(c => {
+                deck.push({ id: c.id, type: 'malay', text: c.malay, group: c.group });
+                deck.push({ id: c.id, type: 'birch', text: c.birch, group: c.group });
+            });
+
+            // 2. Shuffle the deck
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+            cards = deck;
+
+            // 3. Render the grid
+            grid.innerHTML = '';
+            cards.forEach((card) => {
+                const cardElement = document.createElement('div');
+                cardElement.classList.add('card');
+                cardElement.dataset.id = card.id;
+                cardElement.dataset.type = card.type;
+
+                const cardLabelText = card.type === 'malay' ? 'MALAY LAW' : 'BRITISH EDICT';
+
+                cardElement.innerHTML = `
+                    <div class="card-face card-front ${card.type === 'malay' ? 'malay-law' : 'birch-edict'}">
+                        ${cardLabelText}
+                        <span style="font-size: 2.5em;">?</span>
+                    </div>
+                    <div class="card-face card-back">
+                        ${card.text}
+                        <span class="category-tag">${card.group}</span>
+                    </div>
+                `;
+
+                cardElement.addEventListener('click', () => flipCard(cardElement));
+                grid.appendChild(cardElement);
+            });
+
+            // 4. Start the timer
+            startTimer();
+            matchesDisplay.textContent = '0/4';
+        }
+
+        function startTimer() {
+            timeElapsed = 0;
+            timerDisplay.textContent = TIME_LIMIT;
+            timer = setInterval(() => {
+                timeElapsed++;
+                timerDisplay.textContent = TIME_LIMIT - timeElapsed;
+
+                if (TIME_LIMIT - timeElapsed <= 0) {
+                    clearInterval(timer);
+                    endGame(false); // Loss: Time ran out
+                }
+            }, 1000);
+        }
+
+        function flipCard(cardElement) {
+            if (cardElement.classList.contains('flipped') || 
+                cardElement.classList.contains('matched') || 
+                flippedCards.length === 2) {
+                return;
+            }
+
+            cardElement.classList.add('flipped');
+            flippedCards.push(cardElement);
+
+            if (flippedCards.length === 2) {
+                checkForMatch();
+            }
+        }
+
+        function checkForMatch() {
+            const [card1, card2] = flippedCards;
+
+            const isMatch = (card1.dataset.id === card2.dataset.id && 
+                             card1.dataset.type !== card2.dataset.type);
+
+            if (isMatch) {
+                matchesFound++;
+                matchesDisplay.textContent = `${matchesFound}/4`;
+                
+                card1.classList.add('matched');
+                card2.classList.add('matched');
+                
+                // Ensure the back faces (the text) are shown immediately and permanently
+                card1.classList.remove('flipped'); 
+                card2.classList.remove('flipped');
+                
+                flippedCards = [];
+
+                if (matchesFound === 4) {
+                    clearInterval(timer);
+                    endGame(true); // Win!
+                }
+            } else {
+                // Not a match, flip back after a delay
+                setTimeout(() => {
+                    card1.classList.remove('flipped');
+                    card2.classList.remove('flipped');
+                    flippedCards = [];
+                }, 1200);
+            }
+        }
+
+        function endGame(isWin) {
+            const finalTime = timeElapsed;
+            const finalTitle = isWin ? "✅ SUCCESS! CONFLICT UNDERSTOOD" : "❌ FAILURE! TIME RAN OUT";
+            let finalMessage = "";
+
+            if (isWin) {
+                finalMessage = `You successfully identified the 4 core conflicts in ${finalTime} seconds. The **seizure of Judicial and Revenue Authority** was the primary cause of unrest. Birch's insistence on posting his edicts without the Sultan's seal was the final insult that provoked the assassination at Pasir Salak.`;
+            } else {
+                finalMessage = `The tensions in Perak escalated too quickly! You failed to match all 4 conflicts. The loss of **revenue control** and the **abolition of debt slavery** were crucial factors in uniting the Malay Chiefs against the British Resident.`;
+            }
+
+            document.getElementById('game-over-title').textContent = finalTitle;
+            document.getElementById('game-over-message').innerHTML = finalMessage;
+            document.getElementById('final-matches').textContent = matchesFound;
+            document.getElementById('final-time').textContent = finalTime;
+            
+            gameOverScreen.style.display = 'flex';
+        }
+
+        // Initialize the game when the page loads
+        document.addEventListener('DOMContentLoaded', initGame);
+    </script>
+</body>
+</html>
