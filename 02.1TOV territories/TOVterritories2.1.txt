@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Treaty of Versailles - Territory Challenge</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+    color: #e5e7eb;
+    margin: 0;
+    padding: 1rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 700px;
+    width: 100%;
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+h1 {
+    margin: 0 0 0.5rem;
+    font-size: 1.8rem;
+    background: linear-gradient(135deg, #60a5fa, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.subtitle {
+    font-size: 1rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.instructions {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 1rem;
+}
+
+.stat {
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 10px;
+    padding: 0.75rem;
+    text-align: center;
+    flex: 1;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+}
+
+.stat-label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+
+.tile {
+    border-radius: 12px;
+    border: 2px solid #374151;
+    padding: 1rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    background: linear-gradient(135deg, #1e293b, #0f172a);
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.tile::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+}
+
+.tile:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    border-color: #60a5fa;
+}
+
+.tile:hover::before {
+    left: 100%;
+}
+
+.tile.selected {
+    background: linear-gradient(135deg, #1d4ed8, #3730a3);
+    border-color: #60a5fa;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(29, 78, 216, 0.4);
+}
+
+.tile.correct {
+    background: linear-gradient(135deg, #059669, #047857);
+    border-color: #10b981;
+    animation: correctPulse 0.6s ease-out;
+}
+
+.tile.incorrect {
+    background: linear-gradient(135deg, #dc2626, #b91c1c);
+    border-color: #ef4444;
+    animation: shake 0.6s ease-out;
+}
+
+.tile.missed {
+    background: linear-gradient(135deg, #d97706, #b45309);
+    border-color: #f59e0b;
+    animation: missedPulse 0.6s ease-out;
+}
+
+@keyframes correctPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+@keyframes missedPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+.controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 1rem;
+}
+
+button {
+    border-radius: 50px;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.check-btn {
+    background: linear-gradient(135deg, #38bdf8, #6366f1);
+    color: #ffffff;
+}
+
+.check-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+}
+
+.reset-btn {
+    background: linear-gradient(135deg, #64748b, #475569);
+    color: #ffffff;
+}
+
+.reset-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(100, 116, 139, 0.4);
+}
+
+.result {
+    text-align: center;
+    font-size: 1rem;
+    min-height: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.result.show {
+    background: rgba(59, 130, 246, 0.1);
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.score-excellent {
+    color: #10b981;
+}
+
+.score-good {
+    color: #f59e0b;
+}
+
+.score-poor {
+    color: #ef4444;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+    margin: 1rem 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #38bdf8, #6366f1);
+    width: 0%;
+    transition: width 0.5s ease;
+}
+
+@media (max-width: 600px) {
+    .container {
+        padding: 1.5rem;
+        margin: 0.5rem;
+    }
+    
+    .grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .controls {
+        flex-direction: column;
+    }
+    
+    .stats {
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>Treaty of Versailles</h1>
+        <p class="subtitle">Territory Challenge</p>
+    </div>
+    
+    <div class="instructions">
+        <strong>📍 Mission:</strong> Select all territories that Germany lost due to the Treaty of Versailles (1919). 
+        Be careful - some options are tricky! Click territories to select/deselect them.
+    </div>
+    
+    <div class="stats">
+        <div class="stat">
+            <div class="stat-value" id="selectedCount">0</div>
+            <div class="stat-label">Selected</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="totalLost">6</div>
+            <div class="stat-label">Total Lost</div>
+        </div>
+        <div class="stat">
+            <div class="stat-value" id="accuracy">-</div>
+            <div class="stat-label">Accuracy</div>
+        </div>
+    </div>
+    
+    <div class="progress-bar">
+        <div class="progress-fill" id="progressFill"></div>
+    </div>
+    
+    <div class="grid" id="tiles"></div>
+    
+    <div class="controls">
+        <button class="check-btn" id="checkBtn">Check Answer</button>
+        <button class="reset-btn" id="resetBtn">Reset Game</button>
+    </div>
+    
+    <div class="result" id="result"></div>
+</div>
+
+<script>
+const territoryData = [
+    {name: "Alsace-Lorraine", lost: true, info: "Returned to France"},
+    {name: "Polish Corridor", lost: true, info: "Given to Poland for sea access"},
+    {name: "Saar Basin", lost: true, info: "Under League of Nations control for 15 years"},
+    {name: "Rhineland", lost: false, info: "Demilitarized, not given away"},
+    {name: "Danzig (Gdańsk)", lost: true, info: "Became a Free City under League control"},
+    {name: "Sudetenland", lost: false, info: "This was taken later by Nazi Germany (1938)"},
+    {name: "German Colonies", lost: true, info: "All overseas territories lost"},
+    {name: "Bavaria", lost: false, info: "Remained part of Germany"},
+    {name: "Northern Schleswig", lost: true, info: "Returned to Denmark after plebiscite"},
+    {name: "Belgium", lost: false, info: "Was never German territory"},
+    {name: "Eupen-Malmédy", lost: true, info: "Small region given to Belgium"},
+    {name: "Memel Territory", lost: true, info: "Given to Lithuania"}
+];
+
+class TOVGame {
+    constructor() {
+        this.selectedTiles = new Set();
+        this.gameChecked = false;
+        this.init();
+    }
+    
+    init() {
+        this.createTiles();
+        this.bindEvents();
+        this.updateStats();
+    }
+    
+    createTiles() {
+        const tilesDiv = document.getElementById("tiles");
+        tilesDiv.innerHTML = '';
+        
+        territoryData.forEach((territory, index) => {
+            const tile = document.createElement("div");
+            tile.className = "tile";
+            tile.textContent = territory.name;
+            tile.dataset.index = index;
+            tile.title = territory.info;
+            
+            tile.addEventListener("click", () => this.toggleTile(tile, index));
+            tilesDiv.appendChild(tile);
+        });
+    }
+    
+    toggleTile(tile, index) {
+        if (this.gameChecked) return;
+        
+        tile.classList.toggle("selected");
+        
+        if (this.selectedTiles.has(index)) {
+            this.selectedTiles.delete(index);
+        } else {
+            this.selectedTiles.add(index);
+        }
+        
+        this.updateStats();
+    }
+    
+    updateStats() {
+        const selectedCount = this.selectedTiles.size;
+        const totalLost = territoryData.filter(t => t.lost).length;
+        
+        document.getElementById("selectedCount").textContent = selectedCount;
+        document.getElementById("totalLost").textContent = totalLost;
+        
+        // Update progress bar
+        const progress = Math.min((selectedCount / totalLost) * 100, 100);
+        document.getElementById("progressFill").style.width = `${progress}%`;
+    }
+    
+    checkAnswer() {
+        if (this.gameChecked) return;
+        
+        this.gameChecked = true;
+        const tiles = document.querySelectorAll(".tile");
+        let correct = 0;
+        let incorrect = 0;
+        let missed = 0;
+        
+        tiles.forEach((tile, index) => {
+            const isSelected = this.selectedTiles.has(index);
+            const shouldBeSelected = territoryData[index].lost;
+            
+            tile.classList.remove("selected");
+            
+            if (isSelected && shouldBeSelected) {
+                tile.classList.add("correct");
+                correct++;
+            } else if (isSelected && !shouldBeSelected) {
+                tile.classList.add("incorrect");
+                incorrect++;
+            } else if (!isSelected && shouldBeSelected) {
+                tile.classList.add("missed");
+                missed++;
+            }
+        });
+        
+        const totalLost = territoryData.filter(t => t.lost).length;
+        const accuracy = Math.round((correct / totalLost) * 100);
+        
+        document.getElementById("accuracy").textContent = `${accuracy}%`;
+        
+        this.showResult(correct, incorrect, missed, totalLost, accuracy);
+    }
+    
+    showResult(correct, incorrect, missed, totalLost, accuracy) {
+        const resultDiv = document.getElementById("result");
+        resultDiv.classList.add("show");
+        
+        let scoreClass = "score-poor";
+        let message = "Keep studying! 📚";
+        
+        if (accuracy >= 90) {
+            scoreClass = "score-excellent";
+            message = "Excellent! You're a history expert! 🏆";
+        } else if (accuracy >= 70) {
+            scoreClass = "score-good";
+            message = "Good job! Room for improvement! 👍";
+        }
+        
+        resultDiv.innerHTML = `
+            <div class="${scoreClass}">
+                <strong>${message}</strong><br>
+                ✅ Correct: <strong>${correct}</strong>/${totalLost} | 
+                ❌ Wrong: <strong>${incorrect}</strong> | 
+                ⚠️ Missed: <strong>${missed}</strong><br>
+                <strong>Final Score: ${accuracy}%</strong>
+            </div>
+        `;
+    }
+    
+    resetGame() {
+        this.selectedTiles.clear();
+        this.gameChecked = false;
+        
+        const tiles = document.querySelectorAll(".tile");
+        tiles.forEach(tile => {
+            tile.className = "tile";
+        });
+        
+        document.getElementById("result").classList.remove("show");
+        document.getElementById("result").innerHTML = "";
+        document.getElementById("accuracy").textContent = "-";
+        
+        this.updateStats();
+    }
+    
+    bindEvents() {
+        document.getElementById("checkBtn").addEventListener("click", () => this.checkAnswer());
+        document.getElementById("resetBtn").addEventListener("click", () => this.resetGame());
+    }
+}
+
+// Initialize the game
+new TOVGame();
+</script>
+</body>
+</html>
