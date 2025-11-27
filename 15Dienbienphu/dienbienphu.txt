@@ -1,0 +1,979 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dien Bien Phu: Valley Shooter</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            cursor: crosshair;
+        }
+
+        .game-container {
+            width: 100%;
+            height: 100vh;
+            position: relative;
+        }
+
+        .hud {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0,0,0,0.8);
+            padding: 15px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            z-index: 100;
+            border-bottom: 3px solid #8b4513;
+        }
+
+        .hud-item {
+            text-align: center;
+            padding: 10px;
+            background: rgba(139,69,19,0.3);
+            border: 2px solid #8b4513;
+            border-radius: 5px;
+        }
+
+        .hud-label {
+            font-size: 0.9em;
+            color: #ffd700;
+            margin-bottom: 5px;
+        }
+
+        .hud-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .timer-value {
+            color: #ff5252;
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .battlefield {
+            width: 100%;
+            height: 100vh;
+            background: linear-gradient(180deg, #2d5016 0%, #1a4d2e 40%, #3a3a2a 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .valley-layer {
+            position: absolute;
+            width: 100%;
+            height: 40%;
+            bottom: 0;
+            background: linear-gradient(180deg, transparent 0%, rgba(139,69,19,0.4) 100%);
+        }
+
+        .french-bunker {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 4em;
+            z-index: 50;
+            filter: drop-shadow(0 0 20px rgba(255,215,0,0.6));
+        }
+
+        .crosshair {
+            position: fixed;
+            width: 40px;
+            height: 40px;
+            pointer-events: none;
+            z-index: 9999;
+            transform: translate(-50%, -50%);
+        }
+
+        .crosshair::before,
+        .crosshair::after {
+            content: '';
+            position: absolute;
+            background: #ff0000;
+        }
+
+        .crosshair::before {
+            width: 2px;
+            height: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .crosshair::after {
+            height: 2px;
+            width: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        .enemy {
+            position: absolute;
+            font-size: 2.5em;
+            cursor: crosshair;
+            transition: all 0.2s;
+            user-select: none;
+            z-index: 10;
+        }
+
+        .enemy:hover {
+            transform: scale(1.2);
+            filter: brightness(1.3);
+        }
+
+        .muzzle-flash {
+            position: fixed;
+            width: 60px;
+            height: 60px;
+            background: radial-gradient(circle, rgba(255,255,0,0.9) 0%, rgba(255,100,0,0.6) 50%, transparent 100%);
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 9998;
+            animation: flash 0.1s;
+        }
+
+        @keyframes flash {
+            0% { opacity: 1; transform: scale(0); }
+            100% { opacity: 0; transform: scale(2); }
+        }
+
+        .bullet-hole {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: #000;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0.6;
+            z-index: 5;
+        }
+
+        .hit-marker {
+            position: absolute;
+            color: #ff0000;
+            font-size: 3em;
+            font-weight: bold;
+            pointer-events: none;
+            animation: hitMarker 0.5s forwards;
+            z-index: 200;
+        }
+
+        @keyframes hitMarker {
+            0% { opacity: 1; transform: scale(1) translateY(0); }
+            100% { opacity: 0; transform: scale(2) translateY(-50px); }
+        }
+
+        .question-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .question-modal.active {
+            display: flex;
+        }
+
+        .question-content {
+            background: linear-gradient(135deg, #1a4d2e 0%, #2d5016 100%);
+            border: 5px solid #ffd700;
+            padding: 40px;
+            max-width: 800px;
+            border-radius: 15px;
+            animation: slideIn 0.3s;
+        }
+
+        @keyframes slideIn {
+            from { transform: scale(0.8); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .question-title {
+            color: #ffd700;
+            font-size: 1.8em;
+            margin-bottom: 25px;
+            text-align: center;
+        }
+
+        .answers-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .answer-option {
+            padding: 20px;
+            background: rgba(0,0,0,0.4);
+            border: 3px solid #8b4513;
+            color: #fff;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .answer-option:hover {
+            background: rgba(255,215,0,0.2);
+            border-color: #ffd700;
+            transform: translateY(-3px);
+        }
+
+        .answer-option.correct {
+            background: #2e7d32;
+            border-color: #4caf50;
+        }
+
+        .answer-option.wrong {
+            background: #c62828;
+            border-color: #f44336;
+        }
+
+        .game-over-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.98);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .game-over-modal.active {
+            display: flex;
+        }
+
+        .game-over-content {
+            background: linear-gradient(135deg, #1a4d2e 0%, #2d5016 100%);
+            border: 5px solid #ffd700;
+            padding: 50px;
+            max-width: 700px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .game-over-content h2 {
+            color: #ffd700;
+            font-size: 3em;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+        }
+
+        .game-over-content p {
+            font-size: 1.2em;
+            margin-bottom: 15px;
+            line-height: 1.8;
+        }
+
+        .btn {
+            padding: 15px 50px;
+            background: #ffd700;
+            border: none;
+            color: #1a4d2e;
+            font-size: 1.3em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-top: 25px;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #ffed4e;
+            transform: scale(1.1);
+        }
+
+        .start-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.98);
+            z-index: 3000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .start-content {
+            background: linear-gradient(135deg, #1a4d2e 0%, #2d5016 100%);
+            border: 5px solid #ffd700;
+            padding: 50px;
+            max-width: 800px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .start-content h1 {
+            color: #ffd700;
+            font-size: 3em;
+            margin-bottom: 25px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.8);
+        }
+
+        .briefing-box {
+            background: rgba(0,0,0,0.6);
+            padding: 25px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: left;
+        }
+
+        .briefing-box h3 {
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .briefing-box p {
+            margin-bottom: 10px;
+            line-height: 1.6;
+        }
+
+        .ammo-counter {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            border: 3px solid #8b4513;
+            border-radius: 10px;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .ammo-counter .label {
+            color: #ffd700;
+            font-size: 0.9em;
+        }
+
+        .ammo-counter .value {
+            color: #fff;
+            font-size: 2em;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="start-screen" id="startScreen">
+        <div class="start-content">
+            <h1>🎯 DIEN BIEN PHU: VALLEY SHOOTER 🎯</h1>
+
+            <!-- START BUTTON MOVED NEAR TOP -->
+            <button class="btn" onclick="startGame()">BEGIN MISSION</button>
+
+            <div class="briefing-box">
+                <h3>📜 Historical Context:</h3>
+                <p>March-May 1954: French forces defend the valley fortress of Dien Bien Phu against Viet Minh forces in the decisive battle of the First Indochina War.</p>
+                
+                <h3 style="margin-top: 20px;">🎮 How to Play:</h3>
+                <p><strong>• AIM:</strong> Move your mouse to aim the crosshair</p>
+                <p><strong>• SHOOT:</strong> Click to fire at Viet Minh soldiers</p>
+                <p><strong>• HIT:</strong> When you hit a soldier, answer their history question</p>
+                <p><strong>• ELIMINATE:</strong> Correct answer = soldier eliminated</p>
+                <p><strong>• FAIL:</strong> Wrong answer = soldier returns to battle</p>
+                
+                <h3 style="margin-top: 20px;">⚔️ Mission:</h3>
+                <p>• Eliminate <strong>20</strong> Viet Minh soldiers before time runs out</p>
+                <p>• You have <strong>3 minutes (180 seconds)</strong></p>
+                <p>• Answer history questions correctly to eliminate targets</p>
+                <p>• Quick reflexes and knowledge both matter!</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="game-container" id="gameContainer" style="display: none;">
+        <div class="crosshair" id="crosshair"></div>
+
+        <div class="hud">
+            <div class="hud-item">
+                <div class="hud-label">⏱️ TIME LEFT</div>
+                <div class="hud-value timer-value" id="timer">3:00</div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">🎯 ELIMINATED</div>
+                <div class="hud-value" id="eliminated">0 / 20</div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">👥 ACTIVE ENEMIES</div>
+                <div class="hud-value" id="activeEnemies">5</div>
+            </div>
+            <div class="hud-item">
+                <div class="hud-label">✅ ACCURACY</div>
+                <div class="hud-value" id="accuracy">0%</div>
+            </div>
+        </div>
+
+        <div class="battlefield" id="battlefield">
+            <div class="valley-layer"></div>
+            <div class="french-bunker">🏰</div>
+        </div>
+
+        <div class="ammo-counter">
+            <div class="label">SHOTS FIRED</div>
+            <div class="value" id="shotsFired">0</div>
+        </div>
+    </div>
+
+    <div class="question-modal" id="questionModal">
+        <div class="question-content">
+            <h2 style="color: #ff5252; margin-bottom: 15px;">⚔️ TARGET ACQUIRED ⚔️</h2>
+            <div class="question-title" id="questionText"></div>
+            <div class="answers-grid" id="answersGrid"></div>
+        </div>
+    </div>
+
+    <div class="game-over-modal" id="gameOverModal">
+        <div class="game-over-content">
+            <h2 id="gameOverTitle">Mission Complete</h2>
+            <p id="gameOverText"></p>
+            <p id="gameOverStats"></p>
+            <button class="btn" onclick="location.reload()">PLAY AGAIN</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                q: "Why was the French base at Dien Bien Phu naturally weak as a defensive position?",
+                a: [
+                    "It sat in a valley surrounded by hills",
+                    "It was on top of a mountain ridge",
+                    "It was protected by the sea on three sides",
+                    "It had very deep underground bunkers"
+                ],
+                c: 0
+            },
+            {
+                q: "What key mistake did the French make when choosing Dien Bien Phu as a base?",
+                a: [
+                    "They assumed the Viet Minh could not bring heavy artillery into the hills",
+                    "They believed the Viet Minh had no soldiers left",
+                    "They thought the Viet Minh had stronger planes than them",
+                    "They expected the United States to send ground troops"
+                ],
+                c: 0
+            },
+            {
+                q: "How did General Vo Nguyen Giap’s strategy put pressure on the French at Dien Bien Phu?",
+                a: [
+                    "He used a slow siege with trenches and artillery to surround the base",
+                    "He ordered one huge open battle in the valley",
+                    "He launched only small hit-and-run raids and withdrew",
+                    "He refused to attack and waited for peace talks"
+                ],
+                c: 0
+            },
+            {
+                q: "What did the Viet Minh do with their artillery to make it hard for the French to destroy?",
+                a: [
+                    "They hid guns in caves and tunnels dug into the hills",
+                    "They parked guns in the open valley floor",
+                    "They placed all guns in the French airstrip",
+                    "They mounted guns on ships on the river"
+                ],
+                c: 0
+            },
+            {
+                q: "Why did the French rely so heavily on air power at Dien Bien Phu?",
+                a: [
+                    "The base could only be supplied and reinforced by air",
+                    "They had powerful tanks inside the valley",
+                    "They controlled all roads and rivers into the area",
+                    "They had more soldiers than they could feed"
+                ],
+                c: 0
+            },
+            {
+                q: "How did Viet Minh anti-aircraft guns weaken the French position?",
+                a: [
+                    "They shot down or scared off French supply planes",
+                    "They destroyed French trenches on the valley floor",
+                    "They blocked French radio messages",
+                    "They sank French warships offshore"
+                ],
+                c: 0
+            },
+            {
+                q: "What was one major problem with the French supply situation inside the valley?",
+                a: [
+                    "Supplies often missed the drop zone and fell into Viet Minh hands",
+                    "They had unlimited food but no weapons",
+                    "They had too many reinforcements arriving every day",
+                    "They could easily drive trucks in and out of the base"
+                ],
+                c: 0
+            },
+            {
+                q: "Why did French soldiers become increasingly demoralised during the battle?",
+                a: [
+                    "They were surrounded, under constant fire, and could see no hope of rescue",
+                    "They were allowed to go home whenever they wanted",
+                    "They were fighting in their own homeland",
+                    "They had more rest and recreation than expected"
+                ],
+                c: 0
+            },
+            {
+                q: "Which of the following BEST describes Viet Minh morale at Dien Bien Phu?",
+                a: [
+                    "High, because they believed they were fighting for independence",
+                    "Low, because they were forced to fight for France",
+                    "Weak, because they were not used to jungle warfare",
+                    "Uncertain, because they did not understand the war"
+                ],
+                c: 0
+            },
+            {
+                q: "What was one important role of Viet Minh political officers around Dien Bien Phu?",
+                a: [
+                    "They gave speeches to keep soldiers motivated and loyal",
+                    "They controlled all French radio messages",
+                    "They planned French air attacks",
+                    "They negotiated surrender terms with the French at the start"
+                ],
+                c: 0
+            },
+            {
+                q: "How did the ‘human trail of porters’ help the Viet Minh?",
+                a: [
+                    "Porters carried supplies by foot and bicycle through jungle paths to the front line",
+                    "Porters flew jet planes full of weapons to the valley",
+                    "Porters drove tanks along paved highways",
+                    "Porters stayed in the base and refused to move"
+                ],
+                c: 0
+            },
+            {
+                q: "Why was the Viet Minh supply system impressive compared to the French?",
+                a: [
+                    "They moved huge amounts of supplies silently over long distances without modern vehicles",
+                    "They depended only on French supply drops",
+                    "They used only large trucks on wide roads",
+                    "They fought with no food or ammunition at all"
+                ],
+                c: 0
+            },
+            {
+                q: "What did Viet Minh soldiers and porters often have to endure to keep the siege going?",
+                a: [
+                    "Harsh weather, long marches, and heavy loads",
+                    "Luxury hotels and short walks",
+                    "Daily tank rides across the valley",
+                    "Constant holidays away from the front"
+                ],
+                c: 0
+            },
+            {
+                q: "How did Giap change his plan when he realised the cost of a fast, direct attack would be too high?",
+                a: [
+                    "He switched to a slower siege with trenches and careful artillery fire",
+                    "He gave up and left the battlefield",
+                    "He asked the French to help attack his own men",
+                    "He moved the battle to another country immediately"
+                ],
+                c: 0
+            },
+            {
+                q: "What was one effect of Viet Minh trench systems creeping closer to the French positions?",
+                a: [
+                    "French strongpoints were isolated and picked off one by one",
+                    "French tanks could move more freely",
+                    "French planes could land more safely",
+                    "French soldiers were able to escape more easily"
+                ],
+                c: 0
+            },
+            {
+                q: "Why did the fall of the surrounding hill strongpoints weaken French morale?",
+                a: [
+                    "Each loss made the main camp feel more exposed and doomed",
+                    "The hills were unimportant to defence",
+                    "The French wanted to move into the open anyway",
+                    "The hills belonged to another army"
+                ],
+                c: 0
+            },
+            {
+                q: "Which statement BEST describes French leadership at Dien Bien Phu?",
+                a: [
+                    "They underestimated Viet Minh strength and overestimated their own position",
+                    "They fully understood Viet Minh tactics and weather",
+                    "They refused any air support from allies",
+                    "They chose not to build any defences at all"
+                ],
+                c: 0
+            },
+            {
+                q: "How did the isolation of Dien Bien Phu affect French troops psychologically?",
+                a: [
+                    "They felt cut off, trapped, and increasingly hopeless",
+                    "They felt close to friendly cities and safe",
+                    "They knew they could walk home in a day",
+                    "They believed the Viet Minh had already surrendered"
+                ],
+                c: 0
+            },
+            {
+                q: "Why did many Vietnamese villagers near the area prefer to support the Viet Minh rather than the French?",
+                a: [
+                    "They saw the Viet Minh as fighting for Vietnamese independence",
+                    "They believed France wanted to give up its colonies",
+                    "They wanted more French control of their land",
+                    "They were all paid to fight for France"
+                ],
+                c: 0
+            },
+            {
+                q: "What impact did constant shelling and bombing have on daily life for French soldiers in the valley?",
+                a: [
+                    "They were forced to live in muddy, damaged trenches with little rest",
+                    "They enjoyed peaceful and quiet nights",
+                    "They trained for sports events every day",
+                    "They built new hotels and cinemas"
+                ],
+                c: 0
+            },
+            {
+                q: "How did events at Dien Bien Phu affect public opinion back in France?",
+                a: [
+                    "Many people questioned whether France should continue the war in Indochina",
+                    "People demanded France send even more troops forever",
+                    "Nobody in France heard about the battle",
+                    "Everyone believed the war was already a clear success"
+                ],
+                c: 0
+            },
+            {
+                q: "What did the Viet Minh victory at Dien Bien Phu show about ‘people’s war’?",
+                a: [
+                    "A determined local force with strong support can defeat a better-armed colonial power",
+                    "Only modern tanks can win any battle",
+                    "Air power alone always decides the result",
+                    "Colonial powers can never be defeated"
+                ],
+                c: 0
+            },
+            {
+                q: "Which of the following BEST sums up the French weakness at Dien Bien Phu?",
+                a: [
+                    "Poor strategic choice of base, supply problems, and falling morale",
+                    "Endless supplies and perfect morale",
+                    "No opposition from the Viet Minh",
+                    "Total control of the surrounding hills"
+                ],
+                c: 0
+            },
+            {
+                q: "Which factor BEST explains why the Viet Minh could keep up the siege for so long?",
+                a: [
+                    "Strong organisation of porters, trenches, and artillery in the hills",
+                    "Total dependence on French food and weapons",
+                    "Refusal to dig trenches or move guns",
+                    "Complete lack of support from local people"
+                ],
+                c: 0
+            },
+            {
+                q: "Overall, which combination MOST clearly led to French defeat at Dien Bien Phu?",
+                a: [
+                    "Viet Minh determination, Giap’s siege tactics, and French misjudgements",
+                    "French bravery, strong tanks, and secure supply lines",
+                    "Perfect air support and high morale in the valley",
+                    "Viet Minh refusal to fight or move"
+                ],
+                c: 0
+            }
+        ];
+
+        const game = {
+            eliminated: 0,
+            totalEnemies: 20,      // REDUCED SO THEY DON'T HAVE TO HIT EVERY SINGLE ONE
+            activeEnemies: [],
+            timeLeft: 180,        // 3 MINUTES
+            timerInterval: null,
+            gameOver: false,
+            currentEnemy: null,
+            shotsFired: 0,
+            shotsHit: 0,
+            availableQuestions: [],
+            spawnInterval: null
+        };
+
+        function startGame() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('gameContainer').style.display = 'block';
+            
+            game.availableQuestions = [...questions];
+            shuffleArray(game.availableQuestions);
+            
+            spawnEnemies(5);
+            startTimer();
+            startSpawning();
+        }
+
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function spawnEnemies(count) {
+            const battlefield = document.getElementById('battlefield');
+            for (let i = 0; i < count; i++) {
+                if (game.eliminated + game.activeEnemies.length >= game.totalEnemies) break;
+                
+                const enemy = document.createElement('div');
+                enemy.className = 'enemy';
+                enemy.textContent = '🎯';
+                enemy.style.left = `${Math.random() * 85 + 5}%`;
+                enemy.style.top = `${Math.random() * 50 + 15}%`;
+                
+                enemy.addEventListener('click', (e) => handleEnemyClick(e, enemy));
+                
+                battlefield.appendChild(enemy);
+                game.activeEnemies.push(enemy);
+                
+                animateEnemy(enemy);
+            }
+            updateHUD();
+        }
+
+        function animateEnemy(enemy) {
+            // SLOWER MOVEMENT SO TARGETS FEEL LESS “TWITCHY”
+            setInterval(() => {
+                if (!game.gameOver && game.activeEnemies.includes(enemy)) {
+                    const currentLeft = parseFloat(enemy.style.left);
+                    const currentTop = parseFloat(enemy.style.top);
+                    
+                    const newLeft = Math.max(5, Math.min(85, currentLeft + (Math.random() - 0.5) * 8));
+                    const newTop = Math.max(15, Math.min(65, currentTop + (Math.random() - 0.5) * 6));
+                    
+                    enemy.style.left = newLeft + '%';
+                    enemy.style.top = newTop + '%';
+                }
+            }, 3500 + Math.random() * 2000); // 3.5–5.5s between “jumps”
+        }
+
+        function handleEnemyClick(e, enemy) {
+            if (game.gameOver) return;
+            
+            e.stopPropagation();
+            game.shotsFired++;
+            game.shotsHit++;
+            
+            createMuzzleFlash(e.clientX, e.clientY);
+            createHitMarker(e.clientX, e.clientY);
+            
+            game.currentEnemy = enemy;
+            showQuestion();
+            
+            updateHUD();
+        }
+
+        document.getElementById('battlefield').addEventListener('click', (e) => {
+            if (e.target.id === 'battlefield' || e.target.classList.contains('valley-layer')) {
+                game.shotsFired++;
+                createMuzzleFlash(e.clientX, e.clientY);
+                createBulletHole(e.clientX, e.clientY);
+                updateHUD();
+            }
+        });
+
+        function createMuzzleFlash(x, y) {
+            const flash = document.createElement('div');
+            flash.className = 'muzzle-flash';
+            flash.style.left = x + 'px';
+            flash.style.top = y + 'px';
+            document.body.appendChild(flash);
+            setTimeout(() => flash.remove(), 100);
+        }
+
+        function createBulletHole(x, y) {
+            const hole = document.createElement('div');
+            hole.className = 'bullet-hole';
+            hole.style.left = x + 'px';
+            hole.style.top = y + 'px';
+            document.getElementById('battlefield').appendChild(hole);
+        }
+
+        function createHitMarker(x, y) {
+            const marker = document.createElement('div');
+            marker.className = 'hit-marker';
+            marker.textContent = 'X';
+            marker.style.left = x + 'px';
+            marker.style.top = y + 'px';
+            document.body.appendChild(marker);
+            setTimeout(() => marker.remove(), 500);
+        }
+
+        function showQuestion() {
+            if (game.availableQuestions.length === 0) {
+                game.availableQuestions = [...questions];
+                shuffleArray(game.availableQuestions);
+            }
+            
+            const question = game.availableQuestions.pop();
+            document.getElementById('questionText').textContent = question.q;
+            
+            const grid = document.getElementById('answersGrid');
+            grid.innerHTML = '';
+
+            // SHUFFLE ANSWER OPTIONS SO CORRECT ISN'T ALWAYS TOP LEFT
+            const indices = question.a.map((_, i) => i);
+            shuffleArray(indices);
+
+            indices.forEach(idx => {
+                const btn = document.createElement('button');
+                btn.className = 'answer-option';
+                btn.textContent = question.a[idx];
+                const isCorrect = (idx === question.c);
+                btn.dataset.correct = isCorrect ? "true" : "false";
+                btn.onclick = () => checkAnswer(isCorrect, btn);
+                grid.appendChild(btn);
+            });
+            
+            document.getElementById('questionModal').classList.add('active');
+        }
+
+        function checkAnswer(isCorrect, btn) {
+            const buttons = document.querySelectorAll('.answer-option');
+            buttons.forEach(b => b.disabled = true);
+            
+            if (isCorrect) {
+                btn.classList.add('correct');
+                setTimeout(() => {
+                    eliminateEnemy();
+                    document.getElementById('questionModal').classList.remove('active');
+                }, 1000);
+            } else {
+                btn.classList.add('wrong');
+                // highlight the correct one, wherever it is
+                const correctBtn = Array.from(buttons).find(b => b.dataset.correct === "true");
+                if (correctBtn) correctBtn.classList.add('correct');
+                setTimeout(() => {
+                    game.currentEnemy = null;
+                    document.getElementById('questionModal').classList.remove('active');
+                }, 1500);
+            }
+        }
+
+        function eliminateEnemy() {
+            if (game.currentEnemy) {
+                game.currentEnemy.remove();
+                game.activeEnemies = game.activeEnemies.filter(e => e !== game.currentEnemy);
+                game.eliminated++;
+                game.currentEnemy = null;
+                
+                updateHUD();
+                
+                if (game.eliminated >= game.totalEnemies) {
+                    endGame(true);
+                }
+            }
+        }
+
+        function startSpawning() {
+            // SLIGHTLY SLOWER SPAWN SO IT FEELS LESS CROWDED
+            game.spawnInterval = setInterval(() => {
+                if (!game.gameOver && game.activeEnemies.length < 8 && 
+                    game.eliminated + game.activeEnemies.length < game.totalEnemies) {
+                    spawnEnemies(1);
+                }
+            }, 4000);
+        }
+
+        function startTimer() {
+            game.timerInterval = setInterval(() => {
+                game.timeLeft--;
+                const minutes = Math.floor(game.timeLeft / 60);
+                const seconds = game.timeLeft % 60;
+                document.getElementById('timer').textContent = 
+                    `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                if (game.timeLeft <= 0) {
+                    endGame(false);
+                }
+            }, 1000);
+        }
+
+        function updateHUD() {
+            document.getElementById('eliminated').textContent = `${game.eliminated} / ${game.totalEnemies}`;
+            document.getElementById('activeEnemies').textContent = game.activeEnemies.length;
+            document.getElementById('shotsFired').textContent = game.shotsFired;
+            
+            const accuracy = game.shotsFired > 0 ? Math.round((game.shotsHit / game.shotsFired) * 100) : 0;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+        }
+
+        function endGame(victory) {
+            game.gameOver = true;
+            clearInterval(game.timerInterval);
+            clearInterval(game.spawnInterval);
+            
+            const modal = document.getElementById('gameOverModal');
+            const title = document.getElementById('gameOverTitle');
+            const text = document.getElementById('gameOverText');
+            const stats = document.getElementById('gameOverStats');
+            
+            const accuracy = game.shotsFired > 0 ? Math.round((game.shotsHit / game.shotsFired) * 100) : 0;
+            
+            if (victory) {
+                title.textContent = '🎖️ MISSION SUCCESS! 🎖️';
+                text.textContent = 'You eliminated enough Viet Minh soldiers and showed strong knowledge of Dien Bien Phu. In reality, French forces in the valley were overwhelmed by Viet Minh siege tactics, leading to a major colonial defeat.';
+            } else {
+                title.textContent = '⏱️ TIME EXPIRED ⏱️';
+                text.textContent = `Mission incomplete. You did not eliminate all ${game.totalEnemies} targets. Historically, the fall of Dien Bien Phu showed how a determined local force could defeat a stronger colonial army.`;
+            }
+            
+            stats.innerHTML = `
+                <strong>Final Statistics:</strong><br>
+                Enemies Eliminated: ${game.eliminated} / ${game.totalEnemies}<br>
+                Shots Fired: ${game.shotsFired}<br>
+                Accuracy: ${accuracy}%<br>
+                Time Remaining: ${Math.floor(game.timeLeft / 60)}:${(game.timeLeft % 60).toString().padStart(2, '0')}
+            `;
+            
+            modal.classList.add('active');
+        }
+
+        document.addEventListener('mousemove', (e) => {
+            const crosshair = document.getElementById('crosshair');
+            crosshair.style.left = e.clientX + 'px';
+            crosshair.style.top = e.clientY + 'px';
+        });
+    </script>
+</body>
+</html>
