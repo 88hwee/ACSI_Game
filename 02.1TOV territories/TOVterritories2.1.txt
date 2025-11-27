@@ -5,6 +5,7 @@
 <title>Treaty of Versailles - Territory Challenge</title>
 <meta name="viewport" content="width=device-width,initial-scale=1.0">
 <style>
+/* --- BASE STYLES --- */
 * {
     box-sizing: border-box;
 }
@@ -25,13 +26,15 @@ body {
     background: rgba(15, 23, 42, 0.95);
     border-radius: 20px;
     padding: 2rem;
-    max-width: 700px;
+    max-width: 800px;
     width: 100%;
     box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(10px);
     border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
 }
 
+/* --- HEADER & STATS --- */
 .header {
     text-align: center;
     margin-bottom: 2rem;
@@ -58,7 +61,8 @@ h1 {
     border-radius: 12px;
     padding: 1rem;
     margin-bottom: 1.5rem;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
 .stats {
@@ -81,97 +85,97 @@ h1 {
     font-size: 1.5rem;
     font-weight: bold;
     margin-bottom: 0.25rem;
+    color: #f8fafc;
 }
 
 .stat-label {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
 }
 
+/* --- GAME GRID --- */
 .grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.75rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
     margin-bottom: 1.5rem;
 }
 
 .tile {
     border-radius: 12px;
-    border: 2px solid #374151;
-    padding: 1rem;
-    font-size: 0.9rem;
+    border: 2px solid #334155;
+    padding: 1.25rem 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
     background: linear-gradient(135deg, #1e293b, #0f172a);
-    transition: all 0.3s ease;
+    transition: all 0.2s ease;
     position: relative;
     overflow: hidden;
-}
-
-.tile::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s;
+    text-align: center;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 80px;
 }
 
 .tile:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     border-color: #60a5fa;
+    background: #334155;
 }
 
-.tile:hover::before {
-    left: 100%;
-}
-
+/* Selected State */
 .tile.selected {
-    background: linear-gradient(135deg, #1d4ed8, #3730a3);
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
     border-color: #60a5fa;
     color: #ffffff;
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(29, 78, 216, 0.4);
+    box-shadow: 0 4px 15px rgba(29, 78, 216, 0.4);
+}
+
+/* Game Over States */
+.container.game-over .tile {
+    cursor: help; /* change cursor to indicate info is available */
 }
 
 .tile.correct {
     background: linear-gradient(135deg, #059669, #047857);
     border-color: #10b981;
-    animation: correctPulse 0.6s ease-out;
+    opacity: 1;
 }
 
 .tile.incorrect {
-    background: linear-gradient(135deg, #dc2626, #b91c1c);
-    border-color: #ef4444;
-    animation: shake 0.6s ease-out;
+    background: linear-gradient(135deg, #dc2626, #991b1b);
+    border-color: #f87171;
+    opacity: 1;
 }
 
 .tile.missed {
     background: linear-gradient(135deg, #d97706, #b45309);
-    border-color: #f59e0b;
-    animation: missedPulse 0.6s ease-out;
+    border-color: #fbbf24;
+    border-style: dashed;
 }
 
-@keyframes correctPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+/* Badge for "Click for Info" */
+.info-badge {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 10px;
+    background: rgba(0,0,0,0.3);
+    padding: 2px 6px;
+    border-radius: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
 }
 
-@keyframes shake {
-    0%, 100% { transform: translateX(0); }
-    25% { transform: translateX(-5px); }
-    75% { transform: translateX(5px); }
+.container.game-over .tile:hover .info-badge {
+    opacity: 1;
 }
 
-@keyframes missedPulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.03); }
-    100% { transform: scale(1); }
-}
-
+/* --- CONTROLS --- */
 .controls {
     display: flex;
     gap: 1rem;
@@ -182,103 +186,157 @@ h1 {
 button {
     border-radius: 50px;
     border: none;
-    padding: 0.75rem 1.5rem;
-    font-size: 0.9rem;
+    padding: 0.75rem 2rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 .check-btn {
     background: linear-gradient(135deg, #38bdf8, #6366f1);
     color: #ffffff;
 }
-
 .check-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(56, 189, 248, 0.4);
+    box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
 }
 
 .reset-btn {
-    background: linear-gradient(135deg, #64748b, #475569);
+    background: #475569;
     color: #ffffff;
 }
-
 .reset-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(100, 116, 139, 0.4);
+    background: #64748b;
 }
 
+/* --- RESULT SECTION --- */
 .result {
     text-align: center;
-    font-size: 1rem;
-    min-height: 3rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 1.1rem;
+    min-height: 60px;
     border-radius: 12px;
     padding: 1rem;
-    margin-top: 1rem;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+.result.show { opacity: 1; }
+
+.click-hint {
+    display: block;
+    margin-top: 10px;
+    font-size: 0.9rem;
+    color: #cbd5e1;
+    font-style: italic;
+    animation: pulse 2s infinite;
 }
 
-.result.show {
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid rgba(59, 130, 246, 0.3);
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
 }
 
-.score-excellent {
-    color: #10b981;
-}
-
-.score-good {
-    color: #f59e0b;
-}
-
-.score-poor {
-    color: #ef4444;
-}
-
-.progress-bar {
+/* --- MODAL (POPUP) --- */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
     width: 100%;
-    height: 8px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 4px;
-    overflow: hidden;
-    margin: 1rem 0;
-}
-
-.progress-fill {
     height: 100%;
-    background: linear-gradient(90deg, #38bdf8, #6366f1);
-    width: 0%;
-    transition: width 0.5s ease;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(5px);
 }
 
-@media (max-width: 600px) {
-    .container {
-        padding: 1.5rem;
-        margin: 0.5rem;
-    }
-    
-    .grid {
-        grid-template-columns: 1fr;
-    }
-    
-    .controls {
-        flex-direction: column;
-    }
-    
-    .stats {
-        flex-direction: column;
-        gap: 0.5rem;
-    }
+.modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
 }
+
+.modal-content {
+    background: #1e293b;
+    padding: 2rem;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 500px;
+    position: relative;
+    border: 1px solid #475569;
+    transform: translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.modal-overlay.active .modal-content {
+    transform: translateY(0);
+}
+
+.close-modal {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+}
+
+.modal-title {
+    margin-top: 0;
+    color: #fff;
+    font-size: 1.5rem;
+    border-bottom: 2px solid #334155;
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.modal-status {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+}
+
+.status-lost {
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #ef4444;
+}
+
+.status-kept {
+    background: rgba(16, 185, 129, 0.2);
+    color: #34d399;
+    border: 1px solid #10b981;
+}
+
+.modal-text {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: #e2e8f0;
+}
+
 </style>
 </head>
 <body>
-<div class="container">
+
+<div class="container" id="gameContainer">
     <div class="header">
         <h1>Treaty of Versailles</h1>
         <p class="subtitle">Territory Challenge</p>
@@ -286,7 +344,7 @@ button {
     
     <div class="instructions">
         <strong>📍 Mission:</strong> Select all territories that Germany lost due to the Treaty of Versailles (1919). 
-        Be careful - some options are tricky! Click territories to select/deselect them.
+        Click territories to select them, then check your answer.
     </div>
     
     <div class="stats">
@@ -295,8 +353,7 @@ button {
             <div class="stat-label">Selected</div>
         </div>
         <div class="stat">
-            <div class="stat-value" id="totalLost">6</div>
-            <div class="stat-label">Total Lost</div>
+            <div class="stat-value" id="totalLost">0</div> <div class="stat-label">Total to Find</div>
         </div>
         <div class="stat">
             <div class="stat-value" id="accuracy">-</div>
@@ -304,40 +361,47 @@ button {
         </div>
     </div>
     
-    <div class="progress-bar">
-        <div class="progress-fill" id="progressFill"></div>
-    </div>
-    
     <div class="grid" id="tiles"></div>
     
     <div class="controls">
         <button class="check-btn" id="checkBtn">Check Answer</button>
-        <button class="reset-btn" id="resetBtn">Reset Game</button>
+        <button class="reset-btn" id="resetBtn">Reset</button>
     </div>
     
     <div class="result" id="result"></div>
 </div>
 
+<div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+        <button class="close-modal" id="closeModal">&times;</button>
+        <h2 class="modal-title" id="mTitle">Territory Name</h2>
+        <span class="modal-status" id="mStatus">Status</span>
+        <p class="modal-text" id="mText">Description goes here.</p>
+    </div>
+</div>
+
 <script>
 const territoryData = [
-    {name: "Alsace-Lorraine", lost: true, info: "Returned to France"},
-    {name: "Polish Corridor", lost: true, info: "Given to Poland for sea access"},
-    {name: "Saar Basin", lost: true, info: "Under League of Nations control for 15 years"},
-    {name: "Rhineland", lost: false, info: "Demilitarized, not given away"},
-    {name: "Danzig (Gdańsk)", lost: true, info: "Became a Free City under League control"},
-    {name: "Sudetenland", lost: false, info: "This was taken later by Nazi Germany (1938)"},
-    {name: "German Colonies", lost: true, info: "All overseas territories lost"},
-    {name: "Bavaria", lost: false, info: "Remained part of Germany"},
-    {name: "Northern Schleswig", lost: true, info: "Returned to Denmark after plebiscite"},
-    {name: "Belgium", lost: false, info: "Was never German territory"},
-    {name: "Eupen-Malmédy", lost: true, info: "Small region given to Belgium"},
-    {name: "Memel Territory", lost: true, info: "Given to Lithuania"}
+    {name: "Alsace-Lorraine", lost: true, info: "Returned to France. Germany had seized this region in 1871, and France made regaining it a primary war goal."},
+    {name: "Polish Corridor", lost: true, info: "Given to the new state of Poland to provide them access to the Baltic Sea. This separated East Prussia from the rest of Germany."},
+    {name: "Saar Basin", lost: true, info: "Rich in coal, this area was placed under League of Nations control for 15 years, with its coal output going to France."},
+    {name: "Rhineland", lost: false, info: "Germany KEPT this land, but it was 'demilitarized'. No German troops were allowed near the French border."},
+    {name: "Danzig (Gdańsk)", lost: true, info: "Became a 'Free City' under League of Nations protection to give Poland port access, though it was historically German."},
+    {name: "Sudetenland", lost: false, info: "Germany did NOT lose this in 1919. It was part of the new Czechoslovakia. Hitler later annexed it in 1938."},
+    {name: "German Colonies", lost: true, info: "Germany lost ALL overseas colonies in Africa and the Pacific (e.g., Togo, Cameroon, Namibia). They became 'mandates'."},
+    {name: "Bavaria", lost: false, info: "Bavaria remained an integral state within the German Weimar Republic."},
+    {name: "Northern Schleswig", lost: true, info: "Returned to Denmark following a public vote (plebiscite) by the people living there."},
+    {name: "Belgium", lost: false, info: "Belgium was never German territory, though Germany occupied it during the war. Germany withdrew its troops."},
+    {name: "Eupen-Malmédy", lost: true, info: "A small border region given to Belgium as reparations for war damage."},
+    {name: "Memel Territory", lost: true, info: "A strip of land on the East Prussian border, eventually given to Lithuania."}
 ];
 
 class TOVGame {
     constructor() {
         this.selectedTiles = new Set();
         this.gameChecked = false;
+        this.container = document.getElementById("gameContainer");
+        this.modal = document.getElementById("modalOverlay");
         this.init();
     }
     
@@ -345,6 +409,8 @@ class TOVGame {
         this.createTiles();
         this.bindEvents();
         this.updateStats();
+        // Initialize total lost count dynamically
+        document.getElementById("totalLost").textContent = territoryData.filter(t => t.lost).length;
     }
     
     createTiles() {
@@ -354,45 +420,69 @@ class TOVGame {
         territoryData.forEach((territory, index) => {
             const tile = document.createElement("div");
             tile.className = "tile";
-            tile.textContent = territory.name;
-            tile.dataset.index = index;
-            tile.title = territory.info;
             
-            tile.addEventListener("click", () => this.toggleTile(tile, index));
+            // Inner content with badge
+            tile.innerHTML = `
+                ${territory.name}
+                <span class="info-badge">?</span>
+            `;
+            
+            tile.addEventListener("click", () => this.handleTileClick(tile, index));
             tilesDiv.appendChild(tile);
         });
     }
     
-    toggleTile(tile, index) {
-        if (this.gameChecked) return;
-        
-        tile.classList.toggle("selected");
-        
+    handleTileClick(tile, index) {
+        if (this.gameChecked) {
+            // GAME OVER: Show Info Modal
+            this.showInfo(index);
+        } else {
+            // GAME ACTIVE: Toggle Selection
+            this.toggleSelection(tile, index);
+        }
+    }
+    
+    toggleSelection(tile, index) {
         if (this.selectedTiles.has(index)) {
             this.selectedTiles.delete(index);
+            tile.classList.remove("selected");
         } else {
             this.selectedTiles.add(index);
+            tile.classList.add("selected");
         }
-        
         this.updateStats();
     }
     
+    showInfo(index) {
+        const data = territoryData[index];
+        const mTitle = document.getElementById("mTitle");
+        const mStatus = document.getElementById("mStatus");
+        const mText = document.getElementById("mText");
+        
+        mTitle.textContent = data.name;
+        mText.textContent = data.info;
+        
+        if (data.lost) {
+            mStatus.textContent = "LOST by Germany";
+            mStatus.className = "modal-status status-lost";
+        } else {
+            mStatus.textContent = "KEPT by Germany";
+            mStatus.className = "modal-status status-kept";
+        }
+        
+        this.modal.classList.add("active");
+    }
+    
     updateStats() {
-        const selectedCount = this.selectedTiles.size;
-        const totalLost = territoryData.filter(t => t.lost).length;
-        
-        document.getElementById("selectedCount").textContent = selectedCount;
-        document.getElementById("totalLost").textContent = totalLost;
-        
-        // Update progress bar
-        const progress = Math.min((selectedCount / totalLost) * 100, 100);
-        document.getElementById("progressFill").style.width = `${progress}%`;
+        document.getElementById("selectedCount").textContent = this.selectedTiles.size;
     }
     
     checkAnswer() {
         if (this.gameChecked) return;
         
         this.gameChecked = true;
+        this.container.classList.add("game-over");
+        
         const tiles = document.querySelectorAll(".tile");
         let correct = 0;
         let incorrect = 0;
@@ -402,6 +492,7 @@ class TOVGame {
             const isSelected = this.selectedTiles.has(index);
             const shouldBeSelected = territoryData[index].lost;
             
+            // Remove selection look for visual clarity in results
             tile.classList.remove("selected");
             
             if (isSelected && shouldBeSelected) {
@@ -421,54 +512,61 @@ class TOVGame {
         
         document.getElementById("accuracy").textContent = `${accuracy}%`;
         
-        this.showResult(correct, incorrect, missed, totalLost, accuracy);
+        this.showResult(correct, totalLost, accuracy);
     }
     
-    showResult(correct, incorrect, missed, totalLost, accuracy) {
+    showResult(correct, totalLost, accuracy) {
         const resultDiv = document.getElementById("result");
         resultDiv.classList.add("show");
         
-        let scoreClass = "score-poor";
         let message = "Keep studying! 📚";
-        
-        if (accuracy >= 90) {
-            scoreClass = "score-excellent";
-            message = "Excellent! You're a history expert! 🏆";
-        } else if (accuracy >= 70) {
-            scoreClass = "score-good";
-            message = "Good job! Room for improvement! 👍";
-        }
+        if (accuracy === 100) message = "Perfect! Historical Expert! 🏆";
+        else if (accuracy >= 70) message = "Great job! Almost there! 👍";
         
         resultDiv.innerHTML = `
-            <div class="${scoreClass}">
-                <strong>${message}</strong><br>
-                ✅ Correct: <strong>${correct}</strong>/${totalLost} | 
-                ❌ Wrong: <strong>${incorrect}</strong> | 
-                ⚠️ Missed: <strong>${missed}</strong><br>
-                <strong>Final Score: ${accuracy}%</strong>
-            </div>
+            <div><strong>${message}</strong> (Score: ${accuracy}%)</div>
+            <span class="click-hint">👉 Click any box to learn why it was Lost or Kept</span>
         `;
     }
     
     resetGame() {
         this.selectedTiles.clear();
         this.gameChecked = false;
+        this.container.classList.remove("game-over");
         
+        // Reset Visuals
         const tiles = document.querySelectorAll(".tile");
         tiles.forEach(tile => {
             tile.className = "tile";
         });
         
         document.getElementById("result").classList.remove("show");
-        document.getElementById("result").innerHTML = "";
         document.getElementById("accuracy").textContent = "-";
-        
         this.updateStats();
     }
     
     bindEvents() {
         document.getElementById("checkBtn").addEventListener("click", () => this.checkAnswer());
         document.getElementById("resetBtn").addEventListener("click", () => this.resetGame());
+        
+        // Modal Closing Logic
+        document.getElementById("closeModal").addEventListener("click", () => {
+            this.modal.classList.remove("active");
+        });
+        
+        // Close modal on outside click
+        this.modal.addEventListener("click", (e) => {
+            if (e.target === this.modal) {
+                this.modal.classList.remove("active");
+            }
+        });
+        
+        // Close on Escape key
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && this.modal.classList.contains("active")) {
+                this.modal.classList.remove("active");
+            }
+        });
     }
 }
 
