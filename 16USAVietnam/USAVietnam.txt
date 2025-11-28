@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Why Did the USA Fail to Win the Vietnam War?</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6fb;
+            color: #222;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 20px 20px 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 0.95rem;
+            color: #555;
+        }
+
+        .step-title {
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .ideas {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .idea-card {
+            background: #f0f3ff;
+            border-left: 6px solid #3b5bdb;
+            border-radius: 8px;
+            padding: 10px 12px;
+        }
+
+        .idea-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .tag {
+            font-size: 0.85rem;
+            color: #555;
+            margin-bottom: 4px;
+        }
+
+        .idea-text {
+            font-size: 0.9rem;
+        }
+
+        .choose-section {
+            background: #fdf7e3;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-left: 6px solid #f08c00;
+        }
+
+        .option {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 90px;
+            margin-top: 6px;
+            padding: 8px;
+            font-size: 0.95rem;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+
+        .btn {
+            margin-top: 10px;
+            padding: 8px 14px;
+            border: none;
+            border-radius: 6px;
+            background: #3b5bdb;
+            color: white;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            background: #273c9c;
+        }
+
+        .output {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 8px;
+            background: #e7f9ed;
+            border-left: 6px solid #2f9e44;
+            display: none;
+        }
+
+        .output-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+
+        .hint {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .small {
+            font-size: 0.8rem;
+            color: #777;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>Why Did the USA Fail to Win the Vietnam War?</h1>
+    <p class="subtitle">Age 15 History – Think about different reasons, then choose the one you think is most important.</p>
+
+    <!-- STEP 1: Read the three ideas -->
+    <div class="step-title">Step 1: Read the three big ideas 💭</div>
+    <p style="font-size:0.9rem; margin-bottom:8px;">
+        These are three possible reasons why the USA failed to win the Vietnam War. Read them carefully.
+    </p>
+
+    <div class="ideas">
+        <!-- IDEA 1 -->
+        <div class="idea-card">
+            <div class="idea-title">Idea A: Vietcong tactics & the war in the jungle</div>
+            <div class="tag">Guerrilla warfare, local support, home advantage</div>
+            <div class="idea-text">
+                The Vietcong used guerrilla tactics – small, surprise attacks, ambushes and booby traps – instead of
+                large, open battles. They knew the jungle better than the Americans and could hide among villagers.
+                This made it very hard for the USA to find and defeat them, even with stronger weapons.
+            </div>
+        </div>
+
+        <!-- IDEA 2 -->
+        <div class="idea-card">
+            <div class="idea-title">Idea B: Problems with US strategy & leadership</div>
+            <div class="tag">Search-and-destroy, bombing, body counts</div>
+            <div class="idea-text">
+                US leaders relied on heavy bombing (like Operation Rolling Thunder) and “search-and-destroy” missions.
+                These often killed civilians and destroyed villages, turning many Vietnamese people against the USA.
+                American leaders also kept changing strategies and sometimes ignored what was happening on the ground.
+            </div>
+        </div>
+
+        <!-- IDEA 3 -->
+        <div class="idea-card">
+            <div class="idea-title">Idea C: Weak support in Vietnam and in the USA</div>
+            <div class="tag">Corrupt South Vietnamese government, US public opinion</div>
+            <div class="idea-text">
+                The South Vietnamese government was often seen as corrupt and unpopular, so many locals did not trust
+                or support it. In the USA, television showed the horrors of the war, which led to large-scale protests.
+                Growing opposition at home made it harder for the US government to continue the war.
+            </div>
+        </div>
+    </div>
+
+    <!-- STEP 2: Choose one main reason -->
+    <div class="step-title">Step 2: Choose the most important reason ⭐</div>
+    <div class="choose-section">
+        <p style="font-size:0.9rem; margin-bottom:6px;">
+            Which idea do you think is the <strong>main reason</strong> why the USA failed to win the Vietnam War?
+        </p>
+
+        <label class="option">
+            <input type="radio" name="reason" value="Idea A: Vietcong tactics & the war in the jungle">
+            Idea A – Vietcong tactics & the war in the jungle
+        </label>
+
+        <label class="option">
+            <input type="radio" name="reason" value="Idea B: Problems with US strategy & leadership">
+            Idea B – Problems with US strategy & leadership
+        </label>
+
+        <label class="option">
+            <input type="radio" name="reason" value="Idea C: Weak support in Vietnam and in the USA">
+            Idea C – Weak support in Vietnam and in the USA
+        </label>
+
+        <div class="hint">
+            🎯 Tip: Think about which idea affected the war <strong>most seriously</strong> and in the <strong>long term</strong>.
+        </div>
+
+        <label for="explanation" style="display:block; margin-top:10px; font-weight:bold;">
+            Step 3: Explain your choice (2–3 sentences)
+        </label>
+        <textarea id="explanation" placeholder="Explain WHY your chosen idea was the most important. You can compare it with one other idea."></textarea>
+
+        <button class="btn" onclick="saveChoice()">Show my summary</button>
+    </div>
+
+    <!-- OUTPUT -->
+    <div id="output" class="output">
+        <div class="output-title">Your perspective:</div>
+        <p id="chosenReason"></p>
+        <p id="studentExplanation"></p>
+    </div>
+
+    <p class="small">
+        Teacher suggestion: Use this as a planning tool. After students choose and explain, ask them to turn this into a PEEL paragraph
+        or use it as their main argument in an essay.
+    </p>
+</div>
+
+<script>
+    function saveChoice() {
+        const selected = document.querySelector('input[name="reason"]:checked');
+        const explanation = document.getElementById('explanation').value.trim();
+        const output = document.getElementById('output');
+        const chosenReason = document.getElementById('chosenReason');
+        const studentExplanation = document.getElementById('studentExplanation');
+
+        if (!selected) {
+            alert("Please choose one main reason first.");
+            return;
+        }
+
+        if (explanation.length < 20) {
+            alert("Please write at least one or two proper sentences to explain your choice.");
+            return;
+        }
+
+        chosenReason.textContent = "You chose: " + selected.value;
+        studentExplanation.textContent = "Your explanation: " + explanation;
+        output.style.display = "block";
+    }
+</script>
+</body>
+</html>

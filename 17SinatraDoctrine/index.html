@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Sinatra Doctrine: End of an Empire (FIXED)</title>
+    <style>
+        :root {
+            --bg-color: #2b2b2b;
+            --text-color: #f0f0f0;
+            --soviet-red: #cc0000;
+            --freedom-blue: #4da6ff;
+            --gold: #ffd700;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .game-console {
+            max-width: 900px;
+            width: 100%;
+            background: #383838;
+            border: 4px solid #555;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: #1a1a1a;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid #555;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.2em;
+            color: var(--gold);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .stats-row {
+            display: flex;
+            justify-content: space-around;
+            background: #222;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9em;
+        }
+
+        .stat-box {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+
+        /* MAP VISUALIZATION */
+        .map-container {
+            background: #444;
+            height: 250px;
+            position: relative;
+            margin: 20px;
+            border: 2px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .bloc-country {
+            width: 15%;
+            height: 60%;
+            margin: 0 5px;
+            background: var(--soviet-red);
+            border: 2px solid #222;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 0.8em;
+            transition: all 1s ease;
+            position: relative;
+            cursor: default;
+        }
+
+        .bloc-country.free {
+            background: var(--freedom-blue);
+            transform: translateY(-10px);
+            box-shadow: 0 5px 15px rgba(77, 166, 255, 0.4);
+        }
+
+        .ussr-block {
+            width: 20%;
+            height: 80%;
+            background: #880000;
+            border: 3px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            font-weight: bold;
+            font-size: 1.1em;
+            z-index: 10;
+        }
+
+        /* CONTROLS */
+        .narrative-section {
+            padding: 20px;
+            background: #333;
+            min-height: 200px;
+        }
+
+        .narrative-text {
+            font-size: 1.1em;
+            line-height: 1.6;
+            margin-bottom: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        button {
+            background: #4a4a4a;
+            color: white;
+            border: 1px solid #777;
+            padding: 15px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: 0.2s;
+            text-align: left;
+        }
+
+        button:hover {
+            background: var(--gold);
+            color: black;
+            border-color: black;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: #222;
+            color: #555;
+        }
+
+        .feedback-panel {
+            background: #222;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--gold);
+            display: none;
+            font-style: italic;
+        }
+
+        .glossary-term {
+            color: var(--gold);
+            font-weight: bold;
+            text-decoration: underline;
+            cursor: help;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="game-console">
+    <div class="header">
+        <h1>Kremlin Command Center</h1>
+        <span id="date-display">YEAR: 1985</span>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-box">
+            <div>TREASURY</div>
+            <div id="treasury-stat" class="stat-value" style="color:red;">CRITICAL</div>
+        </div>
+        <div class="stat-box">
+            <div>DOOMSDAY CLOCK</div>
+            <div id="tension-stat" class="stat-value">11:55 PM</div>
+        </div>
+        <div class="stat-box">
+            <div>POLICY</div>
+            <div id="policy-stat" class="stat-value">BREZHNEV DOCTRINE</div>
+        </div>
+    </div>
+
+    <div class="map-container">
+        <div class="ussr-block">USSR</div>
+        <div id="poland" class="bloc-country">POLAND</div>
+        <div id="hungary" class="bloc-country">HUNGARY</div>
+        <div id="east-germany" class="bloc-country">E. GERMANY</div>
+        <div id="czech" class="bloc-country">CZECH</div>
+        <div id="romania" class="bloc-country">ROMANIA</div>
+    </div>
+
+    <div class="narrative-section">
+        <div id="feedback" class="feedback-panel"></div>
+        <div id="main-text" class="narrative-text">
+            <strong>Welcome, Comrade General Secretary Gorbachev.</strong><br><br>
+            The year is 1985. The Soviet economy is stagnating due to corruption, alcoholism, and massive military spending. We are fighting an expensive war in Afghanistan and subsidizing our allies in Eastern Europe.<br><br>
+            US President Reagan is increasing pressure with his "Star Wars" (SDI) program. What is your first move?
+        </div>
+        <div id="options" class="options-grid">
+            <button onclick="playTurn(1, 'A')">A: Maintain the status quo. Keep spending on the military to match Reagan.</button>
+            <button onclick="playTurn(1, 'B')">B: Introduce Perestroika (Economic Restructuring) and Glasnost (Openness).</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Game State
+    let state = {
+        stage: 1,
+        treasury: 10, // Low
+        tension: 50,
+        policy: "BREZHNEV DOCTRINE"
+    };
+
+    // DOM Elements
+    const els = {
+        date: document.getElementById('date-display'),
+        treasury: document.getElementById('treasury-stat'),
+        tension: document.getElementById('tension-stat'),
+        policy: document.getElementById('policy-stat'),
+        text: document.getElementById('main-text'),
+        feedback: document.getElementById('feedback'),
+        options: document.getElementById('options'),
+        countries: {
+            poland: document.getElementById('poland'),
+            hungary: document.getElementById('hungary'),
+            eastGermany: document.getElementById('east-germany'),
+            czech: document.getElementById('czech'),
+            romania: document.getElementById('romania')
+        }
+    };
+
+    const scenarios = {
+        1: { // 1985 REFORMS
+            correct: 'B',
+            feedbackA: "Disaster. The economy collapses under the weight of military spending. You are removed from power by hardliners.",
+            feedbackB: "A bold move. You admit the system is failing. 'Perestroika' begins to restructure the economy, and 'Glasnost' allows people to speak freely.",
+            nextDate: "YEAR: 1988",
+            // *** FIX: Added button texts for correct re-rendering on failure ***
+            btnA: "Maintain the status quo. Keep spending on the military to match Reagan.",
+            btnB: "Introduce Perestroika (Economic Restructuring) and Glasnost (Openness)."
+        },
+        2: { // 1988 SINATRA DOCTRINE
+            text: "The reforms are working slowly, but we are bleeding money. We spend billions propping up communist governments in Eastern Europe. They are unpopular and demand our tanks to stay in power.<br><br>Do we continue to enforce the <strong>Brezhnev Doctrine</strong> (military intervention)?",
+            btnA: "Yes. We cannot lose our buffer zone. Send tanks if they rebel.",
+            btnB: "No. Cut the funding. Let them do it 'Their Way' (Sinatra Doctrine).",
+            correct: 'B',
+            feedbackA: "You go bankrupt. The West isolates you. The Soviet Union implodes violently.",
+            feedbackB: "Historic Choice! You announce the 'Sinatra Doctrine'. You tell Eastern European leaders: 'We will no longer send troops to save you.' They are on their own.",
+            nextDate: "YEAR: 1989 (JUNE)"
+        },
+        3: { // 1989 POLAND & HUNGARY
+            text: "The consequences are immediate. Without the threat of Soviet tanks, <strong>Poland</strong>'s Solidarity union has won the election. <strong>Hungary</strong> has cut the barbed wire fence on the Austrian border.<br><br>Hardliners in Moscow are furious. What do you do?",
+            btnA: "Intervene! Send the Red Army to Warsaw and Budapest.",
+            btnB: "Do nothing. Accept the results.",
+            correct: 'B',
+            feedbackA: "You trigger a bloodbath. Western aid stops. Your reforms fail.",
+            feedbackB: "You stand by. Poland becomes the first non-communist government in the bloc. Hungary opens the Iron Curtain. The world watches in shock.",
+            nextDate: "YEAR: 1989 (NOVEMBER)",
+            mapUpdate: ['poland', 'hungary']
+        },
+        4: { // 1989 BERLIN WALL
+            text: "<strong>CRITICAL EVENT:</strong> Encouraged by Poland and Hungary, East Germans are protesting. They are marching on the <strong>Berlin Wall</strong>. The guards are asking for orders to shoot.<br><br>The world holds its breath.",
+            btnA: "Order the guards to shoot. Defend the Wall.",
+            btnB: "Stand down. Let the Wall fall.",
+            correct: 'B',
+            feedbackA: "A Tiananmen-style massacre in Europe. Global war is imminent.",
+            feedbackB: "November 9, 1989. The Wall falls. Crowds surge through. The Cold War is effectively over.",
+            nextDate: "YEAR: 1991",
+            mapUpdate: ['east-germany', 'czech', 'romania'] 
+        },
+        5: { // 1991 THE COUP
+            text: "The empire is gone. Now, chaos hits home. The Baltic states (Lithuania) demand independence. Hardline communists (Yazov, Pavlov) launch a <strong>Coup</strong> against you to stop the breakup.<br><br>Boris Yeltsin is rallying people on top of a tank in Moscow.",
+            btnA: "Join the Coup plotters to save the USSR.",
+            btnB: "Resign and dissolve the Soviet Union.",
+            correct: 'B',
+            feedbackA: "The people reject you. The coup fails violently.",
+            feedbackB: "It is over. On Dec 25, 1991, you resign. The Soviet Union ceases to exist.",
+            nextDate: "GAME OVER",
+            mapUpdate: [] // USSR dissolves
+        }
+    };
+
+    function playTurn(stage, choice) {
+        const scenario = scenarios[stage];
+        
+        // Display feedback
+        els.feedback.style.display = 'block';
+        
+        if (choice === scenario.correct) {
+            // Success Path
+            els.feedback.innerHTML = scenario.feedbackB;
+            els.feedback.style.borderColor = "#ffd700"; // Gold
+            
+            // Update Map Visuals if needed
+            if (scenario.mapUpdate) {
+                scenario.mapUpdate.forEach(countryId => {
+                    const countryEl = document.getElementById(countryId);
+                    if (countryEl) { // Added a safety check to ensure element exists
+                        countryEl.classList.add('free');
+                        countryEl.innerText = "FREE";
+                    }
+                });
+            }
+
+            // Update Policy Display
+            if (stage === 2) els.policy.innerText = "SINATRA DOCTRINE";
+            
+            // Trigger next stage
+            setTimeout(() => {
+                if (scenarios[stage + 1]) {
+                    loadStage(stage + 1);
+                } else {
+                    endGame();
+                }
+            }, 4000);
+
+        } else {
+            // Failure Path - Go back to previous stage to force correct historical choice
+            els.feedback.innerHTML = scenario.feedbackA + "<br><br><strong>(History deviated. Try Option B to proceed to the historical path.)</strong>";
+            els.feedback.style.borderColor = "red";
+            
+            // Re-enable the buttons using the new, complete scenario data
+            els.options.innerHTML = `
+                <button onclick="playTurn(${stage}, 'A')">A: ${scenario.btnA}</button>
+                <button onclick="playTurn(${stage}, 'B')">B: ${scenario.btnB}</button>
+            `;
+        }
+    }
+
+    function loadStage(stage) {
+        state.stage = stage;
+        const data = scenarios[stage];
+        
+        els.date.innerText = data.nextDate || els.date.innerText;
+        els.text.innerHTML = data.text;
+        els.feedback.style.display = 'none';
+        
+        els.options.innerHTML = `
+            <button onclick="playTurn(${stage}, 'A')">A: ${data.btnA}</button>
+            <button onclick="playTurn(${stage}, 'B')">B: ${data.btnB}</button>
+        `;
+    }
+
+    function endGame() {
+        document.querySelector('.ussr-block').style.opacity = '0.3';
+        document.querySelector('.ussr-block').innerText = "RUSSIA";
+        
+        els.text.innerHTML = `
+            <h2>HISTORY LESSON COMPLETE</h2>
+            <p>You have navigated the collapse of the Soviet Union. Key takeaways from your textbook:</p>
+            <ul>
+                <li><strong>Economic Stagnation:</strong> Inefficiency and military spending forced reforms.</li>
+                <li><strong>"Sinatra Doctrine":</strong> Gorbachev allowed Eastern Europe to go "their way" without intervention.</li>
+                <li><strong>The Domino Effect:</strong> Poland and Hungary led the way, followed by the fall of the Berlin Wall in 1989.</li>
+                <li><strong>Internal Collapse:</strong> The loss of empire and the 1991 Coup led to the USSR's total dissolution.</li>
+            </ul>
+            <button onclick="location.reload()">Replay Simulation</button>
+        `;
+        els.options.innerHTML = '';
+        els.date.innerText = "YEAR: 1991 (DECEMBER 25)";
+        els.tension.innerText = "COLD WAR ENDED";
+        els.tension.style.color = "#4da6ff";
+    }
+
+    // Initialize Stage 1 buttons, which are correctly defined in the HTML
+</script>
+
+</body>
+</html>

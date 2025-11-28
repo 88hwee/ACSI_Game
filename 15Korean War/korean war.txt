@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Operation: 38th Parallel (Enhanced)</title>
+    <style>
+        :root {
+            --bg-color: #1a1a1a;
+            --text-color: #e0e0e0;
+            --accent-red: #d32f2f; /* North Korea/China Red */
+            --accent-blue: #1976d2; /* UN/South Korea Blue */
+            --terminal-green: #00e676;
+            --warning-yellow: #ffeb3b;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Courier New', Courier, monospace;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: #252525;
+            padding: 30px;
+            border: 2px solid #444;
+            box-shadow: 0 0 20px rgba(0,0,0,0.7);
+        }
+
+        h1 {
+            text-transform: uppercase;
+            border-bottom: 2px dashed var(--text-color);
+            padding-bottom: 10px;
+            text-align: center;
+            color: var(--terminal-green);
+            font-size: 1.5em;
+        }
+
+        /* INTEL CARDS */
+        .intel-card {
+            background: #333;
+            padding: 15px;
+            border-left: 4px solid var(--warning-yellow);
+            margin-bottom: 15px;
+            font-size: 0.85em;
+        }
+
+        /* WAR METER */
+        .war-meter-container {
+            height: 40px;
+            background: #333;
+            margin: 30px 0;
+            border: 2px solid #555;
+            position: relative;
+            display: flex;
+        }
+
+        .north-control {
+            background-color: var(--accent-red);
+            height: 100%;
+            transition: width 1.5s cubic-bezier(0.4, 0.0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: white;
+            font-weight: bold;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .south-control {
+            background-color: var(--accent-blue);
+            height: 100%;
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+            color: white;
+            font-weight: bold;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
+        .marker-38 {
+            position: absolute;
+            left: 50%;
+            top: -10px;
+            bottom: -10px;
+            width: 2px;
+            background: white;
+            border-left: 2px dashed black;
+            z-index: 10;
+        }
+        
+        .marker-label {
+            position: absolute;
+            left: 50%;
+            top: -30px;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: var(--warning-yellow);
+            background: #1a1a1a;
+            padding: 2px 5px;
+        }
+
+        .scenario-box {
+            border: 1px solid var(--terminal-green);
+            padding: 25px;
+            background: #111;
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        button {
+            background: #222;
+            color: white;
+            border: 1px solid var(--terminal-green);
+            padding: 15px;
+            font-family: inherit;
+            cursor: pointer;
+            font-size: 0.9em;
+            transition: all 0.2s;
+        }
+
+        button:hover {
+            background: var(--terminal-green);
+            color: black;
+            font-weight: bold;
+        }
+
+        button:disabled {
+            border-color: #555;
+            color: #555;
+            cursor: not-allowed;
+            background: #111;
+        }
+
+        .feedback {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #1a2f1a;
+            border: 1px solid var(--terminal-green);
+            color: #b3ffb3;
+            display: none;
+        }
+
+        .leader-portrait {
+            font-size: 0.8em;
+            color: #aaa;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #444;
+            padding-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="status-bar" style="display:flex; justify-content:space-between; margin-bottom:10px; font-size:0.8em; color:#888;">
+        <span id="date-display">DATE: JUNE 25, 1950</span>
+        <span>CONFIDENTIAL: UN SECURITY COUNCIL</span>
+    </div>
+
+    <h1>Operation: 38th Parallel</h1>
+
+    <div class="intel-card">
+        <div class="leader-portrait">
+            <strong>INTELLIGENCE BRIEFING:</strong><br>
+            <strong>NORTH:</strong> Kim Il Sung (Supported by Stalin/USSR)<br>
+            <strong>SOUTH:</strong> Syngman Rhee (Supported by US/UN)
+        </div>
+        <div id="intel-text">
+            Tensions are high. Both leaders want to reunify Korea under their own rule. Border clashes are frequent.
+        </div>
+    </div>
+
+    <div style="position: relative; margin: 40px 0;">
+        <span class="marker-label">38TH PARALLEL (BORDER)</span>
+        <div class="war-meter-container">
+            <div id="north-bar" class="north-control" style="width: 50%;">NORTH (KPA)</div>
+            <div class="marker-38"></div>
+            <div class="south-control">SOUTH (ROK/UN)</div>
+        </div>
+    </div>
+
+    <div class="scenario-box">
+        <div id="narrative-text" style="line-height: 1.6;">
+            <strong>URGENT:</strong> North Korean forces (KPA) have crossed the 38th Parallel! They are Soviet-trained and heavily armed.<br><br>
+            President Truman believes this is a challenge from the Communist Bloc. He wants the United Nations (UN) to act.<br><br>
+            <strong>DECISION POINT:</strong> The UN can only act if the Security Council votes "Yes." The USSR (Russia) has "Veto Power" and can block any war.
+        </div>
+        
+        <div id="feedback-text" class="feedback"></div>
+
+        <div class="options" id="button-container">
+            <button onclick="makeChoice(1, 'A')">OPTION A: Wait for the USSR to attend the meeting.</button>
+            <button onclick="makeChoice(1, 'B')">OPTION B: Vote immediately while USSR is boycotting.</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const northBar = document.getElementById('north-bar');
+    const narrative = document.getElementById('narrative-text');
+    const feedback = document.getElementById('feedback-text');
+    const buttons = document.getElementById('button-container');
+    const dateDisplay = document.getElementById('date-display');
+    const intelText = document.getElementById('intel-text');
+
+    const scenarios = {
+        1: { // THE INVASION
+            outcomeA: "FAILURE. The USSR returns, uses their VETO, and blocks the UN. South Korea is overrun.",
+            outcomeB: "SUCCESS. The USSR was boycotting the UN (protesting China's seat). Without their Veto, the resolution passes!",
+            lesson: "HISTORICAL FACT: The UN voted to intervene only because the Soviet Union boycotted the meeting."
+        },
+        2: { // PUSAN PERIMETER
+            date: "SEPTEMBER 1950",
+            mapState: "90%",
+            intel: "We are losing. The North has pushed us to the 'Pusan Perimeter'—a tiny corner in the Southeast.",
+            text: "General Douglas MacArthur has a risky plan. Instead of reinforcing the line, he wants to launch a surprise amphibious attack behind enemy lines at **Inchon**.",
+            btnA: "Too risky. Reinforce Pusan.",
+            btnB: "Launch Operation Chromite (Inchon Landing).",
+            outcomeA: "The North Korean supply lines remain strong. Attrition bleeds us dry.",
+            outcomeB: "BRILLIANT. We caught them by surprise. We recaptured Seoul and cut the North's supply lines.",
+            lesson: "HISTORICAL FACT: The Inchon landing (Sep 1950) turned the tide of the war overnight."
+        },
+        3: { // THE YALU RIVER / CHINA
+            date: "OCTOBER 1950",
+            mapState: "5%",
+            intel: "VICTORY? We have pushed the North Koreans back across the 38th Parallel.",
+            text: "The South is saved. But MacArthur wants to keep going. He wants to 'Rollback' Communism and take the whole country up to the Yalu River (China's border).<br><br>China warns: 'If you cross the 38th, we will enter the war.'",
+            btnA: "Stop at the 38th Parallel (Containment).",
+            btnB: "Push to the Yalu River (Rollback).",
+            outcomeA: "A wise choice? Perhaps. But in 1950, the US felt confident enough to try to unite the whole country.",
+            outcomeB: "TRAP TRIGGERED. 200,000 Chinese troops ('Volunteers') cross the Yalu river. We are overwhelmed.",
+            lesson: "HISTORICAL FACT: China felt threatened by US troops on their border and entered the war, pushing UN forces back."
+        },
+        4: { // STALEMATE
+            date: "JULY 1953",
+            mapState: "50%",
+            intel: "STALEMATE. For 2 years, we have fought over the same hills with little movement.",
+            text: "President Eisenhower is now in charge. Stalin has died. Both sides are exhausted. A ceasefire is on the table, but Syngman Rhee (South) wants to keep fighting for total unity.",
+            btnA: "Sign the Armistice (Ceasefire).",
+            btnB: "Demand a Peace Treaty.",
+            outcomeA: "The fighting stops. A Demilitarized Zone (DMZ) is created.",
+            outcomeB: "The North refuses a treaty. The war drags on indefinitely.",
+            lesson: "HISTORICAL FACT: No peace treaty was ever signed. The war technically never ended."
+        }
+    };
+
+    function makeChoice(currentStage, option) {
+        // 1. Handle Logic & Feedback for current stage
+        let outcome = "";
+        let lesson = "";
+        let nextStage = currentStage + 1;
+        
+        // STAGE 1: UN VOTE
+        if (currentStage === 1) {
+            if(option === 'A') {
+                feedback.style.background = "#2f1a1a"; // Red tint
+                feedback.innerHTML = `<strong>${scenarios[1].outcomeA}</strong><br><br><em>The simulation corrects your history...</em>`;
+                option = 'B'; // Force them to the correct path for the game to continue
+            } else {
+                feedback.style.background = "#1a2f1a"; // Green tint
+                feedback.innerHTML = `<strong>${scenarios[1].outcomeB}</strong><br><br><span style="color:#00e676">${scenarios[1].lesson}</span>`;
+            }
+        }
+        
+        // STAGE 2: INCHON
+        else if (currentStage === 2) {
+            outcome = (option === 'A') ? scenarios[2].outcomeA : scenarios[2].outcomeB;
+            lesson = scenarios[2].lesson;
+            feedback.innerHTML = `<strong>COMMANDER'S LOG:</strong> ${outcome}<br><br><span style="color:#00e676">${lesson}</span>`;
+        }
+
+        // STAGE 3: YALU / CHINA
+        else if (currentStage === 3) {
+            outcome = (option === 'A') ? scenarios[3].outcomeA : scenarios[3].outcomeB;
+            lesson = scenarios[3].lesson;
+            feedback.innerHTML = `<strong>COMMANDER'S LOG:</strong> ${outcome}<br><br><span style="color:#00e676">${lesson}</span>`;
+        }
+
+        // STAGE 4: END GAME
+        else if (currentStage === 4) {
+            endGame();
+            return;
+        }
+
+        // 2. Show Feedback
+        feedback.style.display = 'block';
+        buttons.innerHTML = '<button disabled>PROCESSING NEW INTEL...</button>';
+
+        // 3. Transition to Next Stage
+        setTimeout(() => {
+            if (scenarios[nextStage]) {
+                updateStage(nextStage);
+            }
+        }, 4500);
+    }
+
+    function updateStage(stageNum) {
+        const data = scenarios[stageNum];
+        
+        // Visual updates
+        northBar.style.width = data.mapState;
+        dateDisplay.innerText = "DATE: " + data.date;
+        intelText.innerText = data.intel;
+        narrative.innerHTML = data.text;
+        
+        // Reset UI
+        feedback.style.display = 'none';
+        buttons.innerHTML = `
+            <button onclick="makeChoice(${stageNum}, 'A')">A: ${data.btnA}</button>
+            <button onclick="makeChoice(${stageNum}, 'B')">B: ${data.btnB}</button>
+        `;
+    }
+
+    function endGame() {
+        northBar.style.width = "50%"; // Reset to middle
+        document.querySelector('.marker-label').innerText = "DMZ (MILITARY DEMARCATION LINE)";
+        
+        narrative.innerHTML = `
+            <h2 style="color:white; text-align:center;">SIMULATION ENDED</h2>
+            <p><strong>FINAL STATUS:</strong> The 38th Parallel (DMZ).</p>
+            <p>You have just experienced the Korean War (1950-1953). Key takeaways:</p>
+            <ul style="font-size:0.9em; line-height:1.5;">
+                <li><strong>The Proxy War:</strong> The US supported Syngman Rhee; The USSR/China supported Kim Il Sung[cite: 68].</li>
+                <li><strong>The Seesaw:</strong> The war moved from the 38th, down to Pusan, up to the Yalu, and back to the 38th[cite: 56, 59].</li>
+                <li><strong>Unfinished Business:</strong> An armistice was signed in 1953, but no peace treaty. Technically, the war is still on.</li>
+            </ul>
+            <p style="text-align:center; margin-top:30px;"><button onclick="location.reload()">RESTART MISSION</button></p>
+        `;
+        buttons.innerHTML = "";
+        feedback.style.display = 'none';
+    }
+
+    // Initialize Stage 2 pre-load data (Stage 1 is hardcoded in HTML)
+    // Wait for user to click first button
+</script>
+
+</body>
+</html>
