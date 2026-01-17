@@ -1,0 +1,679 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pac-Man – British Malaya Fruits</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(circle at top, #001b3a, #000814);
+      color: #fff;
+      text-align: center;
+    }
+    h1 {
+      margin: 10px 0 4px 0;
+    }
+    #hud {
+      margin-bottom: 4px;
+      font-size: 14px;
+    }
+    #hud span {
+      font-weight: bold;
+    }
+    #hint {
+      font-size: 13px;
+      opacity: 0.9;
+      margin-bottom: 6px;
+    }
+    #gameWrapper {
+      display: inline-block;
+      margin-top: 4px;
+      border: 4px solid #00bcd4;
+      box-shadow: 0 0 18px rgba(0, 188, 212, 0.6);
+    }
+    #gameCanvas {
+      display: block;
+      background: #000;
+    }
+    #status {
+      margin-top: 6px;
+      font-size: 13px;
+      min-height: 18px;
+    }
+
+    /* Quiz overlay */
+    #quizOverlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99;
+    }
+    #quizBox {
+      background: #1e1e1e;
+      border-radius: 12px;
+      border: 2px solid #ffeb3b;
+      padding: 14px 18px;
+      width: 90%;
+      max-width: 650px;
+      text-align: left;
+      box-shadow: 0 0 18px rgba(0,0,0,0.8);
+    }
+    #quizBox h2 {
+      margin-top: 0;
+      margin-bottom: 8px;
+      color: #ffeb3b;
+    }
+    #quizQ {
+      margin-bottom: 10px;
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    #quizAnswers {
+      margin-bottom: 8px;
+    }
+    .quizAnswer {
+      display: block;
+      width: 100%;
+      margin: 4px 0;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #555;
+      background: #333;
+      color: #fff;
+      cursor: pointer;
+      text-align: left;
+      font-size: 14px;
+    }
+    .quizAnswer:hover {
+      background: #444;
+    }
+    #quizFeedback {
+      font-size: 13px;
+      min-height: 16px;
+    }
+
+    @media (max-width: 600px) {
+      #quizQ {
+        font-size: 13px;
+      }
+      .quizAnswer {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Pac-Man – British Malaya Fruits</h1>
+  <div id="hud">
+    Dots eaten: <span id="dotsCount">0</span> |
+    Fruits eaten: <span id="fruitsCount">0</span>/<span id="fruitsTotal">0</span> |
+    Questions correct: <span id="correctCount">0</span>/<span id="totalQuestions">?</span>
+  </div>
+  <div id="hint">
+    Use <b>↑ ↓ ← →</b> to move Pac-Man one step.<br>
+    Yellow dots = points. Pink fruits = <b>question</b>. Eat a fruit → answer a British Malaya MCQ to continue.
+  </div>
+
+  <div id="gameWrapper">
+    <canvas id="gameCanvas"></canvas>
+  </div>
+
+  <p id="status"></p>
+
+  <!-- Quiz overlay -->
+  <div id="quizOverlay">
+    <div id="quizBox">
+      <h2>Quiz Time!</h2>
+      <div id="quizQ"></div>
+      <div id="quizAnswers">
+        <button class="quizAnswer" data-index="0"></button>
+        <button class="quizAnswer" data-index="1"></button>
+        <button class="quizAnswer" data-index="2"></button>
+        <button class="quizAnswer" data-index="3"></button>
+      </div>
+      <div id="quizFeedback"></div>
+    </div>
+  </div>
+
+  <!-- Optional sounds (put hit.mp3 and miss.mp3 in same folder) -->
+  <audio id="hitSound" src="hit.mp3"></audio>
+  <audio id="missSound" src="miss.mp3"></audio>
+
+  <script>
+    // ========== 50 MCQs on British Malaya ==========
+    const questions = [
+      { q: "In which year did the British establish their first trading base in Penang?",
+        options: ["1819","1786","1824","1874"], answer: 1 },
+      { q: "Who founded the British settlement on the island of Singapore in 1819?",
+        options: ["Francis Light","James Birch","Stamford Raffles","Andrew Clarke"], answer: 2 },
+      { q: "The 'Straits Settlements' formed in 1826 included which territories?",
+        options: ["Perak, Selangor, and Pahang","Melaka, Penang, and Singapore","Johor, Kedah, and Perlis","Sarawak and Sabah"], answer: 1 },
+      { q: "Which 1824 treaty demarcated the British and Dutch spheres of influence in the Malay Archipelago?",
+        options: ["Pangkor Treaty","Anglo-Dutch Treaty","Treaty of Bangkok","Federation Agreement"], answer: 1 },
+      { q: "Which infrastructure development opened in 1885 to connect Taiping to Port Weld?",
+        options: ["The Suez Canal","The first telegraph line","The first official railway line","The first deep-water port"], answer: 2 },
+      { q: "The opening of which canal in 1869 drastically reduced travel time between Britain and Malaya?",
+        options: ["Panama Canal","Suez Canal","Kiel Canal","Corinth Canal"], answer: 1 },
+      { q: "What was the primary function of a British Resident under the Residential System?",
+        options: [
+          "To serve as the religious head of the state",
+          "To advise the Sultan on all matters except religion and custom",
+          "To manage only the Chinese secret societies",
+          "To collect taxes for the Dutch government"
+        ], answer: 1 },
+      { q: "Which two raw materials were the main drivers of the Malayan colonial economy?",
+        options: ["Gold and Pepper","Coffee and Sugar","Tin and Rubber","Timber and Tobacco"], answer: 2 },
+      { q: "Who was the first Prime Minister of the independent Federation of Malaya?",
+        options: ["Dato Onn Jaafar","Tunku Abdul Rahman","Sultan Idris","Tun Tan Cheng Lock"], answer: 1 },
+      { q: "In the pre-colonial Melaka Sultanate, who was the centre of political power?",
+        options: ["The Bendahara","The Sultan","The Temenggong","The Laksamana"], answer: 1 },
+      { q: "Which term refers to a ruler’s influence and aura of political legitimacy in early Malay states?",
+        options: ["Resident","Daulat","Kerajaan","Merdeka"], answer: 1 },
+      { q: "The Larut Wars were primarily fought between which two Chinese secret societies?",
+        options: ["Triads and Boxers","Ghee Hins and Hai Sans","UMNO and MCA","Cantonese and Hokkiens"], answer: 1 },
+      { q: "Which state was the first to accept a British Resident following the 1874 Pangkor Treaty?",
+        options: ["Selangor","Perak","Pahang","Johor"], answer: 1 },
+      { q: "What was the nickname given to the Malay College Kuala Kangsar (MCKK)?",
+        options: ["The Cambridge of Asia","The Eton of the East","The Oxford of the Orient","The Harvard of the Tropics"], answer: 1 },
+      { q: "In which year did the Federation of Malaya achieve independence?",
+        options: ["1941","1948","1957","1963"], answer: 2 },
+
+      { q: "Which of the following was NOT a member of the Federated Malay States (FMS) formed in 1896?",
+        options: ["Perak","Selangor","Johor","Pahang"], answer: 2 },
+      { q: "Why did the British intervene in Perak in the 1870s?",
+        options: [
+          "To stop the Dutch from invading Singapore",
+          "To resolve succession disputes and end anarchy in tin-mining areas",
+          "To introduce Christianity to the Malay rulers",
+          "To establish a new capital in Pasir Salak"
+        ], answer: 1 },
+      { q: "Which economic event between 1873 and 1896 caused Britain to lose dominance to countries like Germany?",
+        options: ["The Great Fire of London","The Long Depression","The Napoleonic Wars","The Opium Wars"], answer: 1 },
+      { q: "What was the 'rotation system' in the Perak Sultanate?",
+        options: [
+          "A system where Residents changed every year",
+          "A system where the throne rotated among descendants of three royal families",
+          "A system of moving the capital every decade",
+          "A method of crop rotation for rubber and tin"
+        ], answer: 1 },
+      { q: "Why was J.W.W. Birch unpopular with the Malay chiefs?",
+        options: [
+          "He refused to collect taxes",
+          "He showed no respect for local customs and attempted to abolish debt-slavery abruptly",
+          "He moved the Sultan's palace to Singapore",
+          "He was an inexperienced administrator with no background in civil service"
+        ], answer: 1 },
+      { q: "Which British Resident was considered more successful due to his familiarity with Malay customs and language?",
+        options: ["James Birch","Hugh Low","Frank Swettenham","Andrew Clarke"], answer: 1 },
+      { q: "What was the primary goal of the Malay Land Reservation Enactment of 1913?",
+        options: [
+          "To give Malays control over the tin industry",
+          "To prevent Malay land from being sold to non-Malays, though it also discouraged them from planting rubber",
+          "To build the Malay College Kuala Kangsar",
+          "To grant land to British agency houses"
+        ], answer: 1 },
+      { q: "The 'plural society' in Malaya was characterized by:",
+        options: [
+          "Total assimilation of all races into Malay culture",
+          "Different ethnic groups living side by side but maintaining separate communities and identities",
+          "A society where everyone spoke only English",
+          "A society with only two ethnic groups: British and Malay"
+        ], answer: 1 },
+      { q: "Which group was largely employed as 'indentured labourers' in rubber plantations?",
+        options: ["Chinese merchants","Indian immigrants","European expatriates","Japanese traders"], answer: 1 },
+      { q: "The Sultan Idris Training College (SITC) was established in 1922 primarily to:",
+        options: [
+          "Train the Malay elite for the civil service",
+          "Train Malay teachers in gardening, agriculture, and teaching",
+          "Educate Chinese and Indian merchants",
+          "Act as a secret headquarters for the British military"
+        ], answer: 1 },
+      { q: "What was the 'scorched earth' policy practiced by the British during WWII?",
+        options: [
+          "Burning rubber trees to increase their value",
+          "Destroying capital and infrastructure (like tin mines) to prevent Japanese use",
+          "A farming technique used in the east coast states",
+          "A method of tax collection introduced by Birch"
+        ], answer: 1 },
+      { q: "The University of Malaya was inaugurated in 1949 through the merger of which two institutions?",
+        options: [
+          "SITC and MCKK",
+          "King Edward VII Medical College and Raffles College",
+          "Singapore Free School and Penang Free School",
+          "London School of Economics and Oxford"
+        ], answer: 1 },
+      { q: "Which policy, implemented after 1969, aimed to reduce poverty and restructure the economy to eliminate ethnic identification with occupation?",
+        options: ["Stevenson Plan","New Economic Policy (NEP)","Malay Union Plan","The Emergency Act"], answer: 1 },
+      { q: "What was the 'dollar arsenal of the Empire'?",
+        options: [
+          "A secret bank in London",
+          "A nickname for Malaya due to its high export earnings in hard currency (US dollars)",
+          "A type of weapon used by the British in the Perak War",
+          "The name of the first British trading base in Singapore"
+        ], answer: 1 },
+      { q: "What did the 1874 Pangkor Treaty specifically state regarding the Resident's advice?",
+        options: [
+          "It could be ignored by the Sultan at any time",
+          "It must be asked and acted upon on all questions except religion and custom",
+          "It only applied to the Chinese tin miners",
+          "It was only for matters of foreign defense"
+        ], answer: 1 },
+      { q: "Which organization was formed in 1946 to oppose the British-proposed Malayan Union?",
+        options: ["MCA","MIC","UMNO","DAP"], answer: 2 },
+      { q: "The 'Emergency' (1948–1960) was a conflict primarily involving:",
+        options: [
+          "British vs. Dutch",
+          "The British vs. Communist insurgents",
+          "Malay Sultans vs. Chinese miners",
+          "Indian labourers vs. plantation owners"
+        ], answer: 1 },
+      { q: "Which ethnic group historically dominated the tin-mining industry before the British introduced capital-intensive dredging?",
+        options: ["Malays","Chinese","Indians","Thais"], answer: 1 },
+      { q: "What was the main driver of the high Return on Investment (ROI) in Malaya between 1889 and 1969?",
+        options: [
+          "Low taxes for the local population",
+          "Substantial rise in global market prices for rubber and tin",
+          "The abolition of all labor unions",
+          "The discovery of oil in the 1890s"
+        ], answer: 1 },
+      { q: "The first rubber plantations in the 1890s were established by which local businessman?",
+        options: ["Yap Ah Loy","Tan Chay Yan","Eu Tong Sen","Thamboosamy Pillai"], answer: 1 },
+
+      { q: "According to study results, what was the average total real ROI for all sectors in British Malaya (1889–1969)?",
+        options: ["4.2%","5.1%","7.9%","15.0%"], answer: 2 },
+      { q: "In the 1950s, the tin mining sector experienced a 'fabulous' ROI of approximately:",
+        options: ["9.7%","22.4%","55.1% per year","100.0%"], answer: 2 },
+      { q: "Which factor is cited as a reason why Malaya's decolonization did NOT disrupt investor returns?",
+        options: [
+          "The British military stayed until 1980",
+          "The independent government chose not to nationalize foreign assets until the 1970s",
+          "All tin mines were sold to the Dutch",
+          "The ROI was actually negative during the transition"
+        ], answer: 1 },
+      { q: "What was the 'consumption standard' disparity in early 20th-century Malaya?",
+        options: [
+          "Europeans spent twice as much as Malays",
+          "The elite (1% of population) expenditure was more than 21 times the Malayan average",
+          "Everyone had equal consumption standards",
+          "Chinese laborers spent more than Europeans"
+        ], answer: 1 },
+      { q: "Who was the British education officer who encouraged Malay nationalism at the SITC?",
+        options: ["R.O. Winstedt","O.T. Dussek","Alexander Carr-Saunders","Frank Swettenham"], answer: 1 },
+      { q: "What was the role of the 'Malay Translation Bureau' at the SITC?",
+        options: [
+          "To translate English laws into Dutch",
+          "To write and translate educational books and literature, often fostering nationalist ideas",
+          "To translate Chinese mining contracts",
+          "To serve as a spy agency for the Japanese"
+        ], answer: 1 },
+      { q: "In 1951, what percentage of Malaya's export earnings were repatriated to London to cover the British balance-of-payments deficit?",
+        options: ["25%","50%","83%","95%"], answer: 2 },
+      { q: "The 'three big pushes' in the modern Malayan economy were identified by which scholar?",
+        options: ["Nicholas White","Chong-Yah Lim","Jomo K.S.","Sultan Nazrin Shah"], answer: 1 },
+      { q: "Which act of 1917 was intended to discourage Malays from switching from rice to the more profitable rubber planting?",
+        options: [
+          "Malay Land Reservation Enactment",
+          "Rice Land Enactment",
+          "Rubber Regulation Agreement",
+          "Currency Board Act"
+        ], answer: 1 },
+      { q: "What was the 'comprador' system's impact on the Malayan economy?",
+        options: [
+          "It allowed Malays to control all exports",
+          "It passed outrageous British administrative costs to the Malayan economy, causing it to operate at a loss",
+          "It standardized the currency to the Spanish Dollar",
+          "It was a system of education for elite women"
+        ], answer: 1 },
+      { q: "By 1957, what percentage of plantation agriculture and mining share capital was owned by foreign interests?",
+        options: ["25% and 30%","50% and 50%","73% and 75%","90% and 95%"], answer: 2 },
+      { q: "Why did the British favor the 'Unfederated Malay States' (UFMS) model in some regions?",
+        options: [
+          "They wanted to give those states total independence",
+          "It allowed for indirect rule with British Advisors while maintaining the appearance of Sultan-led governance",
+          "They were only interested in the gold deposits there",
+          "Those states were too poor to justify a Resident"
+        ], answer: 1 },
+      { q: "Which organization, established in 1905, was the first to seek qualified medical professionals for the non-European community?",
+        options: [
+          "Raffles College",
+          "King Edward VII Medical School",
+          "Sultan Idris Training College",
+          "The Malay Translation Bureau"
+        ], answer: 1 },
+      { q: "The ROI in Malayan rubber plantations between 1919 and 1958 was 4.1%, whereas the Netherlands Indies plantations ROI was:",
+        options: ["5.1%","10.0%","-3.6%","0%"], answer: 2 },
+      { q: "Which 1903 institutional change forced the Malayan administration to fix the value of the Straits dollar?",
+        options: [
+          "Revaluation of the Spanish silver dollar",
+          "Adoption of a gold exchange standard",
+          "The start of the Larut Wars",
+          "The signing of the Pangkor Treaty"
+        ], answer: 1 }
+    ];
+
+    // ====== QUIZ UI SETUP ======
+    const dotsCountSpan = document.getElementById("dotsCount");
+    const fruitsCountSpan = document.getElementById("fruitsCount");
+    const fruitsTotalSpan = document.getElementById("fruitsTotal");
+    const correctCountSpan = document.getElementById("correctCount");
+    const totalQuestionsSpan = document.getElementById("totalQuestions");
+    const statusP = document.getElementById("status");
+
+    const quizOverlay = document.getElementById("quizOverlay");
+    const quizQ = document.getElementById("quizQ");
+    const quizButtons = Array.from(document.querySelectorAll(".quizAnswer"));
+    const quizFeedback = document.getElementById("quizFeedback");
+    const hitSound = document.getElementById("hitSound");
+    const missSound = document.getElementById("missSound");
+
+    totalQuestionsSpan.textContent = questions.length;
+
+    let quizActive = false;
+    let questionIndex = 0;
+    let questionsAnswered = 0;
+    let currentCorrectIndex = 0;
+
+    function triggerQuestion() {
+      if (quizActive) return;
+      quizActive = true;
+      const q = questions[questionIndex];
+      quizQ.textContent = "Q" + (questionsAnswered + 1) + ". " + q.q;
+      quizButtons.forEach((btn, idx) => {
+        btn.textContent = String.fromCharCode(65 + idx) + ") " + q.options[idx];
+      });
+      currentCorrectIndex = q.answer;
+      quizFeedback.textContent = "Choose the best answer.";
+      quizOverlay.style.display = "flex";
+    }
+
+    quizButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        const idx = parseInt(btn.getAttribute("data-index"), 10);
+        if (idx === currentCorrectIndex) {
+          quizFeedback.textContent = "Correct! Keep running!";
+          if (hitSound) {
+            hitSound.currentTime = 0;
+            hitSound.play().catch(() => {});
+          }
+          questionsAnswered++;
+          correctCountSpan.textContent = questionsAnswered;
+          questionIndex = (questionIndex + 1) % questions.length;
+          setTimeout(() => {
+            quizOverlay.style.display = "none";
+            quizActive = false;
+            statusP.textContent = "";
+          }, 700);
+        } else {
+          quizFeedback.textContent = "Not quite. Try again.";
+          if (missSound) {
+            missSound.currentTime = 0;
+            missSound.play().catch(() => {});
+          }
+        }
+      });
+    });
+
+    // ====== PAC-MAN GAME SETUP ======
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const tileSize = 24;
+
+    // 19 x 13 simple maze
+    const mapRows = [
+      "XXXXXXXXXXXXXXXXXXX",
+      "X.........X.......X",
+      "X.XXXX.XXX.X.XXXX.X",
+      "X.................X",
+      "X.XXXX.X.XXX.X.XX.X",
+      "X......X....X.....X",
+      "XXXXX..XXXXX.XXXXXX",
+      "X........P........X",
+      "XXXXX.XXXXXX.XXXXXX",
+      "X......X....X.....X",
+      "X.XXXX.X.XXX.X.XX.X",
+      "X........G........X",
+      "XXXXXXXXXXXXXXXXXXX"
+    ];
+
+    const ROWS = mapRows.length;
+    const COLS = mapRows[0].length;
+
+    canvas.width = COLS * tileSize;
+    canvas.height = ROWS * tileSize;
+
+    const walls = [];
+    const dots = [];
+    const fruits = [];
+
+    let pac = { tx: 1, ty: 1 };
+    let pacStart = { tx: 1, ty: 1 };
+    let ghost = { tx: COLS - 2, ty: ROWS - 2 };
+    let ghostStart = { tx: COLS - 2, ty: ROWS - 2 };
+
+    for (let y = 0; y < ROWS; y++) {
+      walls[y] = [];
+      dots[y] = [];
+      fruits[y] = [];
+      for (let x = 0; x < COLS; x++) {
+        const ch = mapRows[y][x];
+        if (ch === "X") {
+          walls[y][x] = true;
+          dots[y][x] = false;
+        } else {
+          walls[y][x] = false;
+          dots[y][x] = (ch === ".");
+        }
+        fruits[y][x] = false;
+        if (ch === "P") {
+          pac.tx = x;
+          pac.ty = y;
+          pacStart = { tx: x, ty: y };
+        }
+        if (ch === "G") {
+          ghost.tx = x;
+          ghost.ty = y;
+          ghostStart = { tx: x, ty: y };
+        }
+      }
+    }
+
+    // Manually scatter some fruits on open tiles (no wall)
+    const fruitPositions = [
+      {x: 3, y: 1},
+      {x: 10, y: 1},
+      {x: 15, y: 1},
+      {x: 4, y: 3},
+      {x: 12, y: 3},
+      {x: 6, y: 5},
+      {x: 14, y: 9},
+      {x: 4, y: 11},
+      {x: 10, y: 11},
+      {x: 15, y: 11}
+    ].filter(p => !walls[p.y][p.x]);
+
+    fruitPositions.forEach(p => {
+      fruits[p.y][p.x] = true;
+    });
+
+    const totalFruits = fruitPositions.length;
+    fruitsTotalSpan.textContent = totalFruits;
+
+    function canMoveTo(tx, ty) {
+      return (
+        tx >= 0 && tx < COLS &&
+        ty >= 0 && ty < ROWS &&
+        !walls[ty][tx]
+      );
+    }
+
+    let dotsEaten = 0;
+    let fruitsEaten = 0;
+
+    function eatDotIfAny() {
+      if (dots[pac.ty][pac.tx]) {
+        dots[pac.ty][pac.tx] = false;
+        dotsEaten++;
+        dotsCountSpan.textContent = dotsEaten;
+      }
+    }
+
+    function eatFruitIfAny() {
+      if (fruits[pac.ty][pac.tx]) {
+        fruits[pac.ty][pac.tx] = false;
+        fruitsEaten++;
+        fruitsCountSpan.textContent = fruitsEaten;
+        statusP.textContent = "You ate a fruit → time for a question!";
+        if (!quizActive) {
+          triggerQuestion();
+        }
+      }
+    }
+
+    function handleGhostCatch() {
+      statusP.textContent = "Caught by the 'colonial inspector'! Respawning at start.";
+      pac.tx = pacStart.tx;
+      pac.ty = pacStart.ty;
+      ghost.tx = ghostStart.tx;
+      ghost.ty = ghostStart.ty;
+    }
+
+    let ghostDir = { dx: 0, dy: 0 };
+
+    function chooseGhostDir() {
+      const options = [
+        { dx: 1, dy: 0 },
+        { dx: -1, dy: 0 },
+        { dx: 0, dy: 1 },
+        { dx: 0, dy: -1 }
+      ];
+      const candidates = options.filter(d => {
+        const nx = ghost.tx + d.dx;
+        const ny = ghost.ty + d.dy;
+        if (!canMoveTo(nx, ny)) return false;
+        // avoid instant reverse
+        if (ghostDir && (nx === ghost.tx - ghostDir.dx && ny === ghost.ty - ghostDir.dy)) {
+          return false;
+        }
+        return true;
+      });
+      if (candidates.length === 0) return { dx: 0, dy: 0 };
+      return candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    function moveGhostOneStep() {
+      // Simple slow ghost: 50% chance to move when Pac-Man moves
+      if (Math.random() < 0.5) return;
+      const dir = chooseGhostDir();
+      const gx = ghost.tx + dir.dx;
+      const gy = ghost.ty + dir.dy;
+      if (canMoveTo(gx, gy)) {
+        ghost.tx = gx;
+        ghost.ty = gy;
+        ghostDir = dir;
+      }
+    }
+
+    function checkGhostCollision() {
+      if (pac.tx === ghost.tx && pac.ty === ghost.ty) {
+        handleGhostCatch();
+      }
+    }
+
+    function tryMovePac(dx, dy) {
+      const nx = pac.tx + dx;
+      const ny = pac.ty + dy;
+      if (!canMoveTo(nx, ny)) return;
+      pac.tx = nx;
+      pac.ty = ny;
+      eatDotIfAny();
+      eatFruitIfAny();
+      moveGhostOneStep();
+      checkGhostCollision();
+    }
+
+    // Keyboard: one step per arrow-key press
+    document.addEventListener("keydown", (e) => {
+      if (["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.code)) {
+        e.preventDefault();
+      }
+      if (quizActive) return;
+
+      if (e.code === "ArrowLeft") {
+        tryMovePac(-1, 0);
+      } else if (e.code === "ArrowRight") {
+        tryMovePac(1, 0);
+      } else if (e.code === "ArrowUp") {
+        tryMovePac(0, -1);
+      } else if (e.code === "ArrowDown") {
+        tryMovePac(0, 1);
+      }
+    });
+
+    function draw() {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      for (let y = 0; y < ROWS; y++) {
+        for (let x = 0; x < COLS; x++) {
+          const px = x * tileSize;
+          const py = y * tileSize;
+          if (walls[y][x]) {
+            ctx.fillStyle = "#001a4d";
+            ctx.fillRect(px, py, tileSize, tileSize);
+            ctx.strokeStyle = "#00bcd4";
+            ctx.strokeRect(px + 1, py + 1, tileSize - 2, tileSize - 2);
+          } else {
+            ctx.fillStyle = "#002b22";
+            ctx.fillRect(px, py, tileSize, tileSize);
+            if (dots[y][x]) {
+              ctx.fillStyle = "#ffeb3b";
+              ctx.beginPath();
+              ctx.arc(px + tileSize / 2, py + tileSize / 2, 3, 0, Math.PI * 2);
+              ctx.fill();
+            }
+            if (fruits[y][x]) {
+              ctx.fillStyle = "#ff4081"; // pink fruit
+              ctx.beginPath();
+              ctx.arc(px + tileSize / 2, py + tileSize / 2, 6, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.fillStyle = "#ffd1e8"; // little highlight
+              ctx.beginPath();
+              ctx.arc(px + tileSize / 2 - 2, py + tileSize / 2 - 2, 2, 0, Math.PI * 2);
+              ctx.fill();
+            }
+          }
+        }
+      }
+
+      // Pac-Man
+      const pacX = pac.tx * tileSize + tileSize / 2;
+      const pacY = pac.ty * tileSize + tileSize / 2;
+      ctx.fillStyle = "#ffeb3b";
+      ctx.beginPath();
+      ctx.arc(pacX, pacY, tileSize / 2 - 3, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Ghost
+      const ghostX = ghost.tx * tileSize + tileSize / 2;
+      const ghostY = ghost.ty * tileSize + tileSize / 2;
+      ctx.fillStyle = "#ff5252";
+      ctx.beginPath();
+      ctx.arc(ghostX, ghostY, tileSize / 2 - 3, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function gameLoop() {
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    requestAnimationFrame(gameLoop);
+  </script>
+</body>
+</html>
+
