@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Typing Drill — Home Row First (Aim 40–80 WPM)</title>
+  <style>
+    :root{
+      --bg:#020617; --panel:#0f172a; --ink:#e5e7eb; --muted:#94a3b8;
+      --ok:#22c55e; --bad:#ef4444; --accent:#7c3aed; --border:#334155; --box:#0b1222;
+      --warn:#f59e0b;
+    }
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:Consolas,monospace}
+    header{
+      padding:14px 16px;background:rgba(15,23,42,.92);border-bottom:2px solid var(--accent);
+      display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap
+    }
+    h1{margin:0;font-size:18px}
+    .pill{border:1px solid var(--border);border-radius:999px;padding:6px 10px;color:var(--muted);font-size:12px}
+    main{max-width:980px;margin:0 auto;padding:16px;display:grid;gap:14px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:16px;padding:14px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    select, button{
+      background:var(--box);color:var(--ink);border:1px solid var(--border);
+      border-radius:12px;padding:10px 12px;font-size:14px
+    }
+    button{cursor:pointer;font-weight:900}
+    button.primary{border-color:transparent;background:linear-gradient(90deg,#d946ef,#7c3aed)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .meta{color:var(--muted);font-size:12px;line-height:1.4}
+
+    /* target + typed */
+    .targetWrap{margin-top:10px;background:var(--box);border:1px solid var(--border);border-radius:14px;padding:12px}
+    .label{color:var(--muted);font-size:11px;margin-bottom:6px;letter-spacing:.4px}
+    .targetLine{
+      font-size:22px;line-height:1.6;white-space:pre-wrap;word-break:break-word;
+      padding:10px;border-radius:12px;border:1px solid var(--border);background:#070d1a;
+    }
+    .done{color:var(--ok)}
+    .next{background:rgba(124,58,237,.25);border-radius:6px;padding:0 2px;box-shadow:0 0 0 2px rgba(124,58,237,.15) inset}
+    .rest{color:rgba(229,231,235,.55)}
+    .next.flash{
+      animation: flash 0.22s ease-in-out 0s 3;
+      box-shadow:0 0 0 2px rgba(239,68,68,.28) inset, 0 0 18px rgba(239,68,68,.18);
+      background:rgba(239,68,68,.18);
+    }
+    @keyframes flash{
+      0%,100%{transform:scale(1)}
+      50%{transform:scale(1.06)}
+    }
+
+    textarea{
+      width:100%;min-height:64px;resize:none;
+      padding:14px 14px;font-size:22px;border-radius:14px;
+      border:2px solid var(--border);background:var(--box);color:var(--ink);outline:none
+    }
+    textarea:focus{border-color:#f43f5e;box-shadow:0 0 0 4px rgba(244,63,94,.12)}
+
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:12px}
+    .stat{background:var(--box);border:1px solid var(--border);border-radius:14px;padding:10px}
+    .stat .label{color:var(--muted);font-size:11px}
+    .stat .val{font-size:22px;font-weight:900;margin-top:4px}
+
+    .toast{
+      position:fixed;left:50%;top:14px;transform:translateX(-50%);
+      background:var(--box);border:1px solid var(--border);border-radius:14px;
+      padding:10px 12px;font-weight:900;display:none;z-index:50;
+      box-shadow:0 10px 30px rgba(0,0,0,.35)
+    }
+    .toast.ok{border-color:rgba(34,197,94,.7)}
+    .toast.bad{border-color:rgba(239,68,68,.8)}
+    .toast.warn{border-color:rgba(245,158,11,.85)}
+
+    .homeRow{
+      display:flex;gap:8px;flex-wrap:wrap;align-items:center
+    }
+    .kbd{
+      display:inline-flex;align-items:center;justify-content:center;
+      min-width:34px;height:34px;border-radius:10px;border:1px solid var(--border);
+      background:var(--box);font-weight:900
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Typing Drill — Home Row First</h1>
+  <div class="controls">
+    <span class="pill">Aim: 40–80 WPM</span>
+    <span class="pill">Wrong key = stop (must correct)</span>
+    <span class="pill">Enter = next line</span>
+  </div>
+</header>
+
+<main>
+  <div class="card">
+    <div class="row">
+      <div class="controls">
+        <label class="meta"><b>Drill</b></label>
+        <select id="drill">
+          <option value="asdf" selected>asdf ×100 (Left home row)</option>
+          <option value="jkl;">jkl; ×100 (Right home row)</option>
+          <option value="gh">gh ×100 (Middle reach)</option>
+          <option value="upperLeft">qwert ×100 (Upper left)</option>
+          <option value="upperRight">yuiop ×100 (Upper right)</option>
+          <option value="lowerLeft">zxcv ×100 (Lower left)</option>
+          <option value="lowerRight">bnm, ×100 (Lower right)</option>
+          <option value="full">Full sequence (all drills)</option>
+        </select>
+
+        <label class="meta" style="margin-left:4px"><b>Timer</b></label>
+        <select id="mins">
+          <option value="1">1 min</option>
+          <option value="2">2 min</option>
+          <option value="3" selected>3 min</option>
+          <option value="5">5 min</option>
+        </select>
+      </div>
+
+      <div class="controls">
+        <button id="startBtn" class="primary">Start</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <div class="row">
+        <div class="meta">
+          <b>Fingers must start here:</b>
+        </div>
+        <div class="homeRow">
+          <span class="meta">Left:</span>
+          <span class="kbd">A</span><span class="kbd">S</span><span class="kbd">D</span><span class="kbd">F</span>
+          <span class="meta" style="margin-left:10px">Right:</span>
+          <span class="kbd">J</span><span class="kbd">K</span><span class="kbd">L</span><span class="kbd">;</span>
+        </div>
+      </div>
+      <div class="meta" style="margin-top:6px">
+        Type the pattern exactly. If you hit a wrong key, you’ll get a warning and the cursor will NOT move until you type the correct key.
+      </div>
+    </div>
+
+    <div class="targetWrap" style="margin-top:12px">
+      <div class="label">WHAT TO TYPE (current line)</div>
+      <div class="targetLine" id="targetLine"></div>
+
+      <div class="label" style="margin-top:12px">YOU ARE TYPING</div>
+      <textarea id="typedBox" placeholder="Click Start, then type here…" disabled></textarea>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><div class="label">Time left</div><div class="val" id="time">03:00</div></div>
+      <div class="stat"><div class="label">Accuracy</div><div class="val" id="acc">100%</div></div>
+      <div class="stat"><div class="label">WPM</div><div class="val" id="wpm">0</div></div>
+      <div class="stat"><div class="label">Progress</div><div class="val" id="prog">0%</div></div>
+    </div>
+
+    <div class="meta" style="margin-top:10px">
+      WPM = (correct characters ÷ 5) ÷ minutes. End goal: <b>40–80 WPM</b>.
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="meta">
+      Coach messages: <b>Sigma!</b> (good control), <b>You are cooked</b> (slow down & fix your accuracy). 🙂
+    </div>
+  </div>
+</main>
+
+<div id="toast" class="toast"></div>
+
+<script>
+  // build 100 reps as 10 lines x 10 reps (no numbers shown)
+  function buildBlock(token, repsPerLine=10, lines=10){
+    const line = Array.from({length:repsPerLine}, () => token).join(" ");
+    return Array.from({length:lines}, () => line).join("\n");
+  }
+
+  const blocks = {
+    asdf:       buildBlock("asdf"),
+    "jkl;":     buildBlock("jkl;"),
+    gh:         buildBlock("gh"),
+    upperLeft:  buildBlock("qwert"),
+    upperRight: buildBlock("yuiop"),
+    lowerLeft:  buildBlock("zxcv"),
+    lowerRight: buildBlock("bnm,")
+  };
+
+  function buildFull(){
+    return [
+      "asdf ×100", blocks.asdf,
+      "jkl; ×100", blocks["jkl;"],
+      "gh ×100", blocks.gh,
+      "qwert ×100", blocks.upperLeft,
+      "yuiop ×100", blocks.upperRight,
+      "zxcv ×100", blocks.lowerLeft,
+      "bnm, ×100", blocks.lowerRight
+    ].join("\n\n");
+  }
+
+  const drillEl = document.getElementById("drill");
+  const minsEl = document.getElementById("mins");
+  const startBtn = document.getElementById("startBtn");
+  const resetBtn = document.getElementById("resetBtn");
+  const typedBox = document.getElementById("typedBox");
+
+  const targetLineEl = document.getElementById("targetLine");
+  const timeEl = document.getElementById("time");
+  const accEl = document.getElementById("acc");
+  const wpmEl = document.getElementById("wpm");
+  const progEl = document.getElementById("prog");
+  const toast = document.getElementById("toast");
+
+  const praise = ["Sigma!", "Nice!", "Good control!", "Amazing!", "Clean typing!"];
+  const warn = ["Oops!", "Aiyoh!!", "Be careful.", "You are cooked — slow down.", "Where are your fingers?"];
+
+  function rand(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function showToast(text, kind="ok"){
+    toast.textContent = text;
+    toast.className = "toast " + kind;
+    toast.style.display = "block";
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(()=> toast.style.display="none", 950);
+  }
+
+  function formatTime(s){
+    const m = Math.floor(s/60), r = s%60;
+    return String(m).padStart(2,"0")+":"+String(r).padStart(2,"0");
+  }
+
+  // state
+  let fullText = "";
+  let lines = [];
+  let lineIndex = 0;       // which line (within current drill)
+  let cursor = 0;          // position within current line
+  let started = false;
+
+  // scoring
+  let typedTotal = 0;
+  let correctTotal = 0;
+  let mistakeStreak = 0;
+  let correctStreak = 0;
+
+  // timer
+  let totalSeconds = 180;
+  let secondsLeft = 180;
+  let timer = null;
+
+  function buildTarget(){
+    const key = drillEl.value;
+    fullText = (key === "full") ? buildFull() : blocks[key];
+    // Use only the pattern lines, but keep headings for full mode.
+    // Split into lines; we will practice line-by-line. Empty lines are "section breaks".
+    lines = fullText.split("\n");
+    lineIndex = findNextPracticeLine(0);
+    cursor = 0;
+    typedBox.value = "";
+    renderLine();
+  }
+
+  function isPracticeLine(s){
+    // Practice lines contain letters/punctuation patterns; headings include × or words.
+    // We'll treat lines that contain spaces AND lowercase patterns as practice lines,
+    // and headings/blank lines as non-practice.
+    if(!s.trim()) return false;
+    // If it contains the multiplication symbol or is a short label, skip as practice target.
+    if(s.includes("×")) return false;
+    // Must contain at least one of the drill letters
+    return /[asdfjkl;qwertyuiopzxcvbnm,gh]/i.test(s);
+  }
+
+  function findNextPracticeLine(from){
+    for(let i=from;i<lines.length;i++){
+      if(isPracticeLine(lines[i])) return i;
+    }
+    return -1;
+  }
+
+  function currentLine(){
+    if(lineIndex < 0 || lineIndex >= lines.length) return "";
+    return lines[lineIndex];
+  }
+
+  function escapeHtml(str){
+    return str.replace(/[&<>"']/g, m => ({
+      "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
+    }[m]));
+  }
+
+  function renderLine(flashNext=false){
+    const line = currentLine();
+    const done = escapeHtml(line.slice(0, cursor));
+    const next = escapeHtml(line.slice(cursor, cursor+1));
+    const rest = escapeHtml(line.slice(cursor+1));
+
+    targetLineEl.innerHTML =
+      `<span class="done">${done}</span>` +
+      `<span class="next ${flashNext ? "flash" : ""}">${next || ""}</span>` +
+      `<span class="rest">${rest}</span>`;
+
+    const totalChars = lines.filter(isPracticeLine).join("\n").length || 1;
+    const progressed = lines.slice(0, lineIndex).join("\n").length + cursor;
+    const progress = Math.max(0, Math.min(100, Math.floor((progressed/totalChars)*100)));
+    progEl.textContent = progress + "%";
+
+    const acc = typedTotal === 0 ? 100 : Math.round((correctTotal/typedTotal)*100);
+    accEl.textContent = acc + "%";
+
+    const mins = totalSeconds/60;
+    const wpm = Math.max(0, Math.round((correctTotal/5)/mins));
+    wpmEl.textContent = wpm;
+
+    timeEl.textContent = formatTime(secondsLeft);
+  }
+
+  function start(){
+    if(started) return;
+    started = true;
+    typedBox.disabled = false;
+    typedBox.focus();
+    startBtn.textContent = "Pause";
+
+    totalSeconds = parseInt(minsEl.value, 10) * 60;
+    if(secondsLeft > totalSeconds) secondsLeft = totalSeconds;
+    renderLine(false);
+
+    timer = setInterval(()=>{
+      secondsLeft--;
+      renderLine(false);
+      if(secondsLeft <= 0) stop(true);
+    }, 1000);
+  }
+
+  function stop(finished){
+    started = false;
+    clearInterval(timer);
+    timer = null;
+    typedBox.disabled = true;
+    startBtn.textContent = "Start";
+
+    if(finished){
+      const mins = totalSeconds/60;
+      const wpm = Math.max(0, Math.round((correctTotal/5)/mins));
+      if(wpm < 40) showToast("Aim for 40–80 WPM. Slow and clean first.", "warn");
+      else if(wpm <= 80) showToast("Good pace! Stay in the 40–80 zone.", "ok");
+      else showToast("Fast! Now keep it accurate.", "ok");
+    }
+  }
+
+  function resetAll(){
+    stop(false);
+    typedTotal = 0;
+    correctTotal = 0;
+    mistakeStreak = 0;
+    correctStreak = 0;
+    totalSeconds = parseInt(minsEl.value, 10) * 60;
+    secondsLeft = totalSeconds;
+    buildTarget();
+    renderLine(false);
+  }
+
+  // Controls
+  startBtn.addEventListener("click", () => started ? stop(false) : start());
+  resetBtn.addEventListener("click", resetAll);
+  drillEl.addEventListener("change", resetAll);
+  minsEl.addEventListener("change", () => {
+    totalSeconds = parseInt(minsEl.value, 10) * 60;
+    secondsLeft = totalSeconds;
+    renderLine(false);
+  });
+
+  // Typing logic:
+  // - Wrong key does NOT advance.
+  // - Student sees typed characters in textarea.
+  // - Enter: only allowed when line is completed (otherwise remind).
+  typedBox.addEventListener("keydown", (e) => {
+    if(!started) return;
+
+    const line = currentLine();
+    if(!line){
+      stop(true);
+      return;
+    }
+
+    // Prevent Tab messing layout
+    if(e.key === "Tab"){ e.preventDefault(); return; }
+
+    // Allow Backspace: remove typed char only if cursor > 0 (and move cursor back)
+    if(e.key === "Backspace"){
+      e.preventDefault();
+      if(cursor > 0){
+        cursor--;
+        typedBox.value = typedBox.value.slice(0, -1);
+        // No scoring changes (simple classroom drill)
+        renderLine(false);
+      } else {
+        showToast("Fingers back to ASDF / JKL;.", "warn");
+      }
+      return;
+    }
+
+    // Enter: move to next practice line ONLY if current line complete
+    if(e.key === "Enter"){
+      e.preventDefault();
+      if(cursor < line.length){
+        showToast("Finish the line first. Be careful.", "warn");
+        renderLine(true);
+        return;
+      }
+      // move to next practice line
+      const next = findNextPracticeLine(lineIndex + 1);
+      if(next === -1){
+        stop(true);
+        return;
+      }
+      lineIndex = next;
+      cursor = 0;
+      typedBox.value = ""; // new line typing box clears
+      showToast(rand(praise), "ok");
+      renderLine(false);
+      return;
+    }
+
+    // Only printable single characters
+    if(e.key.length !== 1) return;
+
+    // Compare typed key to expected next char
+    e.preventDefault();
+    const expected = line[cursor];
+
+    typedTotal++;
+
+    if(e.key === expected){
+      // correct
+      correctTotal++;
+      correctStreak++;
+      mistakeStreak = 0;
+
+      typedBox.value += e.key;
+      cursor++;
+
+      if(correctStreak > 0 && correctStreak % 20 === 0){
+        showToast(rand(praise), "ok");
+      }
+      // if line finished, prompt enter
+      if(cursor >= line.length){
+        showToast("Line complete. Press Enter.", "ok");
+      }
+      renderLine(false);
+    } else {
+      // wrong: do NOT advance cursor
+      mistakeStreak++;
+      correctStreak = 0;
+
+      // coaching messages (sigma / cooked)
+      if(mistakeStreak >= 5){
+        showToast("You are cooked — slow down & fix accuracy.", "bad");
+      } else {
+        showToast(rand(warn), "warn");
+      }
+
+      // flash expected next key so they see what to type
+      renderLine(true);
+    }
+  });
+
+  // Init
+  totalSeconds = parseInt(minsEl.value, 10) * 60;
+  secondsLeft = totalSeconds;
+  buildTarget();
+  renderLine(false);
+</script>
+
+</body>
+</html>
