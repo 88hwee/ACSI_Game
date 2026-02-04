@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Sim: Life Under the Reich</title>
+    <style>
+        :root {
+            --nazi-red: #8b0000;
+            --nazi-black: #000000;
+            --nazi-gold: #d4af37;
+            --paper: #fdf5e6;
+            --shadow: #2c2c2c;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #1a1a1a;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        #sim-container {
+            width: 95%;
+            max-width: 950px;
+            background-color: var(--paper);
+            border: 10px double #444;
+            padding: 30px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .screen { display: none; }
+        .active { display: block; animation: fadeIn 0.8s; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        h1, h2 { text-align: center; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-top: 0; }
+
+        /* Character Grid */
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .char-card {
+            background: #eee;
+            border: 2px solid #888;
+            padding: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .char-card:hover { background: #ddd; border-color: var(--nazi-red); transform: scale(1.02); }
+        .char-card h3 { margin: 5px 0; font-size: 1rem; color: var(--nazi-red); }
+        .char-card p { font-size: 0.8rem; color: #555; line-height: 1.2; }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            background: #222;
+            color: white;
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 4px;
+        }
+
+        .stat-bar { background: #444; width: 100px; height: 12px; display: inline-block; border: 1px solid #666; vertical-align: middle; }
+        .stat-fill { background: var(--nazi-red); height: 100%; transition: width 0.5s; }
+        .loyalty-fill { background: var(--nazi-gold) !important; }
+
+        /* Event Area */
+        .game-layout { display: flex; gap: 20px; flex-wrap: wrap; }
+        .event-main { flex: 2; min-width: 300px; }
+        .visual-sidebar { flex: 1; min-width: 250px; background: #eee; border: 1px solid #ccc; padding: 15px; }
+
+        .event-box { margin: 15px 0; border: 1px solid #000; padding: 20px; background: rgba(255,255,255,0.7); line-height: 1.6; }
+        .date-stamp { font-weight: bold; font-family: monospace; color: var(--nazi-red); display: block; margin-bottom: 5px; }
+        
+        /* Visual Source Box */
+        .source-content { font-family: 'Times New Roman', serif; font-size: 0.9rem; }
+        .source-image-placeholder { 
+            width: 100%; 
+            aspect-ratio: 3/4; 
+            background: #333; 
+            color: #eee; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            text-align: center; 
+            padding: 10px; 
+            box-sizing: border-box;
+            border: 2px solid #000;
+            margin-bottom: 10px;
+            font-style: italic;
+            font-size: 0.8rem;
+        }
+
+        .poem-block {
+            background: #fff;
+            padding: 15px;
+            border-left: 4px solid var(--nazi-red);
+            font-style: italic;
+            margin: 10px 0;
+            font-size: 0.85rem;
+            line-height: 1.4;
+        }
+
+        .choice-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #000;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: 0.2s;
+        }
+
+        .choice-btn:hover { background: var(--nazi-red); padding-left: 20px; }
+        .feedback-box { padding: 15px; background: #e8f4fd; border: 1px solid #3498db; margin: 15px 0; font-style: italic; }
+
+        .death { color: var(--nazi-red); font-weight: bold; font-size: 2.5rem; text-shadow: 2px 2px #000; }
+        .survival-report { background: #fff; padding: 25px; border: 2px solid #000; margin-top: 20px; text-align: left; }
+        .historical-truth { margin-top: 20px; font-size: 0.9rem; color: #444; border-top: 1px solid #ccc; padding-top: 10px; }
+        
+        /* Reflection Section */
+        .reflection-block {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fdf5e6;
+            border: 2px solid var(--nazi-red);
+            line-height: 1.6;
+        }
+        .bonhoeffer-section {
+            display: flex;
+            gap: 20px;
+            margin-top: 20px;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #000;
+            align-items: center;
+        }
+        .bonhoeffer-text { font-size: 0.85rem; font-style: italic; }
+        .bonhoeffer-quote { font-weight: bold; color: var(--nazi-red); display: block; margin-bottom: 10px; }
+    </style>
+</head>
+<body>
+
+<div id="sim-container">
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1>Life Under the Reich</h1>
+        <p style="text-align:center;">Experience history from 1933 to 1945. Select an identity to begin.</p>
+        <div class="char-grid" id="character-list"></div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+        <div class="hud">
+            <div><span id="char-name">---</span></div>
+            <div>Survival: <div class="stat-bar"><div id="survival-fill" class="stat-fill" style="width: 100%"></div></div></div>
+            <div>Loyalty: <div class="stat-bar"><div id="loyalty-fill" class="stat-fill loyalty-fill" style="width: 50%"></div></div></div>
+        </div>
+        
+        <div class="game-layout">
+            <div class="event-main">
+                <h2 id="event-title">Event Title</h2>
+                <div id="event-desc" class="event-box">Description goes here...</div>
+                <div id="choices-container"></div>
+            </div>
+            <div class="visual-sidebar">
+                <div id="source-display">
+                    <strong>HISTORICAL SOURCE:</strong>
+                    <div id="source-img" class="source-image-placeholder">Image Description</div>
+                    <div id="source-text" class="source-content">Context text goes here...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen">
+        <h1>The Final Reckoning</h1>
+        <div id="end-body"></div>
+        <br>
+        <button onclick="location.reload()" class="choice-btn" style="text-align:center;">Return to 1933 (Restart Simulation)</button>
+    </div>
+</div>
+
+<script>
+    const characters = [
+        { id: 'worker', name: 'Factory Worker', desc: 'A Berlin industrial laborer.', survival: 80, loyalty: 30, traits: ['industrial', 'male'] },
+        { id: 'ss', name: 'SS Officer', desc: 'A committed party member.', survival: 95, loyalty: 100, traits: ['nazi', 'officer', 'male'] },
+        { id: 'jew', name: 'Jewish Citizen', desc: 'A shopkeeper with a family.', survival: 40, loyalty: 0, traits: ['persecuted'] },
+        { id: 'youth', name: 'Young Man', desc: '15 years old, eager to belong.', survival: 75, loyalty: 50, traits: ['youth', 'male'] },
+        { id: 'lady', name: 'Young Lady', desc: '16 years old, BDM member.', survival: 80, loyalty: 55, traits: ['youth', 'female'] },
+        { id: 'housewife', name: 'Housewife', desc: 'Focusing on "Kinder, Küche, Kirche".', survival: 85, loyalty: 60, traits: ['female'] },
+        { id: 'soldier', name: 'Wermacht Soldier', desc: 'Enlisted in the regular army.', survival: 65, loyalty: 70, traits: ['military', 'male'] },
+        { id: 'sa', name: 'SA Brownshirt', desc: 'A party loyalist.', survival: 50, loyalty: 90, traits: ['nazi', 'sa', 'male'] },
+        { id: 'deaf', name: 'Deaf Man', desc: 'Living with a hereditary condition.', survival: 35, loyalty: 20, traits: ['persecuted', 'disabled'] }
+    ];
+
+    const events = [
+        {
+            title: "Coordination: The Trade Union Ban",
+            date: "May 2, 1933",
+            desc: "The Nazi Party has banned all trade unions. They are replaced by the German Labour Front (DAF).",
+            sourceImg: "[Poster: A giant fist clutching a gear. Text: 'Wir bauen auf!']",
+            sourceText: "The DAF replaced your union, taking away your right to strike in exchange for 'Job Security'.",
+            choices: [
+                { text: "Join the DAF and show enthusiasm.", impact: { loyalty: 20, survival: 5 }, req: '!persecuted', feedback: "You are marked as a reliable citizen." },
+                { text: "Protest the loss of rights.", impact: { survival: -40, loyalty: -30 }, feedback: "The Gestapo identifies you as a threat." }
+            ]
+        },
+        {
+            title: "The Nuremberg Laws",
+            date: "1935",
+            desc: "Laws are passed stripping Jews of citizenship and forbidding marriage between Jews and non-Jews.",
+            sourceImg: "[Chart: Nazi racial charts showing classification levels.]",
+            sourceText: "These laws made discrimination part of the legal code of Germany.",
+            choices: [
+                { text: "Identify as an 'Aryan' and distance yourself from neighbors.", impact: { loyalty: 15, survival: 5 }, req: '!persecuted', feedback: "You chose safety over solidarity." },
+                { text: "Try to explain to your children why they can't go to the park.", impact: { survival: -25 }, req: 'persecuted', feedback: "The world is closing in." }
+            ]
+        },
+        {
+            title: "The Outbreak of War",
+            date: "Sept 1, 1939",
+            desc: "Germany invades Poland. Total war begins. Food rationing is introduced and conscription is absolute.",
+            sourceImg: "[Poster: A soldier with a steel helmet. Text: 'One People, One Nation, One Leader'.]",
+            sourceText: "Total war meant every resource, including every human life, belonged to the state.",
+            choices: [
+                { text: "Enlist or support the war effort.", impact: { loyalty: 20, survival: -15 }, req: 'male', feedback: "You head to the front. The odds are against you." },
+                { text: "Work overtime in the munitions factory.", impact: { loyalty: 15, survival: -10 }, req: 'industrial', feedback: "Long hours and Allied bombs await you." },
+                { text: "Wait for the inevitable knock on the door.", impact: { survival: -40 }, req: 'persecuted', feedback: "Ghettos are being established. Deportations have begun." }
+            ]
+        },
+        {
+            title: "The Total War Economy",
+            date: "1943",
+            desc: "After the defeat at Stalingrad, Goebbels declares 'Total War'. Allied bombing raids happen nightly.",
+            sourceImg: "[Poster: A woman working a machine. Text: 'Womanpower for Victory!']",
+            sourceText: "Niemöller's poem 'First They Came' is now a haunting reality for anyone who remains.",
+            choices: [
+                { text: "Flee to the bunkers during the raids.", impact: { survival: 5 }, req: '!military', feedback: "The city above you is burning." },
+                { text: "Hold the line at the front.", impact: { survival: -30, loyalty: 10 }, req: 'military', feedback: "The retreat has begun. It is a slaughter." }
+            ]
+        },
+        {
+            title: "The Collapse",
+            date: "April 1945",
+            desc: "The Soviet Army is in Berlin. Hitler is dead in his bunker. The Reich has lasted only 12 years.",
+            sourceImg: "[Photo: The Soviet flag over the Reichstag ruins.]",
+            sourceText: "The 1000-Year Reich is over. The cost: 6 million Jews murdered and millions more dead in war.",
+            choices: [
+                { text: "Surrender and hope for mercy.", impact: { survival: 20 }, feedback: "The war is over. Now comes the reckoning." }
+            ]
+        }
+    ];
+
+    let player = null;
+    let currentEventIndex = 0;
+
+    function init() {
+        const list = document.getElementById('character-list');
+        characters.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'char-card';
+            card.innerHTML = `<h3>${char.name}</h3><p>${char.desc}</p>`;
+            card.onclick = () => selectCharacter(char);
+            list.appendChild(card);
+        });
+    }
+
+    function selectCharacter(char) {
+        player = { ...char };
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('game-screen').classList.add('active');
+        updateHUD();
+        showEvent();
+    }
+
+    function updateHUD() {
+        document.getElementById('char-name').innerText = player.name;
+        document.getElementById('survival-fill').style.width = player.survival + "%";
+        document.getElementById('loyalty-fill').style.width = player.loyalty + "%";
+        if(player.survival <= 0) endGame("DEATH", "History is a tragedy. You did not survive the era.");
+    }
+
+    function showEvent() {
+        if (currentEventIndex >= events.length) {
+            endGame("THE WAR ENDS", "The bells of liberation ring, but the silence in the cities is deafening.");
+            return;
+        }
+        const ev = events[currentEventIndex];
+        document.getElementById('event-title').innerText = ev.title;
+        document.getElementById('event-desc').innerHTML = `<span class="date-stamp">${ev.date}</span>${ev.desc}`;
+        document.getElementById('source-img').innerText = ev.sourceImg;
+        document.getElementById('source-text').innerHTML = ev.sourceText;
+        const container = document.getElementById('choices-container');
+        container.innerHTML = '';
+        ev.choices.forEach(choice => {
+            if (choice.req) {
+                const isNot = choice.req.startsWith('!');
+                const trait = isNot ? choice.req.substring(1) : choice.req;
+                const hasTrait = player.traits.includes(trait);
+                if ((!isNot && !hasTrait) || (isNot && hasTrait)) return;
+            }
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = choice.text;
+            btn.onclick = () => handleChoice(choice);
+            container.appendChild(btn);
+        });
+    }
+
+    function handleChoice(choice) {
+        player.survival += (choice.impact.survival || 0);
+        player.loyalty += (choice.impact.loyalty || 0);
+        player.survival = Math.max(0, Math.min(100, player.survival));
+        player.loyalty = Math.max(0, Math.min(100, player.loyalty));
+        const container = document.getElementById('choices-container');
+        container.innerHTML = `<div class="feedback-box"><strong>Outcome:</strong> ${choice.feedback}</div>
+        <button class="choice-btn" style="text-align:center; background:#222;" onclick="nextEvent()">Continue...</button>`;
+        updateHUD();
+    }
+
+    function nextEvent() {
+        currentEventIndex++;
+        showEvent();
+    }
+
+    function endGame(status, message) {
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('end-screen').classList.add('active');
+        const body = document.getElementById('end-body');
+        
+        let fate = "";
+        if (player.id === 'ss') {
+            fate = player.loyalty > 70 ? "You are arrested for war crimes and face the Nuremberg Trials." : "You disappear into the ruins, hiding your identity forever.";
+        } else if (player.id === 'jew') {
+            fate = player.survival > 30 ? "You survived the camps and migrate to a new land, carrying the memory of those lost." : "You are one of the 6 million. Your story ends in the darkness of the Final Solution.";
+        } else if (player.id === 'deaf') {
+            fate = "The T4 program targeted you. The state likely claimed your life.";
+        } else if (player.id === 'worker') {
+            fate = "Your home is rubble. You face years of rebuilding a divided Germany.";
+        } else if (player.id === 'soldier') {
+            fate = player.survival > 40 ? "You return home from a POW camp." : "You fell on the Eastern Front.";
+        } else {
+            fate = "You survive into the post-war era, left to wonder how it all happened.";
+        }
+
+        body.innerHTML = `
+            <div class="survival-report">
+                <h2 class="${status === 'DEATH' ? 'death' : ''}">${status}</h2>
+                <p>${message}</p>
+                <hr>
+                <p><strong>Final Fate:</strong> ${fate}</p>
+                <p><strong>Identity:</strong> ${player.name}</p>
+                
+                <div class="reflection-block">
+                    <strong>Reflections on the Human Choice:</strong>
+                    <p>Every person in this simulation—and in history—faced the same temptations: the temptation to choose safety over truth, comfort over justice, and silence over courage. It is easy to judge the past with the clarity of the present, but would you have truly done differently?</p>
+                    <p>To live life with courage is a choice that often carries the heaviest price. Sometimes, that price is death. But as history shows, a life lived in fear and complicity with evil carries a price of its own: the loss of the soul.</p>
+                </div>
+
+                <div class="bonhoeffer-section">
+                    <div>
+                        <span class="bonhoeffer-quote">"Silence in the face of evil is itself evil... Not to speak is to speak. Not to act is to act."</span>
+                        <div class="bonhoeffer-text">
+                            <strong>Dietrich Bonhoeffer (1906–1945):</strong> A German pastor and theologian who refused to remain silent. He joined the resistance against Hitler and was executed at Flossenbürg concentration camp just days before its liberation. He chose to resist evil unto death, demonstrating that even in the darkest regime, one can choose courage.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="historical-truth">
+                    <strong>The Real History:</strong> The Nazi regime caused the most destructive war in human history and the Holocaust. Their "1000-Year Reich" lasted only 12 years, but the scars remain forever.
+                </div>
+            </div>`;
+    }
+    init();
+</script>
+</body>
+</html>

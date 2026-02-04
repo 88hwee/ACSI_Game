@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Survival Sim: Life Under the Reich</title>
+    <style>
+        :root {
+            --nazi-red: #8b0000;
+            --nazi-black: #000000;
+            --nazi-gold: #d4af37;
+            --paper: #f4ecd8;
+            --ink: #1a1a1a;
+            --blood: #5e0000;
+        }
+
+        body {
+            font-family: 'Times New Roman', serif;
+            background-color: #1a1a1a;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow: hidden;
+        }
+
+        #sim-container {
+            width: 95%;
+            max-width: 1100px;
+            background-color: var(--paper);
+            border: 2px solid #333;
+            padding: 30px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+            position: relative;
+            overflow-y: auto;
+            max-height: 95vh;
+            background-image: radial-gradient(#dcd0b8 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        .screen { display: none; }
+        .active { display: block; animation: fadeIn 0.6s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        h1, h2 { text-align: center; text-transform: uppercase; letter-spacing: 2px; border-bottom: 2px solid #000; padding-bottom: 10px; margin-top: 0; font-variant: small-caps; }
+
+        .char-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .char-card {
+            background: #e8dfc9;
+            border: 1px solid #999;
+            padding: 15px;
+            cursor: pointer;
+            text-align: center;
+            transition: 0.3s;
+        }
+
+        .char-card:hover { background: #dcd0b8; border-color: var(--nazi-red); transform: scale(1.02); }
+        .char-card h3 { margin: 5px 0; font-size: 0.9rem; color: var(--nazi-red); }
+        .char-card p { font-size: 0.75rem; color: #555; line-height: 1.2; }
+
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            background: #222;
+            color: white;
+            padding: 12px 20px;
+            margin-bottom: 20px;
+            font-family: 'Courier New', Courier, monospace;
+            border: 1px solid #000;
+            position: sticky;
+            top: -30px;
+            z-index: 10;
+        }
+
+        .stat-bar { background: #444; width: 100px; height: 12px; display: inline-block; border: 1px solid #666; vertical-align: middle; position: relative; }
+        .stat-fill { background: var(--nazi-red); height: 100%; transition: width 0.5s ease-in-out; }
+        .loyalty-fill { background: var(--nazi-gold) !important; }
+
+        .game-layout { display: flex; gap: 25px; flex-wrap: wrap; }
+        .event-main { flex: 3; min-width: 350px; }
+        .visual-sidebar { flex: 2; min-width: 300px; background: #fffdf5; border: 1px solid #bba; padding: 15px; height: fit-content; }
+
+        .event-box { margin: 15px 0; border: 1px solid #000; padding: 20px; background: rgba(255,255,255,0.7); line-height: 1.6; border-left: 5px solid #333; }
+        .date-stamp { font-weight: bold; font-family: monospace; color: var(--nazi-red); display: block; margin-bottom: 5px; font-size: 1.1rem; }
+        
+        /* Inner Dialogue / Thinking Process */
+        .thought-bubble {
+            background: #fdf5e6;
+            border: 1px dashed #666;
+            padding: 15px;
+            margin: 15px 0;
+            font-style: italic;
+            font-size: 0.9rem;
+            color: #555;
+            position: relative;
+            animation: slideLeft 0.5s ease-out;
+        }
+        @keyframes slideLeft { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+        .thought-bubble::before { content: "Internal Dialogue:"; display: block; font-weight: bold; font-size: 0.7rem; text-transform: uppercase; margin-bottom: 5px; color: #888; }
+
+        .source-image-container { 
+            width: 100%; 
+            background: #fff; 
+            border: 1px solid #000;
+            margin-bottom: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .source-image-container svg { max-width: 100%; height: auto; display: block; }
+        
+        .source-caption {
+            font-size: 0.7rem;
+            color: #444;
+            padding: 8px;
+            font-style: italic;
+            text-align: center;
+            border-top: 1px solid #eee;
+            width: 100%;
+            background: #fafafa;
+        }
+
+        .choice-btn {
+            display: block;
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #000;
+            cursor: pointer;
+            text-align: left;
+            font-size: 0.95rem;
+            transition: 0.2s;
+            position: relative;
+        }
+
+        .choice-btn:hover { background: var(--nazi-red); padding-left: 20px; }
+        .choice-btn:hover::after { content: " →"; }
+        
+        .feedback-box { padding: 15px; background: #e8f4fd; border-left: 5px solid #3498db; margin: 15px 0; font-style: italic; }
+
+        .death { color: var(--nazi-red); font-weight: bold; font-size: 2.5rem; text-shadow: 2px 2px #000; }
+        .survival-report { background: #fff; padding: 25px; border: 2px solid #000; margin-top: 20px; text-align: left; }
+        
+        .reflection-block {
+            margin-top: 30px;
+            padding: 20px;
+            background: #fff;
+            border: 1px solid var(--nazi-red);
+            line-height: 1.6;
+        }
+        .bonhoeffer-section {
+            margin-top: 20px;
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #000;
+            border-left: 10px solid var(--nazi-red);
+        }
+        .bonhoeffer-quote { font-weight: bold; color: var(--nazi-red); display: block; margin-bottom: 10px; font-size: 1.1rem; }
+
+        .poem-block {
+            background: #222;
+            color: #ddd;
+            padding: 30px;
+            margin-top: 20px;
+            font-family: 'Times New Roman', serif;
+            line-height: 1.8;
+            border-radius: 4px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .poem-line {
+            display: block;
+            margin-bottom: 5px;
+        }
+        
+        .typewriter { overflow: hidden; white-space: nowrap; border-right: 2px solid var(--ink); animation: typing 2s steps(40, end), blink-caret .75s step-end infinite; }
+        @keyframes typing { from { width: 0 } to { width: 100% } }
+        @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--ink) } }
+    </style>
+</head>
+<body>
+
+<div id="sim-container">
+    <!-- START SCREEN -->
+    <div id="start-screen" class="screen active">
+        <h1>Life Under the Reich</h1>
+        <p style="text-align:center; font-style: italic;">"Whoever has the youth, has the future." — Select an identity to navigate the dark years of 1933–1945.</p>
+        <div class="char-grid" id="character-list"></div>
+    </div>
+
+    <!-- GAME SCREEN -->
+    <div id="game-screen" class="screen">
+        <div class="hud">
+            <div><span id="char-name">---</span></div>
+            <div>Health/Survival: <div class="stat-bar"><div id="survival-fill" class="stat-fill" style="width: 100%"></div></div></div>
+            <div>Political Loyalty: <div class="stat-bar"><div id="loyalty-fill" class="stat-fill loyalty-fill" style="width: 50%"></div></div></div>
+        </div>
+        
+        <div class="game-layout">
+            <div class="event-main">
+                <h2 id="event-title">Event Title</h2>
+                <div id="event-desc" class="event-box">Description...</div>
+                <div id="thought-container"></div>
+                <div id="choices-container"></div>
+            </div>
+            <div class="visual-sidebar">
+                <div id="source-display">
+                    <strong style="font-size: 0.75rem; color: #666; text-transform: uppercase;">Primary Archival Evidence:</strong>
+                    <div id="source-img-box" class="source-image-container"></div>
+                    <div id="source-text" class="source-content" style="font-size: 0.8rem; margin-top: 10px; line-height: 1.4;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="screen">
+        <h1>The Historical Ledger</h1>
+        <div id="end-body"></div>
+        <br>
+        <button onclick="location.reload()" class="choice-btn" style="text-align:center;">Begin a New History (Restart)</button>
+    </div>
+</div>
+
+<script>
+    const characters = [
+        { id: 'worker', name: 'Factory Worker', desc: 'A skilled metalworker in the Ruhr Valley industrial heartland.', survival: 80, loyalty: 30, traits: ['industrial', 'male'] },
+        { id: 'ss', name: 'SS Officer', desc: 'A fanatical member of the Black Corps, loyal to the leader.', survival: 95, loyalty: 100, traits: ['nazi', 'officer', 'male'] },
+        { id: 'jew', name: 'Jewish Citizen', desc: 'A Berlin veteran shopkeeper and family man.', survival: 40, loyalty: 0, traits: ['persecuted'] },
+        { id: 'youth', name: 'Young Man', desc: '15, seeking purpose in the Hitler Youth.', survival: 75, loyalty: 50, traits: ['youth', 'male'] },
+        { id: 'lady', name: 'Young Lady', desc: '16, training for BDM motherhood duties.', survival: 80, loyalty: 55, traits: ['youth', 'female'] },
+        { id: 'housewife', name: 'Housewife', desc: 'A mother striving to manage the domestic sphere.', survival: 85, loyalty: 60, traits: ['female'] },
+        { id: 'soldier', name: 'Wermacht Soldier', desc: 'A regular army infantry conscript.', survival: 65, loyalty: 70, traits: ['military', 'male'] },
+        { id: 'sa', name: 'SA Brownshirt', desc: 'An early party street fighter.', survival: 50, loyalty: 90, traits: ['nazi', 'sa', 'male'] },
+        { id: 'deaf', name: 'Deaf Man', desc: 'A carpenter with a hereditary condition.', survival: 35, loyalty: 20, traits: ['persecuted', 'disabled'] }
+    ];
+
+    const svgs = {
+        stab: `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="160" fill="white"/><path d="M10 120 L190 120 L150 140 L50 140 Z" fill="#777" stroke="#333"/><path d="M40 120 Q80 80 120 120" stroke="#000" fill="#555"/><path d="M140 30 Q160 20 180 50 L180 90 Q160 110 140 90 Z" fill="#ddd" stroke="#000"/><path d="M150 70 L130 90" stroke="#000" stroke-width="3"/><text x="100" y="155" font-size="10" text-anchor="middle" font-weight="bold">DOLCHSTOßLEGENDE</text></svg>`,
+        graph: `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="160" fill="#fff"/><line x1="25" y1="20" x2="25" y2="140" stroke="#000" stroke-width="1.5"/><line x1="25" y1="140" x2="190" y2="140" stroke="#000" stroke-width="1.5"/><path d="M25 130 L40 135 L55 125 L70 90 L85 110 L100 130 L115 115 L130 110 L145 70 L160 50 L175 60 L185 80" stroke="#000" stroke-width="1.2" fill="none"/><path d="M25 125 L40 128 L55 120 L70 80 L85 100 L100 125 L115 100 L130 90 L145 50 L160 30 L175 45 L185 70" stroke="#666" stroke-width="1" stroke-dasharray="3,1" fill="none"/><text x="155" y="25" font-size="7" fill="#8b0000" font-weight="bold">6,000,000</text></svg>`,
+        union: `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="140" fill="#bbb"/><path d="M20 140 L20 40 L180 40 L180 140 Z" fill="#888" stroke="#333"/><rect x="50" y="80" width="10" height="40" fill="#333"/><rect x="70" y="80" width="10" height="40" fill="#333"/><rect x="90" y="80" width="10" height="40" fill="#333"/><text x="100" y="130" font-size="8" text-anchor="middle" fill="#fff" font-weight="bold">TRADE UNION OCCUPIED</text></svg>`,
+        cartoon: `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="background:#eee"><rect width="200" height="160" fill="#fff"/><rect x="20" y="20" width="160" height="80" fill="#ddd" stroke="#333"/><text x="100" y="70" font-size="40" text-anchor="middle" fill="#ccc" opacity="0.3">卍</text><rect x="92" y="70" width="16" height="30" fill="#000"/><circle cx="100" cy="65" r="5" fill="#fcc"/><path d="M100 65 L115 55" stroke="#000" stroke-width="2" fill="none"/><text x="100" y="145" font-size="8" text-anchor="middle" font-weight="bold">"Keep your seats."</text></svg>`,
+        ahnentafel: `<svg viewBox="0 0 200 240" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="240" fill="#fdf5e6"/><rect x="5" y="5" width="190" height="230" fill="none" stroke="#8b0000" stroke-width="1.5"/><text x="100" y="45" font-family="Times New Roman" font-size="18" text-anchor="middle" font-weight="bold" fill="#8b0000">Ahnentafel</text><circle cx="100" cy="180" r="30" fill="#483d8b" opacity="0.2"/><text x="100" y="220" font-family="Times New Roman" font-size="9" text-anchor="middle" font-weight="bold">Betr. Ariernachweis</text></svg>`,
+        jcard: `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="140" fill="#dcd8c0" stroke="#333"/><text x="100" y="25" font-size="10" text-anchor="middle" font-weight="bold">Kennkarte</text><text x="30" y="90" font-size="40" fill="#8b0000" font-weight="bold" opacity="0.6">J</text></svg>`,
+        vw: `<svg viewBox="0 0 100 120" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="5" width="90" height="110" fill="#90ee90" stroke="#000" stroke-dasharray="2,1"/><text x="50" y="25" font-size="8" text-anchor="middle" font-weight="bold">KdF-Wagen</text><text x="50" y="65" font-size="20" text-anchor="middle">5</text></svg>`,
+        crystal: `<svg viewBox="0 0 200 140" xmlns="http://www.w3.org/2000/svg"><rect width="200" height="140" fill="#333"/><path d="M30 20 L60 80 L10 100 M170 20 L140 80 L180 110" stroke="#fff" stroke-width="1.5" opacity="0.8"/><text x="100" y="130" fill="#fff" font-size="9" text-anchor="middle" font-style="italic">Shattered Storefront</text></svg>`,
+        collapse: `<svg viewBox="0 0 200 160" xmlns="http://www.w3.org/2000/svg" style="background:#333"><path d="M20 140 L180 140 L150 60 L100 40 L50 60 Z" fill="#111"/><text x="100" y="100" fill="#fff" text-anchor="middle">THE COLLAPSE</text></svg>`
+    };
+
+    const events = [
+        {
+            title: "1933: The Economic Catalyst",
+            date: "January 1933",
+            desc: "The Great Depression has destroyed Germany's economy. Resentment boils over as propaganda blames the 'Stab-in-the-back' for WWI loss. Unemployment is at 6 million.",
+            sourceSvg: svgs.graph,
+            sourceText: "Archival chart reflecting catastrophic unemployment peaking at over 6 million in 1932 (image_0d0600.png).",
+            caption: "Source: Statistics of Unemployment 1919-1934.",
+            thoughts: {
+                worker: "My children haven't had meat in months. The Brownshirts promise bread and work. Is a meal worth a vote for a fanatic?",
+                ss: "The republic is dead. Only a strong leader can heal this bleeding nation. I will be the sword of the new order.",
+                jew: "The neighbors look at me differently now. They used to buy my bread; now they spit on my pavement. Is this a passing storm?",
+                sa: "We are the masters of the street now. The communists are running. This is the revolution we were promised.",
+                deaf: "They talk about 'healthy stock' and 'burden on the state'. I am a good carpenter. Surely they won't target a hard worker."
+            },
+            choices: [
+                { text: "Join the SA paramilitary for the promise of meals.", impact: { loyalty: 15, survival: 5 }, req: 'male', feedback: "You find food and a uniform. You feel powerful for the first time in years." },
+                { text: "Seek work through the dwindling regular labor market.", impact: { survival: -10, loyalty: -5 }, feedback: "Hunger is a constant companion. The extremists look more rational every day." }
+            ]
+        },
+        {
+            title: "Coordination: The Trade Union Ban",
+            date: "May 2, 1933",
+            desc: "Independent trade unions are banned. The SA occupies union buildings. All labor is forced into the Nazi-led German Labour Front (DAF).",
+            sourceSvg: svgs.union,
+            sourceText: "SA members occupying building on Engelufer, Berlin (image_0d6b00.jpg).",
+            caption: "Source: Coordination (Gleichschaltung) of labor.",
+            thoughts: {
+                worker: "They took my union card and gave me a cogwheel stamp. I have a job, but I have no voice. If I strike, I disappear.",
+                ss: "One nation, one goal. The chaos of the unions is replaced by the discipline of the state.",
+                jew: "They are seizing property and assets. My shop is small... maybe I am too insignificant for them to notice."
+            },
+            choices: [
+                { text: "Enthusiastically support the DAF to keep your job.", impact: { loyalty: 20, survival: 5 }, req: '!persecuted', feedback: "You are marked as reliable. You keep your factory wages." },
+                { text: "Express concern over the loss of union rights.", impact: { survival: -40, loyalty: -30 }, feedback: "Surveillance begins. You are labeled a 'Marxist agitator'." }
+            ]
+        },
+        {
+            title: "Night of the Long Knives",
+            date: "June 30, 1934",
+            desc: "Hitler purges his own party leadership. Rivals in the SA are executed to secure the support of the regular army.",
+            sourceSvg: svgs.cartoon,
+            sourceText: "Sidney Strube's cartoon: 'Will the audience kindly keep their seats' (image_0d146b.jpg).",
+            caption: "Source: Sidney Strube, Daily Express.",
+            thoughts: {
+                sa: "They are killing my friends. Röhm is gone. Was my loyalty a lie? Am I next in the purge?",
+                ss: "The leader has spoken. We have cut out the rot to save the body. This is our rise to true power.",
+                soldier: "The SA brawlers are finally tamed. Now the regular army is the only power. This is good for Germany."
+            },
+            choices: [
+                { text: "Participate in the purge as an SS Officer.", impact: { loyalty: 30, survival: 10 }, req: 'officer', feedback: "You secure your position in the new hierarchy of terror." },
+                { text: "Remain silent and support the 'necessity' of order.", impact: { survival: 0, loyalty: 10 }, req: '!nazi', feedback: "The violence is chilling, but the state claims it saved the nation from civil war." }
+            ]
+        },
+        {
+            title: "The Nuremberg Laws & Ariernachweis",
+            date: "1935",
+            desc: "Laws strip Jews of citizenship. Every 'Aryan' citizen must provide an 'Ahnentafel' Ancestry Table to maintain their status.",
+            sourceSvg: svgs.ahnentafel,
+            sourceText: "The 'Ahnentafel' became a mandatory document for survival (image_0d09e1.jpg).",
+            caption: "Source: Ariernachweis (Ancestry Table).",
+            thoughts: {
+                jew: "I am a veteran of the Great War. I bled for this country. Now, by a stroke of a pen, I am a guest in my own home.",
+                housewife: "I need that certificate for my children to stay in school. I'll search every church record. I must be 'pure'.",
+                deaf: "The doctors are asking more questions about my family. They talk about 'weeding out the weak'. I must hide my condition."
+            },
+            choices: [
+                { text: "Apply for your racial certificate immediately.", impact: { loyalty: 20, survival: 5 }, req: '!persecuted', feedback: "You trace your tree with relief. You are safe, for now." },
+                { text: "Watch your neighbors lose their legal rights.", impact: { survival: -35 }, req: 'persecuted', feedback: "You are now a 'subject' with no citizenship and no protection." }
+            ]
+        },
+        {
+            title: "Crystal Night (Kristallnacht)",
+            date: "Nov 9, 1938",
+            desc: "State-sponsored violence erupts. Jewish shops and synagogues are burned. The regime moves to open persecution.",
+            sourceSvg: svgs.crystal,
+            sourceText: "Photography from Berlin shows the shattered remains of the Jewish community (image_0d1147.jpg).",
+            caption: "Source: Berlin shopfront, Nov 1938.",
+            thoughts: {
+                jew: "The glass is everywhere. It looks like diamonds in the moonlight, but it is the death of my life's work. They are taking the men.",
+                youth: "The leaders said we are cleaning the city of 'parasites'. I feel... I feel sick watching them burn the books.",
+                worker: "I walk past the broken windows on my way to the factory. If I stop to help, the Gestapo will take me too. I keep walking."
+            },
+            choices: [
+                { text: "Attempt to hide your family in the chaos.", impact: { survival: -20 }, req: 'persecuted', feedback: "The borders are closed. You are trapped in a city that wants you dead." },
+                { text: "Witness the violence in silence and keep walking.", impact: { survival: 0, loyalty: -20 }, req: '!persecuted', feedback: "The indifference of the public is as sharp as the glass." }
+            ]
+        },
+        {
+            title: "The Final Collapse",
+            date: "April 1945",
+            desc: "Berlin is a smoking ruin. The Soviet flag flies over the Reichstag. Hitler is dead. The Reich has ended in total destruction.",
+            sourceSvg: svgs.collapse,
+            sourceText: "Berlin, 1945. The total collapse of the 1,000-year Reich after just 12 years.",
+            caption: "Source: The Fall of Berlin.",
+            thoughts: {
+                soldier: "Twelve years. For what? My legs are gone, my city is gone. We were told we were gods; we are just ghosts.",
+                ss: "I must burn the files. If they find my name, I am a dead man. The 'Ratlines' to South America are my only hope.",
+                jew: "The gates of the camp are open. I am too weak to stand. Is there even a world left to go back to?"
+            },
+            choices: [
+                { text: "Surrender to the Allied forces.", impact: { survival: 10 }, feedback: "The war is over. Now comes the rebuilding." }
+            ]
+        }
+    ];
+
+    let player = null;
+    let currentEventIndex = 0;
+
+    function init() {
+        const list = document.getElementById('character-list');
+        characters.forEach(char => {
+            const card = document.createElement('div');
+            card.className = 'char-card';
+            card.innerHTML = `<h3>${char.name}</h3><p>${char.desc}</p>`;
+            card.onclick = () => selectCharacter(char);
+            list.appendChild(card);
+        });
+    }
+
+    function selectCharacter(char) {
+        player = { ...char };
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('game-screen').classList.add('active');
+        updateHUD();
+        showEvent();
+    }
+
+    function updateHUD() {
+        document.getElementById('char-name').innerText = player.name;
+        document.getElementById('survival-fill').style.width = player.survival + "%";
+        document.getElementById('loyalty-fill').style.width = player.loyalty + "%";
+        if(player.survival <= 0) endGame("DEATH", "History has claimed your life.");
+    }
+
+    function showEvent() {
+        if (currentEventIndex >= events.length) {
+            endGame("LIBERATION", "The bells of 1945 ring out across the ruins.");
+            return;
+        }
+        const ev = events[currentEventIndex];
+        document.getElementById('event-title').innerText = ev.title;
+        document.getElementById('event-desc').innerHTML = `<span class="date-stamp">${ev.date}</span>${ev.desc}`;
+        document.getElementById('source-img-box').innerHTML = ev.sourceSvg + `<div class="source-caption">${ev.caption}</div>`;
+        document.getElementById('source-text').innerText = ev.sourceText;
+        
+        // Show Thoughts (Thinking Process Immersion)
+        const thoughtBox = document.getElementById('thought-container');
+        const specificThought = ev.thoughts[player.id] || ev.thoughts['worker'] || "What have we become?";
+        thoughtBox.innerHTML = `<div class="thought-bubble">${specificThought}</div>`;
+
+        const container = document.getElementById('choices-container');
+        container.innerHTML = '';
+        ev.choices.forEach(choice => {
+            if (choice.req) {
+                const isNot = choice.req.startsWith('!');
+                const trait = isNot ? choice.req.substring(1) : choice.req;
+                const hasTrait = player.traits.includes(trait);
+                if ((!isNot && !hasTrait) || (isNot && hasTrait)) return;
+            }
+            const btn = document.createElement('button');
+            btn.className = 'choice-btn';
+            btn.innerText = choice.text;
+            btn.onclick = () => handleChoice(choice);
+            container.appendChild(btn);
+        });
+    }
+
+    function handleChoice(choice) {
+        player.survival += (choice.impact.survival || 0);
+        player.loyalty += (choice.impact.loyalty || 0);
+        player.survival = Math.max(0, Math.min(100, player.survival));
+        player.loyalty = Math.max(0, Math.min(100, player.loyalty));
+        const container = document.getElementById('choices-container');
+        container.innerHTML = `<div class="feedback-box"><strong>Result:</strong> ${choice.feedback}</div>
+        <button class="choice-btn" style="text-align:center; background:#222;" onclick="nextEvent()">Proceed to the Next Milestone</button>`;
+        updateHUD();
+    }
+
+    function nextEvent() {
+        currentEventIndex++;
+        showEvent();
+    }
+
+    function endGame(status, message) {
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('end-screen').classList.add('active');
+        
+        let fateDescription = "";
+        const id = player.id;
+        const surv = player.survival;
+        const loy = player.loyalty;
+
+        // Character-Specific Endings
+        if (id === 'worker') {
+            fateDescription = loy > 60 ? "Post-war, you are arrested during Denazification for your active role in the DAF. You spend years in an Allied camp." : "You survive to see Berlin divided. You spend the rest of your life rebuilding the city from the rubble.";
+        } else if (id === 'ss') {
+            fateDescription = surv > 60 ? "You successfully use the 'Ratlines' to escape to Argentina. You live the rest of your life in hiding, forever fearing a knock on the door." : "You are captured by Soviet forces and spend the next 20 years in a Siberian Gulag.";
+        } else if (id === 'jew') {
+            fateDescription = surv > 30 ? "You survived the camps and migrate to a new land. You carry the weight of the lost world into the future, a witness to the unthinkable." : "You are one of the 6 million. Your shop is gone, your family is gone, and your story ends in the darkness of the Final Solution.";
+        } else if (id === 'deaf') {
+            fateDescription = surv > 40 ? "Through luck and the silence of a sympathetic doctor, you survived the T4 program. You live in a world that once tried to erase you." : "The state eugenics program marked you as 'unworthy of life'. You were taken in a gray bus and never returned.";
+        } else if (id === 'soldier') {
+            fateDescription = surv > 30 ? "You return home as a POW. You are alive, but the physical and moral scars of the Eastern Front never heal." : "You fell during the retreat from Stalingrad. Your name is another cross in a forest of crosses.";
+        } else if (id === 'youth' || id === 'lady') {
+            fateDescription = loy > 50 ? "Your childhood was a lie. You face a long, painful adulthood of 'unlearning' the propaganda that stole your youth." : "You survived with your soul intact, eventually becoming part of the generation that would rebuild Germany on the values of peace.";
+        } else {
+            fateDescription = "You enter a divided Germany, tasked with rebuilding a nation from the literal and moral rubble of the 1,000-year Reich.";
+        }
+
+        document.getElementById('end-body').innerHTML = `
+            <div class="survival-report">
+                <h2 class="${status === 'DEATH' ? 'death' : ''}">${status}</h2>
+                <p>${message}</p>
+                <p><strong>Your Historical Fate:</strong> ${fateDescription}</p>
+                <hr>
+
+                <div class="poem-block">
+                    <span class="poem-line">First they came for the Communists, and I did not speak out—</span>
+                    <span class="poem-line">Because I was not a Communist.</span>
+                    <br>
+                    <span class="poem-line">Then they came for the Socialists, and I did not speak out—</span>
+                    <span class="poem-line">Because I was not a Socialist.</span>
+                    <br>
+                    <span class="poem-line">Then they came for the Trade Unionists, and I did not speak out—</span>
+                    <span class="poem-line">Because I was not a Trade Unionist.</span>
+                    <br>
+                    <span class="poem-line">Then they came for the Jews, and I did not speak out—</span>
+                    <span class="poem-line">Because I was not a Jew.</span>
+                    <br>
+                    <span class="poem-line">Then they came for me—and there was no one left to speak for me.</span>
+                    <br>
+                    <small>— Pastor Martin Niemöller (1892–1984)</small>
+                </div>
+
+                <div class="reflection-block">
+                    <strong>Reflections on the Temptation of Silence:</strong>
+                    <p>Every person in history—the worker, the soldier, the mother—faced the same daily temptation: to choose personal safety over moral truth. To live with courage often carried a heavy price—the loss of job, freedom, or life. Niemöller's words serve as a permanent warning that silence is a choice with consequences.</p>
+                </div>
+
+                <div class="bonhoeffer-section">
+                    <span class="bonhoeffer-quote">"Silence in the face of evil is itself evil... Not to speak is to speak. Not to act is to act."</span>
+                    <p><strong>Dietrich Bonhoeffer (1906–1945):</strong> A German pastor and theologian who refused to remain silent. Unlike many who retreated into safety, Bonhoeffer joined the active resistance against Hitler's regime. He was arrested by the Gestapo and eventually executed at the Flossenbürg concentration camp on April 9, 1945—just weeks before the war ended. He demonstrated that resisting evil unto death is the ultimate act of moral courage. His life remains the final answer to the question: <em>What could have been done?</em></p>
+                </div>
+            </div>`;
+    }
+    init();
+</script>
+</body>
+</html>
