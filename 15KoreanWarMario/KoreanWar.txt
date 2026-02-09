@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Korean War: Mastery Quest</title>
+    <style>
+        body { margin: 0; background: #0b0f0b; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; overflow: hidden; color: white; }
+        #game-container { 
+            position: relative; width: 800px; height: 400px; margin: 20px auto; 
+            background: linear-gradient(to bottom, #4a6fa5, #92a8d1); 
+            border: 6px solid #2d3436; border-radius: 8px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        canvas { display: block; }
+        #start-screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(20, 30, 20, 0.95); display: flex; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 200;
+        }
+        #btn-start {
+            padding: 15px 45px; font-size: 24px; font-weight: bold; color: #fff;
+            background: #27ae60; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 0 #1e8449;
+        }
+        #btn-start:hover { transform: translateY(-3px); background: #2ecc71; box-shadow: 0 7px 0 #1e8449; }
+        #btn-start:active { transform: translateY(0); box-shadow: 0 2px 0 #1e8449; }
+
+        #ui-layer { position: absolute; top: 15px; left: 20px; right: 20px; pointer-events: none; display: flex; justify-content: space-between; font-weight: bold; text-shadow: 2px 2px #000; font-size: 18px; z-index: 10; }
+        #stats-coins { color: #f1c40f; }
+        #quiz-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); display: none; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center; padding: 30px; z-index: 100;
+        }
+        #feedback-text { font-size: 18px; margin-top: 10px; font-weight: bold; min-height: 1.5em; }
+        .option-btn { background: #ecf0f1; color: #2c3e50; border: none; padding: 12px; margin: 6px; cursor: pointer; width: 90%; border-radius: 10px; font-size: 15px; font-weight: 600; transition: 0.2s; }
+        .option-btn:hover:not(:disabled) { background: #3498db; color: white; transform: scale(1.02); }
+        .option-btn:disabled { cursor: default; }
+        .btn-correct { background: #2ecc71 !important; color: white !important; }
+        .btn-wrong { background: #e74c3c !important; color: white !important; }
+        
+        #message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; display: none; text-align: center; text-shadow: 4px 4px 0px #000; z-index: 110; font-weight: 900; color: #e74c3c; width: 100%; }
+        
+        .instructions { font-size: 14px; color: #bdc3c7; margin-top: 20px; line-height: 1.5; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1 style="color: #2ecc71; margin-bottom: 10px;">KOREAN WAR</h1>
+        <h2 style="color: #ecf0f1; margin-top: 0;">Mastery Quest</h2>
+        <div class="instructions">
+            Use <b>ARROW KEYS</b> to Move & Jump.<br>
+            Hit <b>Supply Crates</b> to get questions.<br>
+            Wrong answers reappear 3 questions later.
+        </div>
+        <button id="btn-start" style="margin-top: 30px;">BEGIN DEPLOYMENT</button>
+    </div>
+    <div id="ui-layer">
+        <div id="stats-lives" style="color:#e74c3c">Lives: 3</div>
+        <div id="stats-coins">Score: 0</div>
+        <div id="stats-timer">300s</div>
+    </div>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+    <div id="quiz-overlay">
+        <div id="question-text" style="color: #f1c40f; font-size: 19px; margin-bottom: 15px; max-width: 650px;"></div>
+        <div id="options-container" style="width:100%; max-width: 500px; display: flex; flex-direction: column; align-items: center;"></div>
+        <div id="feedback-text"></div>
+    </div>
+    <div id="message"></div>
+</div>
+
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+
+let gameStarted = false, gameActive = false, isFalling = false;
+let timer = 300; 
+let lives = 3, coins = 0;
+const gravity = 0.5;
+
+const player = { x: 100, y: 200, w: 32, h: 50, vx: 0, vy: 0, speed: 5, jumpPower: -12, grounded: false, facingRight: true };
+
+let questionsDeck = [
+    { q: "On what date did the conventional phase of the Korean War begin?", a: ["August 15, 1945", "June 25, 1950", "July 27, 1953", "October 1, 1949"], correct: "June 25, 1950" },
+    { q: "What was the primary geographical dividing line between North and South Korea in 1945?", a: ["The Yalu River", "The Han River", "The 38th Parallel", "The Pusan Perimeter"], correct: "The 38th Parallel" },
+    { q: "Why is the Korean War often characterized as a 'civil war'?", a: ["It only involved soldiers from one ethnic group.", "It was a conflict between two regimes claiming to be the sole legitimate government.", "It did not involve any foreign weaponry.", "It was fought entirely without international assistance."], correct: "It was a conflict between two regimes claiming to be the sole legitimate government." },
+    { q: "How is the Korean War defined as a 'proxy war'?", a: ["It was fought by robots.", "It was a war where local leaders had no power.", "Superpowers supported opposing sides but did not fight each other directly.", "It was fought entirely through economic sanctions."], correct: "Superpowers supported opposing sides but did not fight each other directly." },
+    { q: "Before June 1950, what internal events suggested the war was already a civil conflict?", a: ["There were no issues before 1950.", "Widespread insurgencies and significant border clashes resulted in ~100,000 deaths.", "North and South Korea had signed a peace treaty.", "The UN had successfully unified the country."], correct: "Widespread insurgencies and significant border clashes resulted in ~100,000 deaths." },
+    { q: "What was the central U.S. foreign policy goal during the Korean War?", a: ["Expansionism", "Containment", "Isolationism", "Imperialism"], correct: "Containment" },
+    { q: "How did President Truman officially describe the military intervention to avoid a formal declaration of war?", a: ["A total war", "A 'police action'", "An invasion", "A liberation mission"], correct: "A 'police action'" },
+    { q: "What was the 'Domino Theory' in the context of the U.S. intervention?", a: ["A strategy involving game pieces.", "The belief that if South Korea fell, neighboring countries like Japan would follow.", "The idea that all wars start with a single incident.", "A plan to drop leaflets shaped like dominoes."], correct: "The belief that if South Korea fell, neighboring countries like Japan would follow." },
+    { q: "Which document advocated for a massive buildup of U.S. military power to counter the Soviet threat?", a: ["The Truman Doctrine", "The Cairo Declaration", "NSC-68", "The Marshall Plan"], correct: "NSC-68" },
+    { q: "The United States provided approximately what percentage of the UN military personnel?", a: ["50%", "90%", "10%", "100%"], correct: "90%" },
+    { q: "Who was the chosen leader of the Soviet-backed 'client state' in North Korea?", a: ["Syngman Rhee", "Mao Zedong", "Kim Il Sung", "Peng Dehuai"], correct: "Kim Il Sung" },
+    { q: "Why was the Soviet Union unable to veto the UN Security Council resolution to assist South Korea?", a: ["They had lost their veto power.", "They were boycotting the UN because it refused to recognize the PRC.", "They actually supported the resolution.", "They were not members of the UN at the time."], correct: "They were boycotting the UN because it refused to recognize the PRC." },
+    { q: "What was Stalin’s primary strategic priority in the late 1940s?", a: ["Dominating South America.", "Creating a buffer zone of communist states in Eastern Europe.", "Starting a war with the U.S. in Japan.", "Disbanding the Red Army."], correct: "Creating a buffer zone of communist states in Eastern Europe." },
+    { q: "When did Stalin finally give Kim Il Sung the 'green light' to invade?", a: ["1945", "Late January 1950", "After Inchon", "1953"], correct: "Late January 1950" },
+    { q: "What did Stalin warn Kim would happen if the invasion backfired?", a: ["He would send the entire Soviet Army.", "'I shall not lift a finger' to help directly.", "He would surrender to the U.S.", "He would use nuclear weapons."], correct: "'I shall not lift a finger' to help directly." },
+    { q: "What phrase did Premier Zhou Enlai use to describe the security relationship between China and Korea?", a: ["Brothers in arms", "As closely related as lips and teeth", "One nation, one goal", "The Great Wall of Communism"], correct: "As closely related as lips and teeth" },
+    { q: "Under what name did China constitute its forces to avoid an official war with the U.S.?", a: ["The Red Army", "The People's Liberation Army", "The People's Volunteer Army (PVA)", "The Northeastern Border Defense Army"], correct: "The People's Volunteer Army (PVA)" },
+    { q: "Why was Mao Zedong initially reluctant to intervene?", a: ["He was a pacifist.", "He wanted to focus on domestic reconstruction and 'liberating' Taiwan.", "He did not like Kim Il Sung.", "He thought the U.S. was his ally."], correct: "He wanted to focus on domestic reconstruction and 'liberating' Taiwan." },
+    { q: "What triggered the massive Chinese intervention in late 1950?", a: ["The death of Stalin.", "UNC forces crossing the 38th parallel and advancing toward the Yalu River.", "A formal declaration of war by Rhee.", "The start of the Inchon landing."], correct: "UNC forces crossing the 38th parallel and advancing toward the Yalu River." },
+    { q: "What tactic did the PVA use to mitigate the UN's superior air and firepower?", a: ["Building massive bunkers.", "Night fighting, camouflage, and marching 'dark-to-dark.'", "Using heavy tanks in broad daylight.", "Retreating whenever they saw a plane."], correct: "Night fighting, camouflage, and marching 'dark-to-dark.'" },
+    { q: "What was Syngman Rhee’s stance on a peaceful armistice?", a: ["He was the lead negotiator.", "He strongly opposed it, wishing to reunite the peninsula by force.", "He suggested it first.", "He didn't care about the outcome."], correct: "He strongly opposed it, wishing to reunite the peninsula by force." },
+    { q: "What was the 'Bodo League' in South Korea?", a: ["A professional baseball organization.", "A re-education movement for suspected sympathizers who were later executed.", "A group of military advisors.", "Rhee's cabinet members."], correct: "A re-education movement for suspected sympathizers who were later executed." },
+    { q: "Kim Il Sung based his confidence for a quick victory on which assumption?", a: ["The South had no soldiers.", "A popular uprising against Rhee would occur in the South.", "Stalin would send nuclear bombs.", "He had 10 million tanks."], correct: "A popular uprising against Rhee would occur in the South." },
+    { q: "Which state ideology did Kim Il Sung establish emphasizing self-reliance?", a: ["Marxism-Leninism", "Juche", "Maoism", "Capitalism"], correct: "Juche" },
+    { q: "Before the war, why was the ROK Army poorly equipped compared to the KPA?", a: ["They had no money.", "The U.S. withheld heavy weaponry to prevent Rhee from attacking the North.", "Rhee preferred a light infantry approach.", "They had sold all their equipment to China."], correct: "The U.S. withheld heavy weaponry to prevent Rhee from attacking the North." },
+    { q: "What was the daring amphibious assault planned by MacArthur to break the Pusan stalemate?", a: ["The Yalu River Crossing", "Operation Chromite (The Inchon Landing)", "Operation Thunderbolt", "The Chosin Reservoir breakout"], correct: "Operation Chromite (The Inchon Landing)" },
+    { q: "What did MacArthur’s 'rollback' policy represent as a shift from original goals?", a: ["Returning all troops home immediately.", "Moving beyond containment to destroy the DPRK and reunite Korea.", "Rolling tanks backward into defensive positions.", "Ending the war through economic trade."], correct: "Moving beyond containment to destroy the DPRK and reunite Korea." },
+    { q: "In which location did MacArthur famously meet President Truman to assure him China would not intervene?", a: ["The White House", "Wake Island", "Tokyo", "Panmunjom"], correct: "Wake Island" },
+    { q: "What was MacArthur’s suggested strategy to deal with the massive Chinese intervention?", a: ["Total withdrawal.", "Extending the war into China, naval blockade and nuclear weapons.", "Asking for UN mediation.", "Surrendering immediately."], correct: "Extending the war into China, naval blockade and nuclear weapons." },
+    { q: "What was the official reason President Truman gave for firing General MacArthur?", a: ["Losing too many battles.", "Insubordination and violation of civilian control over the military.", "Old age.", "Taking too many vacations in Japan."], correct: "Insubordination and violation of civilian control over the military." },
+    { q: "What was the 'Pusan Perimeter'?", a: ["A new type of tank.", "The last line of defense in the southeastern tip of Korea.", "A strategy to drop billions of leaflets.", "The border with Manchuria."], correct: "The last line of defense in the southeastern tip of Korea." },
+    { q: "The 'Chosin Few' refers to soldiers from which battle?", a: ["Inchon", "Chosin Reservoir", "Triangle Hill", "Heartbreak Ridge"], correct: "Chosin Reservoir" },
+    { q: "What became the biggest 'sticking point' in peace negotiations after July 1951?", a: ["The location of the capital.", "The repatriation of prisoners of war (POWs).", "The use of the Korean language.", "Food supplies for civilians."], correct: "The repatriation of prisoners of war (POWs)." },
+    { q: "Why did many Chinese and North Korean POWs refuse to return home?", a: ["Better jobs in the U.S.", "Fear of punishment for being captured or for political views.", "They had forgotten where they lived.", "They were 'brainwashed' by American movies."], correct: "Fear of punishment for being captured or for political views." },
+    { q: "The term 'MiG Alley' refers to what aspect of the war?", a: ["A bowling alley in Pusan.", "Northwestern North Korea where jet air combat frequently occurred.", "A street in Seoul.", "A supply route for North Korean tanks."], correct: "Northwestern North Korea where jet air combat frequently occurred." },
+    { q: "Approximately how many propaganda leaflets were dropped by UN forces during the war?", a: ["1 million", "100 million", "2.5 billion", "50 billion"], correct: "2.5 billion" },
+    { q: "What was the primary goal of 'Operation Strike'?", a: ["To encourage strikes in factories.", "To warn civilians of imminent bombing raids to flee and clog roads.", "To strike down the enemy flag.", "To find a new way to land in Inchon."], correct: "To warn civilians of imminent bombing raids to flee and clog roads." },
+    { q: "What was the 'Pseudo-Kim Il Sung' theory spread by U.S. propaganda?", a: ["That Kim was a robot.", "That the current Kim was a fake 'Kim Sung Ju' masquerading as a hero.", "That Kim was actually a capitalist.", "That Kim was an American spy."], correct: "That the current Kim was a fake 'Kim Sung Ju' masquerading as a hero." },
+    { q: "What was the 'War Song of the Chinese People’s Volunteer Army' used for?", a: ["To mock the soldiers.", "To mobilize the masses, boost morale, and normalize hardships.", "To coordinate secret attacks through lyrics.", "To beg for food."], correct: "To mobilize the masses, boost morale, and normalize hardships." },
+    { q: "How did the U.S. try to overcome the high illiteracy rate among enemy troops?", a: ["By sending teachers to the front lines.", "Using cartoon-based leaflets like 'Sad Sack'.", "Dropping books from planes.", "Only broadcasting through loudspeakers."], correct: "Using cartoon-based leaflets like 'Sad Sack'." },
+    { q: "Who succeeded Truman and was elected in 1952 with a promise to end the war?", a: ["Richard Nixon", "Dwight D. Eisenhower", "John F. Kennedy", "Lyndon B. Johnson"], correct: "Dwight D. Eisenhower" },
+    { q: "What major event in March 1953 shifted the Soviet position toward ending the war?", a: ["The invention of the hydrogen bomb.", "The death of Joseph Stalin.", "The capture of Moscow by the U.S.", "A massive drought in Russia."], correct: "The death of Joseph Stalin." },
+    { q: "Where was the Korean Armistice Agreement signed?", a: ["Seoul", "Pyongyang", "Panmunjom", "Tokyo"], correct: "Panmunjom" },
+    { q: "What is the name of the buffer zone created by the armistice?", a: ["The No-Man's Land", "The Demilitarized Zone (DMZ)", "The Iron Curtain", "The Bamboo Curtain"], correct: "The Demilitarized Zone (DMZ)" },
+    { q: "Was a formal peace treaty signed to officially end the war?", a: ["Yes, in 1953.", "No, technically North and South Korea remain in a state of war.", "Yes, but only by the U.S. and China.", "No, the UN vetoed it."], correct: "No, technically North and South Korea remain in a state of war." },
+    { q: "What was one of the first results of the armistice regarding deceased soldiers?", a: ["They were left in the fields.", "Operation Glory, an exchange of dead bodies.", "A mass burial in the DMZ.", "Building a giant shared monument."], correct: "Operation Glory, an exchange of dead bodies." },
+    { q: "How did the war affect the U.S. defense budget in the long term?", a: ["It led to permanent budget cuts.", "Tripling of armed forces and doubling of the Pentagon budget.", "It had no effect.", "The budget was moved entirely to the State Department."], correct: "Tripling of armed forces and doubling of the Pentagon budget." },
+    { q: "What was the 'Lips and Teeth' theory’s eventual consequence for the PRC?", a: ["They lost all their heavy industry.", "North Korea became a permanent security buffer for China.", "China became a part of North Korea.", "The theory was proven wrong by an invasion."], correct: "North Korea became a permanent security buffer for China." },
+    { q: "How did the war impact Japan’s economy?", a: ["It destroyed Japanese factories.", "U.S. wartime spending 'jump-started' the economy.", "Japan was forced to pay for the war.", "Japan became an agricultural society."], correct: "U.S. wartime spending 'jump-started' the economy." },
+    { q: "Why is the Korean War often called 'The Forgotten War'?", a: ["Everyone actually forgot it happened.", "It was overshadowed by World War II and the Vietnam War.", "It was too short to be remembered.", "The U.S. government burned all records of it."], correct: "It was overshadowed by World War II and the Vietnam War." }
+];
+
+function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+// Initial random sort of questions
+shuffle(questionsDeck);
+
+const blocks = Array.from({length: 80}, (_, i) => ({ 
+    x: 400 + (i * 350), 
+    y: 180, 
+    w: 50, 
+    h: 50, 
+    active: true
+}));
+
+document.getElementById('btn-start').onclick = () => {
+    document.getElementById('start-screen').style.display = 'none';
+    gameStarted = true; gameActive = true;
+};
+
+const keys = {};
+window.onkeydown = e => keys[e.code] = true;
+window.onkeyup = e => keys[e.code] = false;
+
+function drawPlayer() {
+    ctx.save();
+    ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
+    if (!player.facingRight) ctx.scale(-1, 1);
+    ctx.fillStyle = "#4b5320"; // Helmet
+    ctx.beginPath(); ctx.arc(0, -18, 14, Math.PI, 0); ctx.fill();
+    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-10, -18, 20, 15); // Face
+    ctx.fillStyle = "black"; ctx.fillRect(-6, -14, 3, 3); ctx.fillRect(3, -14, 3, 3); // Eyes
+    ctx.fillStyle = "#556b2f"; ctx.fillRect(-14, -3, 28, 28); // Body
+    ctx.fillStyle = "#3d2b1f"; ctx.fillRect(-14, 15, 28, 5); // Belt
+    ctx.fillStyle = "#4b5320"; ctx.fillRect(-12, 25, 10, 20); ctx.fillRect(2, 25, 10, 20); // Legs
+    ctx.fillStyle = "black"; ctx.fillRect(-14, 45, 12, 5); ctx.fillRect(2, 45, 12, 5); // Boots
+    ctx.restore();
+}
+
+function triggerQuiz() {
+    gameActive = false;
+    const currentQ = questionsDeck[0];
+    const feedback = document.getElementById('feedback-text');
+    feedback.innerText = "";
+    feedback.style.color = "white";
+
+    document.getElementById('question-text').innerText = currentQ.q;
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    // Always randomize options
+    let opts = [...currentQ.a]; 
+    shuffle(opts);
+
+    opts.forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn'; 
+        btn.innerText = opt;
+        btn.onclick = () => {
+            const allBtns = container.querySelectorAll('button');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (opt === currentQ.correct) {
+                btn.classList.add('btn-correct');
+                feedback.innerText = "Correct! Deploying deeper into territory...";
+                feedback.style.color = "#2ecc71";
+                
+                coins += 10;
+                document.getElementById('stats-coins').innerText = `Score: ${coins}`;
+                
+                setTimeout(() => {
+                    document.getElementById('quiz-overlay').style.display = 'none';
+                    questionsDeck.shift(); // Remove correct question
+                    if (questionsDeck.length === 0) victory();
+                    else gameActive = true;
+                }, 1000);
+            } else {
+                btn.classList.add('btn-wrong');
+                // Highlight the correct answer
+                allBtns.forEach(b => {
+                    if (b.innerText === currentQ.correct) b.classList.add('btn-correct');
+                });
+                
+                feedback.innerText = `Incorrect. Correct: ${currentQ.correct}`;
+                feedback.style.color = "#e74c3c";
+
+                setTimeout(() => {
+                    document.getElementById('quiz-overlay').style.display = 'none';
+                    isFalling = true; // Player falls back
+                    
+                    // Logic: Repeat same wrong question 3 questions later
+                    const wrongQ = questionsDeck.shift();
+                    // Re-insert at index 3 (or at end if deck is short)
+                    const targetIndex = Math.min(3, questionsDeck.length);
+                    questionsDeck.splice(targetIndex, 0, wrongQ);
+                }, 2500); // Give student time to read correct answer
+            }
+        };
+        container.appendChild(btn);
+    });
+    document.getElementById('quiz-overlay').style.display = 'flex';
+}
+
+function victory() {
+    gameActive = false;
+    document.getElementById('message').style.display = 'block';
+    document.getElementById('message').innerText = "KOREA MASTERED!";
+    document.getElementById('message').style.color = "#2ecc71";
+}
+
+function update() {
+    if (!gameStarted) { requestAnimationFrame(update); return; }
+
+    if (timer <= 0 && gameActive) {
+        gameActive = false;
+        document.getElementById('message').style.display = 'block';
+        document.getElementById('message').innerText = "MISSION FAILED";
+    }
+
+    if (isFalling) {
+        player.vy += gravity; player.y += player.vy;
+        if (player.y > 600) {
+            lives--; document.getElementById('stats-lives').innerText = `Lives: ${lives}`;
+            if (lives <= 0) { 
+                gameActive = false; document.getElementById('message').style.display = 'block'; 
+                document.getElementById('message').innerText = "KIA"; 
+            } else { 
+                player.x = Math.max(100, player.x - 400); player.y = 100; player.vy = 0; isFalling = false; 
+                if (timer > 0) gameActive = true; 
+            }
+        }
+    } else if (gameActive) {
+        if (keys['ArrowRight']) { player.vx = player.speed; player.facingRight = true; }
+        else if (keys['ArrowLeft']) { player.vx = -player.speed; player.facingRight = false; }
+        else player.vx *= 0.8;
+        
+        if ((keys['ArrowUp'] || keys['Space']) && player.grounded) { 
+            player.vy = player.jumpPower; player.grounded = false; 
+        }
+
+        player.vy += gravity; player.x += player.vx; player.y += player.vy;
+
+        if (player.y + player.h > 350) { 
+            player.y = 350 - player.h; player.vy = 0; player.grounded = true; 
+        }
+        
+        blocks.forEach((b, i) => {
+            if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
+                if (player.vy < 0 && player.y > b.y + b.h - 15) { 
+                    b.active = false; player.vy = 2; 
+                    if(questionsDeck.length > 0) triggerQuiz(); 
+                } else if (player.vy > 0 && player.y + player.h < b.y + 20) {
+                    player.y = b.y - player.h; player.vy = 0; player.grounded = true;
+                }
+            }
+        });
+    }
+    
+    ctx.setTransform(1,0,0,1,0,0);
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let camX = -player.x + 200; if (camX > 0) camX = 0;
+    ctx.translate(camX, 0);
+
+    // Mountains
+    ctx.fillStyle = "#2c3e50";
+    for(let i=0; i<30; i++) {
+        ctx.beginPath(); ctx.moveTo(i*600, 350); ctx.lineTo(i*600+300, 100); ctx.lineTo(i*600+600, 350); ctx.fill();
+    }
+
+    ctx.fillStyle = isFalling ? '#1e272e' : '#3d2b1f'; 
+    ctx.fillRect(-2000, 350, 40000, 50);
+    ctx.fillStyle = "#27ae60"; ctx.fillRect(-2000, 350, 40000, 5);
+
+    blocks.forEach(b => { 
+        if (b.active) { 
+            ctx.fillStyle = '#cd853f'; ctx.fillRect(b.x, b.y, b.w, b.h); 
+            ctx.strokeStyle = '#8b4513'; ctx.lineWidth = 3; ctx.strokeRect(b.x+5, b.y+5, b.w-10, b.h-10);
+            ctx.fillStyle = 'white'; ctx.font = 'bold 24px Arial'; ctx.fillText('?', b.x+18, b.y+33); 
+        } 
+    });
+
+    drawPlayer();
+    requestAnimationFrame(update);
+}
+
+setInterval(() => { if (gameActive && timer > 0) { timer--; document.getElementById('stats-timer').innerText = timer + "s"; } }, 1000);
+update();
+</script>
+</body>
+</html>
