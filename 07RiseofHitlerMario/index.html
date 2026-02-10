@@ -52,9 +52,8 @@
             background: skyblue; 
         }
 
-        /* --- Overlay Fix: Changed to fixed to cover the entire viewport on mobile --- */
         .overlay {
-            position: fixed; /* Popped out of the 2:1 container to cover full screen */
+            position: fixed;
             top: 0; 
             left: 0; 
             width: 100vw; 
@@ -64,10 +63,11 @@
             justify-content: center; 
             align-items: center;
             text-align: center; 
-            z-index: 1000; /* Higher z-index to ensure it is above everything */
+            z-index: 1000;
             background: rgba(15, 23, 42, 0.98);
-            padding: 30px;
+            padding: 20px;
             box-sizing: border-box;
+            overflow-y: auto; /* Enable scrolling for the whole overlay if needed */
         }
 
         #start-screen h1 {
@@ -123,15 +123,18 @@
 
         #quiz-overlay {
             display: none;
+            justify-content: flex-start; /* Start from top to allow scrolling */
+            padding-top: 40px;
         }
 
         #question-text { 
             color: var(--primary); 
-            font-size: clamp(20px, 5vw, 28px); 
-            margin-bottom: 25px; 
+            font-size: clamp(18px, 5vw, 26px); 
+            margin-bottom: 20px; 
             max-width: 90%; 
             font-weight: bold;
             line-height: 1.3;
+            flex-shrink: 0;
         }
         
         #options-container {
@@ -139,26 +142,34 @@
             max-width: 500px;
             display: flex;
             flex-direction: column;
-            gap: 15px;
+            gap: 12px;
+            padding-bottom: 30px; /* Space at bottom */
         }
 
         .option-btn { 
             background: var(--slate-700); 
             color: white; 
             border: 2px solid #475569; 
-            padding: 16px; 
+            padding: 14px; 
             cursor: pointer; 
             border-radius: 12px; 
-            font-size: clamp(16px, 4vw, 19px); 
+            font-size: clamp(14px, 4vw, 18px); 
             font-weight: 600;
             transition: background 0.2s;
             touch-action: manipulation;
+            width: 100%;
         }
 
         .option-btn.correct { background: #22c55e !important; border-color: #166534; }
         .option-btn.wrong { background: #ef4444 !important; border-color: #991b1b; }
 
-        #feedback-area { margin-top: 20px; font-size: 20px; font-weight: bold; min-height: 28px; }
+        #feedback-area { 
+            margin-top: 15px; 
+            font-size: 18px; 
+            font-weight: bold; 
+            min-height: 24px; 
+            flex-shrink: 0;
+        }
 
         #touch-controls {
             position: absolute;
@@ -207,7 +218,7 @@
         }
 
         #message { 
-            position: fixed; /* Cover full screen as well */
+            position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.85);
             display: none; 
@@ -225,6 +236,7 @@
             #touch-controls { bottom: 10px; }
             .touch-btn { width: 65px; height: 65px; }
             #ui-layer { top: 5px; }
+            .overlay { padding: 15px; }
         }
     </style>
 </head>
@@ -263,7 +275,6 @@
         </div>
     </div>
 
-    <!-- Move quiz and message outside to ensure fixed positioning covers full screen -->
     <div id="quiz-overlay" class="overlay">
         <div id="question-text"></div>
         <div id="options-container"></div>
@@ -322,7 +333,6 @@ const blocks = Array.from({length: 40}, (_, i) => ({
 
 const inputs = { left: false, right: false };
 
-// Keyboard
 window.onkeydown = e => {
     if (e.code === 'ArrowRight' || e.code === 'KeyD') inputs.right = true;
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') inputs.left = true;
@@ -333,7 +343,6 @@ window.onkeyup = e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') inputs.left = false;
 };
 
-// Robust Pointer Events for Mobile
 const setupTouch = (id, key) => {
     const btn = document.getElementById(id);
     
@@ -400,7 +409,6 @@ function triggerQuiz() {
     isPaused = true;
     gameActive = false;
     
-    // Clear inputs
     inputs.left = false;
     inputs.right = false;
     
