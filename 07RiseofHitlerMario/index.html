@@ -20,7 +20,10 @@
             font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; 
             overflow: hidden; 
             color: white;
+            /* Critical for mobile: prevent all default browser touch behaviors */
             touch-action: none;
+            -webkit-user-select: none;
+            user-select: none;
         }
 
         #game-wrapper {
@@ -84,6 +87,7 @@
             cursor: pointer; 
             box-shadow: 0 4px 0 var(--primary-dark);
             transition: transform 0.1s;
+            touch-action: manipulation;
         }
 
         button.main-btn:active {
@@ -143,6 +147,7 @@
             font-size: clamp(14px, 3.5vw, 17px); 
             font-weight: 600;
             transition: background 0.2s;
+            touch-action: manipulation;
         }
 
         .option-btn.correct { background: #22c55e !important; border-color: #166534; }
@@ -170,28 +175,30 @@
         }
 
         .touch-btn {
-            width: 65px;
-            height: 65px;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px solid rgba(255, 255, 255, 0.4);
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
             user-select: none;
             backdrop-filter: blur(5px);
+            touch-action: none; /* Prevents browser handling */
             -webkit-tap-highlight-color: transparent;
         }
 
         .touch-btn:active {
             background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.95);
+            transform: scale(0.9);
         }
 
         .touch-btn svg {
             fill: white;
-            width: 30px;
-            height: 30px;
+            width: 35px;
+            height: 35px;
+            pointer-events: none;
         }
 
         #message { 
@@ -210,7 +217,7 @@
 
         @media (max-width: 600px) {
             #touch-controls { bottom: 10px; }
-            .touch-btn { width: 55px; height: 55px; }
+            .touch-btn { width: 60px; height: 60px; }
             #ui-layer { top: 5px; }
         }
     </style>
@@ -249,8 +256,8 @@
                 </div>
             </div>
             <div class="control-group">
-                <div class="touch-btn" id="btn-jump" style="width: 80px; border-radius: 40px;">
-                    <span style="font-weight: bold;">JUMP</span>
+                <div class="touch-btn" id="btn-jump" style="width: 100px; border-radius: 50px;">
+                    <span style="font-weight: bold; pointer-events: none;">JUMP</span>
                 </div>
             </div>
         </div>
@@ -275,7 +282,6 @@ const player = {
     jumpsAvailable: 2
 };
 
-// Normalized questions and options for "same length" visual consistency
 let questionsDeck = [
     { q: "Weimar Republic formed after which war?", a: ["World War I", "World War II", "The Cold War", "Franco-Prussian"], correct: "World War I" },
     { q: "What was a main problem for the Weimar?", a: ["Weak Coalitions", "Single Party", "No Elections", "Absolute King"], correct: "Weak Coalitions" },
@@ -307,8 +313,9 @@ const blocks = Array.from({length: 40}, (_, i) => ({
     w: 60, h: 60, active: true 
 }));
 
-const inputs = { left: false, right: false, jump: false };
+const inputs = { left: false, right: false };
 
+// Keyboard
 window.onkeydown = e => {
     if (e.code === 'ArrowRight' || e.code === 'KeyD') inputs.right = true;
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') inputs.left = true;
@@ -319,10 +326,28 @@ window.onkeyup = e => {
     if (e.code === 'ArrowLeft' || e.code === 'KeyA') inputs.left = false;
 };
 
+// Robust Pointer Events for Mobile
 const setupTouch = (id, key) => {
     const btn = document.getElementById(id);
-    btn.addEventListener('touchstart', (e) => { e.preventDefault(); inputs[key] = true; if(key==='jump') handleJump(); });
-    btn.addEventListener('touchend', (e) => { e.preventDefault(); inputs[key] = false; });
+    
+    const onDown = (e) => {
+        e.preventDefault();
+        if (key === 'jump') {
+            handleJump();
+        } else {
+            inputs[key] = true;
+        }
+    };
+    
+    const onUp = (e) => {
+        e.preventDefault();
+        if (key !== 'jump') inputs[key] = false;
+    };
+
+    btn.addEventListener('pointerdown', onDown);
+    btn.addEventListener('pointerup', onUp);
+    btn.addEventListener('pointerleave', onUp);
+    btn.addEventListener('pointercancel', onUp);
 };
 
 setupTouch('btn-left', 'left');
@@ -368,6 +393,10 @@ function triggerQuiz() {
     isPaused = true;
     gameActive = false;
     
+    // Clear inputs so player doesn't keep moving while quiz is open
+    inputs.left = false;
+    inputs.right = false;
+    
     const currentQ = questionsDeck[0];
     const questionEl = document.getElementById('question-text');
     const feedbackEl = document.getElementById('feedback-area');
@@ -377,14 +406,14 @@ function triggerQuiz() {
     feedbackEl.innerText = "";
     container.innerHTML = '';
     
-    // Always shuffle options for every encounter
     let opts = shuffle([...currentQ.a]); 
 
     opts.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'option-btn'; 
         btn.innerText = opt;
-        btn.onclick = () => {
+        btn.onclick = (e) => {
+            e.stopPropagation();
             Array.from(container.children).forEach(b => b.disabled = true);
             
             if (opt === currentQ.correct) {
@@ -412,7 +441,6 @@ function triggerQuiz() {
                 setTimeout(() => {
                     document.getElementById('quiz-overlay').style.display = 'none';
                     isFalling = true;
-                    // Move missed question to back for later
                     questionsDeck.push(questionsDeck.shift());
                     isPaused = false;
                 }, 2000);
@@ -530,10 +558,6 @@ setInterval(() => {
         document.getElementById('stats-timer').innerText = timer + "s"; 
     } 
 }, 1000);
-
-document.querySelectorAll('.touch-btn').forEach(btn => {
-    btn.addEventListener('contextmenu', e => e.preventDefault());
-});
 
 update();
 </script>
