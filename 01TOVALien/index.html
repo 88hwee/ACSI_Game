@@ -1,251 +1,436 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Local Hero: Alien Defense (Full 50 Qs)</title>
-    <style>
-        body { margin: 0; background: #000; color: #fff; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
-        #game-stage { position: relative; width: 100vw; height: 100vh; background: linear-gradient(to bottom, #000033 0%, #000 100%); }
-        
-        #hud { position: absolute; top: 0; width: 100%; display: flex; justify-content: space-around; padding: 15px; background: rgba(0,0,0,0.8); border-bottom: 2px solid #00ff00; z-index: 10; }
-        .stat { font-size: 18px; color: #00ff00; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Local Hero: Alien Defense - HISTORY EDITION</title>
+  <style>
+    body { margin: 0; background: #000; color: #fff; font-family: "Courier New", Courier, monospace; overflow: hidden; }
+    #game-stage { position: relative; width: 100vw; height: 100vh; background: linear-gradient(to bottom, #000033 0%, #000 100%); }
 
-        #hero { position: absolute; bottom: 20px; width: 60px; height: 60px; font-size: 50px; text-align: center; transition: left 0.1s; z-index: 5; }
-        #hero::after { content: '🛡️'; }
-        
-        .alien { position: absolute; width: 60px; height: 60px; font-size: 40px; text-align: center; top: 80px; z-index: 4; }
-        .alien::after { content: '🛸'; }
+    #hud {
+      position: absolute; top: 0; left: 0; width: 100%;
+      display: flex; justify-content: space-around; padding: 15px;
+      background: rgba(0,0,0,0.8); border-bottom: 2px solid #00ff00; z-index: 10;
+      box-sizing: border-box;
+    }
+    .stat { font-size: 18px; color: #00ff00; }
 
-        .laser { position: absolute; width: 4px; height: 20px; background: #00ff00; box-shadow: 0 0 10px #00ff00; z-index: 3; }
+    #hero {
+      position: absolute; bottom: 20px;
+      width: 60px; height: 60px; font-size: 50px; text-align: center;
+      transform: translateX(-50%);
+      z-index: 5; user-select: none;
+      transition: left 0.1s ease-out;
+    }
+    #hero::after { content: "🛡️"; }
 
-        #mcq-modal { display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.95); border: 3px solid #00ff00; padding: 20px; width: 90%; max-width: 600px; z-index: 100; border-radius: 15px; text-align: center; }
-        #question-text { font-size: 20px; margin-bottom: 20px; color: #fff; }
-        .option-btn { display: block; width: 100%; margin: 8px 0; padding: 12px; background: #111; color: #00ff00; border: 1px solid #00ff00; cursor: pointer; font-size: 16px; border-radius: 5px; }
-        .option-btn:hover { background: #00ff00; color: #000; }
+    .alien {
+      position: absolute; width: 60px; height: 60px;
+      font-size: 40px; text-align: center;
+      z-index: 4; user-select: none;
+      transform: translateX(-50%);
+    }
+    .alien::after { content: "🛸"; }
 
-        #end-screen { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #000; flex-direction: column; align-items: center; justify-content: center; z-index: 200; }
-        .restart-btn { padding: 15px 30px; background: #00ff00; border: none; cursor: pointer; font-weight: bold; font-size: 18px; margin-top: 20px; }
-    </style>
+    .bomb {
+      position: absolute; width: 60px; height: 60px;
+      font-size: 40px; text-align: center;
+      z-index: 4; user-select: none;
+      transform: translateX(-50%);
+    }
+    .bomb::after { content: "💣"; }
+
+    .laser {
+      position: absolute; width: 4px; height: 20px;
+      background: #00ff00; box-shadow: 0 0 10px #00ff00; z-index: 3;
+      transform: translateX(-50%);
+    }
+
+    #mcq-modal {
+      display: none;
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: rgba(0,0,0,0.95);
+      border: 3px solid #00ff00;
+      padding: 20px; width: 90%; max-width: 600px;
+      z-index: 100; border-radius: 15px; text-align: center;
+      box-sizing: border-box;
+    }
+
+    #crisis-timer-display {
+      font-size: 30px; color: #ff0000; font-weight: bold; margin-bottom: 10px; display: none;
+    }
+
+    .option-btn {
+      display: block; width: 100%;
+      margin: 8px 0; padding: 12px;
+      background: #111; color: #00ff00;
+      border: 1px solid #00ff00; cursor: pointer;
+      font-size: 16px; border-radius: 5px; transition: 0.2s;
+    }
+    .option-btn:hover { background: #222; }
+    .option-btn:disabled { cursor: default; opacity: 0.9; }
+
+    .wrong-highlight { background: #aa0000 !important; color: #fff !important; border-color: red !important; }
+    .correct-highlight { background: #00aa00 !important; color: #fff !important; border-color: #00ff00 !important; }
+
+    #end-screen {
+      display: none;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+      background: #000;
+      flex-direction: column; align-items: center; justify-content: center;
+      z-index: 600; gap: 10px; text-align: center;
+      padding: 20px; box-sizing: border-box;
+    }
+    #end-screen button { padding: 15px 30px; background: #00ff00; border: none; cursor: pointer; font-weight: bold; }
+  </style>
 </head>
 <body>
-
-<div id="game-stage">
+  <div id="game-stage" tabindex="0">
     <div id="hud">
-        <div class="stat">TIME: <span id="timer">90</span>s</div>
-        <div class="stat">SCORE: <span id="score">0</span></div>
-        <div class="stat">LIVES: <span id="lives">❤️❤️❤️❤️❤️</span></div>
-        <div class="stat">PROGRESS: <span id="progress">0</span>/50</div>
+      <div class="stat">TIME: <span id="timer">90</span>s</div>
+      <div class="stat">SCORE: <span id="score">0</span></div>
+      <div class="stat">LIVES: <span id="lives">❤️❤️❤️❤️❤️</span></div>
     </div>
 
-    <div id="hero" style="left: 50%;"></div>
+    <div id="hero"></div>
 
     <div id="mcq-modal">
-        <h3 id="question-text"></h3>
-        <div id="options-container"></div>
+      <div id="crisis-timer-display">BOMB CRISIS! <span id="crisis-sec">10</span>s</div>
+      <h3 id="question-text"></h3>
+      <div id="options-container"></div>
+      <div id="feedback" style="margin-top:12px; color:#00ff00; display:none; min-height: 20px;"></div>
     </div>
 
     <div id="end-screen">
-        <h1 id="end-title">MISSION COMPLETE</h1>
-        <h2 id="final-score"></h2>
-        <button class="restart-btn" onclick="location.reload()">RESTART MISSION</button>
+      <h1 id="end-title">GAME OVER</h1>
+      <h2 id="final-score"></h2>
+      <button id="restart-btn">RESTART</button>
     </div>
-</div>
+  </div>
 
-<script>
+  <script>
+    const GAME_SECONDS = 90;
+    const START_LIVES = 5;
+    const SPAWN_EVERY_MS = 1200;
+    const FIRE_COOLDOWN_MS = 250;
+
     const questions = [
-        { q: "Which three countries formed the Triple Alliance?", a: "Germany, Austria-Hungary, Italy", o: ["Britain, France, Russia", "Germany, Austria-Hungary, Italy", "Germany, Russia, Italy", "Britain, Italy, Japan"] },
-        { q: "The Triple Entente was a reaction to which alliance?", a: "The Triple Alliance", o: ["The League of Nations", "The Triple Alliance", "The Central Powers", "The Axis Powers"] },
-        { q: "What term described Kaiser Wilhelm II’s fear of being surrounded?", a: "Encirclement", o: ["Isolationism", "Annexation", "Encirclement", "Entrenchment"] },
-        { q: "Which country had the largest military personnel (6.0m) by 1914?", a: "Russia", o: ["Germany", "France", "Russia", "Britain"] },
-        { q: "Which territory's annexation in 1908 caused major tension?", a: "Bosnia", o: ["Serbia", "Bosnia", "Sarajevo", "Bulgaria"] },
-        { q: "Who was assassinated in Sarajevo, sparking WWI?", a: "Archduke Franz Ferdinand", o: ["Kaiser Wilhelm II", "Archduke Franz Ferdinand", "Tsar Nicholas II", "Woodrow Wilson"] },
-        { q: "What was Germany’s primary naval goal under Wilhelm II?", a: "To rival Britain's navy", o: ["To protect merchant ships", "To rival Britain's navy", "To explore the Atlantic", "To transport troops"] },
-        { q: "Which country switched from the Triple Alliance to the Entente?", a: "Italy", o: ["Japan", "Italy", "Russia", "Ottoman Empire"] },
-        { q: "What was the estimated total death toll of WWI?", a: "40 million", o: ["9 million", "20 million", "40 million", "60 million"] },
-        { q: "Which treaty allowed Russia to exit the war early?", a: "Treaty of Brest-Litovsk", o: ["Versailles", "St. Germain", "Brest-Litovsk", "Trianon"] },
-        { q: "In the Russian Civil War, the 'Reds' represented whom?", a: "The Bolshevik Party", o: ["Tsar supporters", "The Bolshevik Party", "Foreign troops", "Landowners"] },
-        { q: "Who were the 'Whites' in the Russian Civil War?", a: "Anti-Bolshevik movements", o: ["The Red Army", "Anti-Bolshevik movements", "French allies", "German forces"] },
-        { q: "Which country emerged from WWI as the world's greatest power?", a: "United States", o: ["Britain", "France", "United States", "Japan"] },
-        { q: "What was Woodrow Wilson’s proposal for peace called?", a: "The Fourteen Points", o: ["The Atlantic Charter", "The Fourteen Points", "The League Covenant", "The Young Plan"] },
-        { q: "Who were the 'Big Three' at the Paris Peace Conference?", a: "USA, Britain, France", o: ["Britain, France, Italy", "USA, Britain, France", "USA, Britain, Germany", "France, Italy, Russia"] },
-        { q: "Who was the Prime Minister of France during the conference?", a: "Georges Clemenceau", o: ["David Lloyd George", "Georges Clemenceau", "Woodrow Wilson", "Vladimir Lenin"] },
-        { q: "What is an armistice?", a: "Agreement to stop fighting", o: ["Peace treaty", "Agreement to stop fighting", "Declaration of war", "Alliance"] },
-        { q: "Why was France most affected among the victors?", a: "Industrial regions devastated", o: ["Lost its navy", "Industrial regions devastated", "Paid reparations", "Overthrown"] },
-        { q: "What does the term 'Tsar' refer to?", a: "Emperor of Russia", o: ["Elected leader", "Emperor of Russia", "Military commander", "Communist official"] },
-        { q: "What is the definition of a dictator?", a: "One with complete power", o: ["Shared power", "One with complete power", "Temporary leader", "Ceremonial head"] },
-        { q: "How much in reparations did Russia pay Germany in 1918?", a: "6 billion marks", o: ["1 billion marks", "6 billion marks", "10 billion marks", "40 million"] },
-        { q: "Who believed the state should run all land and industry?", a: "The Bolsheviks", o: ["The Whites", "The Bolsheviks", "The Triple Entente", "The Great Powers"] },
-        { q: "What happened to the Kaiser at the end of the war?", a: "Overthrown in revolution", o: ["Promoted", "Overthrown in revolution", "Became US ally", "Led the League"] },
-        { q: "How many republics made up the USSR by 1922?", a: "15", o: ["5", "10", "15", "20"] },
-        { q: "What does 'Bolshevik' mean in Russian?", a: "Majority", o: ["Minority", "Majority", "Revolution", "Peace"] },
-        { q: "What was the primary aim of the Paris Peace Conference?", a: "Officially end WWI", o: ["Start a new war", "Officially end WWI", "Rebuild German navy", "Annex Russia"] },
-        { q: "Why did Japan's wealth increase during WWI?", a: "No domestic war damage", o: ["Conquered Russia", "No domestic war damage", "Led the Big Three", "Germany paid them"] },
-        { q: "Which was NOT part of the Triple Entente?", a: "Italy", o: ["Britain", "France", "Italy", "Russia"] },
-        { q: "How much of its population did Russia lose at Brest-Litovsk?", a: "One-third", o: ["One-tenth", "One-quarter", "One-third", "One-half"] },
-        { q: "What resource did Russia lose significant stores of in 1918?", a: "Oil, iron, and coal", o: ["Gold", "Oil, iron, and coal", "Timber", "Silk"] },
-        { q: "Why did the USA enter the war in 1917?", a: "To support the Entente", o: ["Annex land", "To support the Entente", "Support Lenin", "Colonize Africa"] },
-        { q: "Who were the 'Great Powers' of the 19th century?", a: "Britain, France, Germany", o: ["Serbia, Belgium", "Britain, France, Germany", "Spain, Portugal", "Greece, Bulgaria"] },
-        { q: "What caused the naval arms race?", a: "German naval expansion", o: ["German naval expansion", "Russia in Mediterranean", "Italy in Atlantic", "Bosnian tension"] },
-        { q: "Who was overthrown in the March 1917 revolution?", a: "Tsar Nicholas II", o: ["Lenin", "Tsar Nicholas II", "Wilhelm II", "Wilson"] },
-        { q: "What was the 'Red Army'?", a: "Bolshevik military", o: ["Tsarist military", "Bolshevik military", "US forces", "German guard"] },
-        { q: "Which countries faced the worst food shortages?", a: "Britain and France", o: ["USA", "Japan", "Britain and France", "Portugal"] },
-        { q: "Wilson wanted the world to be safe for what?", a: "Every peace-loving nation", o: ["Empires", "Every peace-loving nation", "Dictators", "Alliances"] },
-        { q: "Which alliance was NOT a legally binding commitment?", a: "Triple Entente", o: ["Triple Alliance", "Triple Entente", "League of Nations", "USSR"] },
-        { q: "What happened to Austria-Hungary after the war?", a: "Collapsed into smaller countries", o: ["More powerful", "Collapsed into smaller countries", "Annexed USA", "Joined USSR"] },
-        { q: "Who succeeded Wilhelm I in 1888?", a: "Wilhelm II", o: ["Franz Joseph", "Wilhelm II", "Nicholas II", "Lloyd George"] },
-        { q: "What was the purpose of the Washington Naval Conference?", a: "Limit the size of navies", o: ["Build more ships", "Limit the size of navies", "Trade routes", "Declare war"] },
-        { q: "The 'Big Three' leaders were all what?", a: "Democratically elected", o: ["Dictators", "Democratically elected", "Monarchs", "Generals"] },
-        { q: "French sentiment toward the German treaty was what?", a: "It should be harsh", o: ["Lenient", "It should be harsh", "Keep all land", "Russia should pay"] },
-        { q: "Which country joined the war later for benefits?", a: "Italy", o: ["Russia", "Italy", "Germany", "France"] },
-        { q: "The Bolsheviks believed property should be what?", a: "Run by the state", o: ["Protected", "Run by the state", "Given to Kaiser", "Sold to USA"] },
-        { q: "Why did the West support the 'Whites'?", a: "Opposed communism", o: ["Help Germany", "Opposed communism", "Annex Siberia", "Bolshevik allies"] },
-        { q: "What was the 'spark' for WWI?", a: "Franz Ferdinand assassination", o: ["New ships", "Franz Ferdinand assassination", "Dawes Plan", "USSR creation"] },
-        { q: "Japan protected colonies for which country in 1914?", a: "Britain", o: ["Germany", "Britain", "Russia", "France"] },
-        { q: "What was the immediate impact of the Armistice?", a: "Stopped fighting temporarily", o: ["Ended war officially", "Stopped fighting temporarily", "Created League", "Germany won"] },
-        { q: "The League of Nations was an attempt to do what?", a: "Make and keep peace", o: ["Make and keep peace", "Triple Alliance", "Invade Russia", "Overthrow USA"] }
+      { q: "Which three countries formed the Triple Alliance?", a: "Germany, Austria-Hungary, Italy", o: ["Britain, France, Russia", "Germany, Austria-Hungary, Italy", "Germany, Russia, Italy", "Britain, Italy, Japan"] },
+      { q: "The Triple Entente was a reaction to which alliance?", a: "The Triple Alliance", o: ["The League of Nations", "The Triple Alliance", "The Central Powers", "The Axis Powers"] },
+      { q: "What term described Kaiser Wilhelm II’s fear of being surrounded?", a: "Encirclement", o: ["Isolationism", "Annexation", "Encirclement", "Entrenchment"] },
+      { q: "Which country had the largest military personnel (6.0m) by 1914?", a: "Russia", o: ["Germany", "France", "Russia", "Britain"] },
+      { q: "Which territory's annexation in 1908 caused major tension?", a: "Bosnia", o: ["Serbia", "Bosnia", "Sarajevo", "Bulgaria"] },
+      { q: "Who was assassinated in Sarajevo, sparking WWI?", a: "Archduke Franz Ferdinand", o: ["Kaiser Wilhelm II", "Archduke Franz Ferdinand", "Tsar Nicholas II", "Woodrow Wilson"] },
+      { q: "What was Germany’s primary naval goal under Wilhelm II?", a: "To rival Britain's navy", o: ["To protect merchant ships", "To rival Britain's navy", "To explore the Atlantic", "To transport troops"] },
+      { q: "Which country switched from the Triple Alliance to the Entente?", a: "Italy", o: ["Japan", "Italy", "Russia", "Ottoman Empire"] },
+      { q: "What was the estimated total death toll of WWI?", a: "40 million", o: ["9 million", "20 million", "40 million", "60 million"] },
+      { q: "Which treaty allowed Russia to exit the war early?", a: "Treaty of Brest-Litovsk", o: ["Versailles", "St. Germain", "Brest-Litovsk", "Trianon"] },
+      { q: "In the Russian Civil War, the 'Reds' represented whom?", a: "The Bolshevik Party", o: ["Tsar supporters", "The Bolshevik Party", "Foreign troops", "Landowners"] },
+      { q: "Who were the 'Whites' in the Russian Civil War?", a: "Anti-Bolshevik movements", o: ["The Red Army", "Anti-Bolshevik movements", "French allies", "German forces"] },
+      { q: "Which country emerged from WWI as the world's greatest power?", a: "United States", o: ["Britain", "France", "United States", "Japan"] },
+      { q: "What was Woodrow Wilson’s proposal for peace called?", a: "The Fourteen Points", o: ["The Atlantic Charter", "The Fourteen Points", "The League Covenant", "The Young Plan"] },
+      { q: "Who were the 'Big Three' at the Paris Peace Conference?", a: "USA, Britain, France", o: ["Britain, France, Italy", "USA, Britain, France", "USA, Britain, Germany", "France, Italy, Russia"] },
+      { q: "Who was the Prime Minister of France during the conference?", a: "Georges Clemenceau", o: ["David Lloyd George", "Georges Clemenceau", "Woodrow Wilson", "Vladimir Lenin"] },
+      { q: "What is an armistice?", a: "Agreement to stop fighting", o: ["Peace treaty", "Agreement to stop fighting", "Declaration of war", "Alliance"] },
+      { q: "What does the term 'Tsar' refer to?", a: "Emperor of Russia", o: ["Elected leader", "Emperor of Russia", "Military commander", "Communist official"] },
+      { q: "How much in reparations did Russia pay Germany in 1918?", a: "6 billion marks", o: ["1 billion marks", "6 billion marks", "10 billion marks", "40 million"] },
+      { q: "Who believed the state should run all land and industry?", a: "The Bolsheviks", o: ["The Whites", "The Bolsheviks", "The Triple Entente", "The Great Powers"] },
+      { q: "What happened to the Kaiser at the end of the war?", a: "Overthrown in revolution", o: ["Promoted", "Overthrown in revolution", "Became US ally", "Led the League"] },
+      { q: "How many republics made up the USSR by 1922?", a: "15", o: ["5", "10", "15", "20"] },
+      { q: "What was the primary aim of the Paris Peace Conference?", a: "Officially end WWI", o: ["Start a new war", "Officially end WWI", "Rebuild German navy", "Annex Russia"] },
+      { q: "Which was NOT part of the Triple Entente?", a: "Italy", o: ["Britain", "France", "Italy", "Russia"] },
+      { q: "Who was overthrown in the March 1917 revolution?", a: "Tsar Nicholas II", o: ["Lenin", "Tsar Nicholas II", "Wilhelm II", "Wilson"] },
+      { q: "Wilson wanted the world to be safe for what?", a: "Every peace-loving nation", o: ["Empires", "Every peace-loving nation", "Dictators", "Alliances"] },
+      { q: "Which alliance was NOT a legally binding commitment?", a: "Triple Entente", o: ["Triple Alliance", "Triple Entente", "League of Nations", "USSR"] }
     ];
 
-    let currentHeroPos = 50; 
+    function shuffle(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function escapeHTML(s) {
+      return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+
+    const qPool = shuffle([...questions]);
+    const stage = document.getElementById("game-stage");
+    const hero = document.getElementById("hero");
+    const restartBtn = document.getElementById("restart-btn");
+    const feedbackEl = document.getElementById("feedback");
+    const modal = document.getElementById("mcq-modal");
+    const container = document.getElementById("options-container");
+    const crisisDisplay = document.getElementById("crisis-timer-display");
+    const crisisSec = document.getElementById("crisis-sec");
+
+    let currentHeroPos = 50;
     let score = 0;
-    let lives = 5;
-    let timeLeft = 90;
+    let lives = START_LIVES;
+    let timeLeft = GAME_SECONDS;
     let gameRunning = true;
-    let alienActive = false;
-    let currentQIndex = 0;
+    let pausedForMCQ = false;
+    let qIndex = 0;
+    let isCrisis = false;
+    let crisisQuestionsNeeded = 0;
+    let crisisTimeLeft = 10;
+    let crisisTimerInterval = null;
 
-    const hero = document.getElementById('hero');
-    const stage = document.getElementById('game-stage');
+    const aliens = new Set();
+    const bombs = new Set();
+    let spawnInterval = null;
+    let lastFireAt = 0;
 
-    // Hero Movement & Shoot
-    window.addEventListener('keydown', (e) => {
-        if (!gameRunning) return;
-        if (e.key === 'ArrowLeft' && currentHeroPos > 5) currentHeroPos -= 5;
-        if (e.key === 'ArrowRight' && currentHeroPos < 90) currentHeroPos += 5;
-        if (e.key === ' ') fireLaser();
-        hero.style.left = currentHeroPos + '%';
+    // Movement & Shooting
+    window.addEventListener("keydown", (e) => {
+      if (!gameRunning || pausedForMCQ) return;
+      if (e.key === "ArrowLeft") moveHero(-6);
+      if (e.key === "ArrowRight") moveHero(6);
+      if (e.key === " ") fireLaser();
     });
 
+    function moveHero(delta) {
+      currentHeroPos = Math.max(5, Math.min(95, currentHeroPos + delta));
+      hero.style.left = currentHeroPos + "%";
+    }
+
     function fireLaser() {
-        if (!gameRunning) return;
-        const laser = document.createElement('div');
-        laser.className = 'laser';
-        laser.style.left = (currentHeroPos + 3) + '%';
-        laser.style.bottom = '80px';
-        stage.appendChild(laser);
+      const now = Date.now();
+      if (now - lastFireAt < FIRE_COOLDOWN_MS) return;
+      lastFireAt = now;
 
-        const moveLaser = setInterval(() => {
-            let btm = parseInt(laser.style.bottom);
-            laser.style.bottom = (btm + 12) + 'px';
+      const laser = document.createElement("div");
+      laser.className = "laser";
+      laser.style.left = currentHeroPos + "%";
+      laser.style.bottom = "80px";
+      stage.appendChild(laser);
 
-            const alien = document.querySelector('.alien');
-            if (alien && isColliding(laser, alien)) {
-                clearInterval(moveLaser);
-                laser.remove();
-                hitAlien();
-            }
-            if (btm > window.innerHeight) {
-                clearInterval(moveLaser);
-                laser.remove();
-            }
-        }, 20);
+      const move = setInterval(() => {
+        if (!gameRunning || pausedForMCQ) { clearInterval(move); laser.remove(); return; }
+        const btm = parseInt(laser.style.bottom, 10);
+        laser.style.bottom = (btm + 12) + "px";
+
+        // Collision with Aliens
+        for (const alien of aliens) {
+          if (isColliding(laser, alien)) {
+            clearInterval(move);
+            laser.remove();
+            onAlienHit(alien);
+            return;
+          }
+        }
+
+        if (btm > window.innerHeight) { clearInterval(move); laser.remove(); }
+      }, 20);
+    }
+
+    function onAlienHit(alien) {
+      alien.remove();
+      aliens.delete(alien);
+      score += 50;
+      updateStats();
+      startQuiz(false);
+    }
+
+    function startQuiz(crisis) {
+      pausedForMCQ = true;
+      modal.style.display = "block";
+      isCrisis = crisis;
+      
+      if (crisis) {
+        crisisQuestionsNeeded = 2;
+        crisisTimeLeft = 10;
+        crisisDisplay.style.display = "block";
+        crisisSec.innerText = crisisTimeLeft;
+        
+        crisisTimerInterval = setInterval(() => {
+          crisisTimeLeft--;
+          crisisSec.innerText = crisisTimeLeft;
+          if (crisisTimeLeft <= 0) {
+            clearInterval(crisisTimerInterval);
+            endGame("BOMB EXPLODED!");
+          }
+        }, 1000);
+      } else {
+        crisisDisplay.style.display = "none";
+      }
+      
+      showNextQuestion();
+    }
+
+    function showNextQuestion() {
+      feedbackEl.style.display = "none";
+      const qData = qPool[qIndex % qPool.length];
+      document.getElementById("question-text").innerText = qData.q;
+      container.innerHTML = "";
+
+      const options = shuffle([...qData.o]);
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.className = "option-btn";
+        btn.innerText = opt;
+        btn.onclick = () => {
+          const allBtns = container.querySelectorAll("button");
+          allBtns.forEach(b => b.disabled = true);
+
+          if (opt === qData.a) {
+            btn.classList.add("correct-highlight");
+            score += 100;
+            qIndex++;
+            handleCorrect();
+          } else {
+            btn.classList.add("wrong-highlight");
+            const correctBtn = Array.from(allBtns).find(b => b.innerText === qData.a);
+            if (correctBtn) correctBtn.classList.add("correct-highlight");
+            feedbackEl.style.display = "block";
+            feedbackEl.innerHTML = `Correct: <strong>${escapeHTML(qData.a)}</strong>`;
+            lives = Math.max(0, lives - 1);
+            updateStats();
+            
+            setTimeout(() => {
+              qIndex++;
+              if (isCrisis) {
+                // In crisis, if you get it wrong, it doesn't count towards the 2 needed
+                showNextQuestion();
+              } else {
+                resumeGame();
+              }
+            }, 2500);
+          }
+        };
+        container.appendChild(btn);
+      });
+    }
+
+    function handleCorrect() {
+      setTimeout(() => {
+        if (isCrisis) {
+          crisisQuestionsNeeded--;
+          if (crisisQuestionsNeeded <= 0) {
+            clearInterval(crisisTimerInterval);
+            resumeGame();
+          } else {
+            showNextQuestion();
+          }
+        } else {
+          resumeGame();
+        }
+      }, 800);
+    }
+
+    function resumeGame() {
+      modal.style.display = "none";
+      pausedForMCQ = false;
+      isCrisis = false;
+      updateStats();
+      if (lives <= 0) endGame("NO LIVES LEFT");
+    }
+
+    // Spawning logic
+    function spawnLoop() {
+      if (!gameRunning || pausedForMCQ) return;
+      
+      // Randomly spawn bomb or alien
+      if (Math.random() < 0.15) {
+        spawnBomb();
+      } else {
+        spawnAlien();
+      }
     }
 
     function spawnAlien() {
-        if (!gameRunning || alienActive || currentQIndex >= 50) return;
-        const alien = document.createElement('div');
-        alien.className = 'alien';
-        alien.style.left = (Math.random() * 80 + 5) + '%';
-        alien.style.top = '80px';
-        stage.appendChild(alien);
-        alienActive = true;
+      const alien = document.createElement("div");
+      alien.className = "alien";
+      alien.style.left = (Math.random() * 90 + 5) + "%";
+      alien.style.top = "80px";
+      stage.appendChild(alien);
+      aliens.add(alien);
 
-        const fall = setInterval(() => {
-            if (!gameRunning) { clearInterval(fall); return; }
-            let top = alien.offsetTop;
-            alien.style.top = (top + 3) + 'px';
+      const fall = setInterval(() => {
+        if (!gameRunning) { clearInterval(fall); return; }
+        if (pausedForMCQ) return;
+        const top = alien.offsetTop;
+        alien.style.top = (top + 3) + "px";
 
-            if (top > window.innerHeight - 100) {
-                clearInterval(fall);
-                alien.remove();
-                alienActive = false;
-                lives--;
-                updateStats();
-                if (lives <= 0) endGame("EARTH HAS FALLEN");
-                else spawnAlien();
-            }
-        }, 30);
+        if (top > window.innerHeight - 100) {
+          clearInterval(fall);
+          if (alien.isConnected) alien.remove();
+          aliens.delete(alien);
+          lives = Math.max(0, lives - 1);
+          updateStats();
+        }
+      }, 30);
     }
 
-    function hitAlien() {
-        gameRunning = false;
-        const alien = document.querySelector('.alien');
-        if (alien) alien.remove();
-        alienActive = false;
+    function spawnBomb() {
+      const bomb = document.createElement("div");
+      bomb.className = "bomb";
+      bomb.style.left = (Math.random() * 90 + 5) + "%";
+      bomb.style.top = "80px";
+      stage.appendChild(bomb);
+      bombs.add(bomb);
 
-        const modal = document.getElementById('mcq-modal');
-        const qData = questions[currentQIndex];
-        document.getElementById('question-text').innerText = qData.q;
-        
-        const container = document.getElementById('options-container');
-        container.innerHTML = '';
-        
-        // Shuffle options for variety
-        const shuffledOptions = [...qData.o].sort(() => Math.random() - 0.5);
-        
-        shuffledOptions.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => {
-                if (opt === qData.a) {
-                    score += 100;
-                } else {
-                    lives--;
-                }
-                currentQIndex++;
-                updateStats();
-                modal.style.display = 'none';
-                gameRunning = true;
-                
-                if (lives <= 0) endGame("SHIELDS DESTRUCTED");
-                else if (currentQIndex >= 50) endGame("MISSION COMPLETE - HISTORY DEFENDED!");
-                else spawnAlien();
-            };
-            container.appendChild(btn);
-        });
-        modal.style.display = 'block';
+      const fall = setInterval(() => {
+        if (!gameRunning) { clearInterval(fall); return; }
+        if (pausedForMCQ) return;
+        const top = bomb.offsetTop;
+        bomb.style.top = (top + 5) + "px";
+
+        // Collision with Hero
+        if (isColliding(hero, bomb)) {
+          clearInterval(fall);
+          bomb.remove();
+          bombs.delete(bomb);
+          startQuiz(true); // Crisis mode
+          return;
+        }
+
+        if (top > window.innerHeight) {
+          clearInterval(fall);
+          bomb.remove();
+          bombs.delete(bomb);
+        }
+      }, 30);
     }
 
     function isColliding(a, b) {
-        const r1 = a.getBoundingClientRect();
-        const r2 = b.getBoundingClientRect();
-        return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
+      const r1 = a.getBoundingClientRect();
+      const r2 = b.getBoundingClientRect();
+      return !(r1.right < r2.left || r1.left > r2.right || r1.bottom < r2.top || r1.top > r2.bottom);
     }
 
     function updateStats() {
-        document.getElementById('score').innerText = score;
-        document.getElementById('timer').innerText = timeLeft;
-        document.getElementById('lives').innerText = "❤️".repeat(Math.max(0, lives));
-        document.getElementById('progress').innerText = currentQIndex;
+      document.getElementById("score").innerText = score;
+      document.getElementById("timer").innerText = timeLeft;
+      document.getElementById("lives").innerText = "❤️".repeat(lives);
     }
-
-    const timerInt = setInterval(() => {
-        if (gameRunning && timeLeft > 0) {
-            timeLeft--;
-            updateStats();
-            if (timeLeft <= 0) endGame("TIME'S UP - REINFORCEMENTS NEEDED!");
-        }
-    }, 1000);
 
     function endGame(title) {
-        gameRunning = false;
-        clearInterval(timerInt);
-        document.getElementById('end-screen').style.display = 'flex';
-        document.getElementById('end-title').innerText = title;
-        document.getElementById('final-score').innerText = "FINAL SCORE: " + score;
+      gameRunning = false;
+      pausedForMCQ = true;
+      clearInterval(spawnInterval);
+      clearInterval(gameTimerInterval);
+      if (crisisTimerInterval) clearInterval(crisisTimerInterval);
+      document.getElementById("end-screen").style.display = "flex";
+      document.getElementById("end-title").innerText = title;
+      document.getElementById("final-score").innerText = "FINAL SCORE: " + score;
     }
 
-    spawnAlien();
-</script>
+    const gameTimerInterval = setInterval(() => {
+      if (!gameRunning || pausedForMCQ) return;
+      timeLeft--;
+      updateStats();
+      if (timeLeft <= 0) endGame("TIME'S UP!");
+    }, 1000);
+
+    spawnInterval = setInterval(spawnLoop, SPAWN_EVERY_MS);
+    restartBtn.onclick = () => location.reload();
+    hero.style.left = "50%";
+    updateStats();
+  </script>
 </body>
 </html>
