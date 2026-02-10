@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Gravity Trivia Bouncer: Korean War Edition</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow: hidden;
+            touch-action: none;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        canvas {
+            background: #1e293b;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            max-width: 95%;
+            max-height: 55vh;
+        }
+        .ans-btn {
+            transition: all 0.2s ease;
+            text-align: center;
+            min-width: 140px;
+        }
+        #overlay, #trivia-overlay {
+            background: rgba(15, 23, 42, 0.95);
+            z-index: 50;
+        }
+        /* Mobile Control Buttons */
+        .mobile-btn {
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .mobile-btn:active {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.9);
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- UI Header -->
+    <div class="w-full max-w-2xl px-4 py-2 flex justify-between items-center">
+        <div class="flex flex-col">
+            <div class="text-xl font-bold text-blue-400">Time: <span id="timer">180</span>s</div>
+            <div class="text-sm text-slate-400">Bounces: <span id="bounces">0</span> / 3</div>
+        </div>
+        <div class="flex flex-col items-end">
+            <div class="text-2xl font-bold text-green-400">Score: <span id="score">0</span></div>
+            <div class="text-xs text-slate-500">Mastered: <span id="mastered-count">0</span> / 7</div>
+        </div>
+    </div>
+
+    <!-- Canvas Area -->
+    <div class="relative w-full flex justify-center">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Trivia Pop-up -->
+        <div id="trivia-overlay" class="absolute inset-0 flex flex-col items-center justify-center p-4 hidden rounded-lg border-2 border-blue-500 shadow-2xl">
+            <h2 class="text-blue-400 font-bold mb-2 uppercase tracking-widest text-xs">Korean War Intel</h2>
+            <div id="question-text" class="text-base md:text-xl font-semibold mb-4 text-center leading-tight px-2">
+                Question goes here?
+            </div>
+            <div id="options-grid" class="grid grid-cols-2 gap-2 w-full max-w-lg">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Controls -->
+    <div class="flex justify-between w-full max-w-md px-10 mt-6 lg:hidden">
+        <div id="leftBtn" class="mobile-btn">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg>
+        </div>
+        <div id="rightBtn" class="mobile-btn">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6 6-6"/></svg>
+        </div>
+    </div>
+
+    <!-- Game Over Overlay -->
+    <div id="overlay" class="absolute inset-0 flex flex-col items-center justify-center hidden">
+        <h1 id="overlay-title" class="text-5xl font-black mb-4">MISSION END</h1>
+        <p id="overlay-msg" class="text-xl mb-8">Score: 0</p>
+        <button id="restartBtn" class="bg-blue-600 hover:bg-blue-500 px-8 py-3 rounded-full font-bold text-xl shadow-lg">RE-DEPLOY</button>
+    </div>
+
+    <!-- Initial Start Screen -->
+    <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900 z-50 p-6 text-center">
+        <h1 class="text-4xl font-black mb-4 text-blue-400 uppercase tracking-tighter">Korean War<br>Supply Bouncer</h1>
+        <div class="mb-8 text-slate-400 max-w-md space-y-2 text-sm text-left mx-auto">
+            <p>• Bounce 3 times to get a question.</p>
+            <p>• <span class="text-green-400 font-bold">Correct:</span> Question is removed permanently.</p>
+            <p>• <span class="text-red-400 font-bold">Wrong:</span> Question stays in the pool.</p>
+            <p>• <span class="text-yellow-400 font-bold">Gold Crates:</span> Bonus points + Instant Trivia.</p>
+            <p>• Mobile: Use the on-screen arrows.</p>
+        </div>
+        <button id="startBtn" class="bg-blue-600 hover:bg-blue-500 px-10 py-4 rounded-full font-bold text-2xl shadow-xl">START MISSION</button>
+    </div>
+</div>
+
+<script>
+    /** @type {HTMLCanvasElement} */
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    const timerEl = document.getElementById('timer');
+    const scoreEl = document.getElementById('score');
+    const bounceEl = document.getElementById('bounces');
+    const questionText = document.getElementById('question-text');
+    const optionsGrid = document.getElementById('options-grid');
+    const overlay = document.getElementById('overlay');
+    const masteredEl = document.getElementById('mastered-count');
+    const triviaOverlay = document.getElementById('trivia-overlay');
+    const startScreen = document.getElementById('start-screen');
+
+    const rawQuestions = [
+        { q: "When did the North Korean army first cross the 38th Parallel?", a: "June 1950", options: ["June 1950", "May 1945", "July 1953", "Sept 1948"] },
+        { q: "Which US General led the UN forces until he was fired in 1951?", a: "MacArthur", options: ["MacArthur", "Eisenhower", "Ridgway ", "Marshall "] },
+        { q: "What line divided North and South Korea before and after the war?", a: "Parallel 38", options: ["Parallel 38", "Parallel 17", "Parallel 45", "Parallel 50"] },
+        { q: "In which coastal city did MacArthur launch a daring surprise landing?", a: "Incheon  ", options: ["Incheon  ", "Busan    ", "Seoul    ", "Pyongyang"] },
+        { q: "Which major country entered the war to support North Korea in late 1950?", a: "China    ", options: ["China    ", "Japan    ", "Vietnam  ", "Germany  "] },
+        { q: "What was the capital of South Korea that changed hands four times?", a: "Seoul    ", options: ["Seoul    ", "Daegu    ", "Incheon  ", "Gwangju  "] },
+        { q: "The Korean War ended with an armistice but never a formal treaty in...", a: "July 1953", options: ["July 1953", "June 1950", "Aug 1945 ", "May 1955 "] }
+    ];
+
+    function normalizeAnswers(data) {
+        return data.map(item => {
+            const maxLen = Math.max(...item.options.map(o => o.length));
+            const paddedOptions = item.options.map(o => o.padEnd(maxLen, '\u00A0'));
+            const paddedCorrect = item.a.padEnd(maxLen, '\u00A0');
+            return { q: item.q, a: paddedCorrect, options: paddedOptions };
+        });
+    }
+
+    const gameQuestions = normalizeAnswers(rawQuestions);
+
+    let ball, paddle, crates, floorY, ceilingY, score, timeLeft, gameRunning, currentQ, intervalId, animationId;
+    let keys = {};
+    let bounceCount = 0;
+    let isPausedForTrivia = false;
+    let activeQuestions = []; // The list of questions the user hasn't mastered yet
+    let questionPool = [];   // The current shuffled round
+
+    function initGame() {
+        cancelAnimationFrame(animationId);
+        clearInterval(intervalId);
+        
+        canvas.width = 600;
+        canvas.height = 400;
+
+        score = 0;
+        timeLeft = 180;
+        bounceCount = 0;
+        gameRunning = true;
+        isPausedForTrivia = false;
+        ceilingY = 20;
+        floorY = canvas.height - 20;
+        crates = [];
+
+        ball = {
+            x: canvas.width / 2,
+            y: canvas.height / 2,
+            radius: 14,
+            dx: 3,
+            dy: -3,
+            speed: 4.5
+        };
+
+        paddle = {
+            width: 100,
+            height: 14,
+            x: (canvas.width - 100) / 2
+        };
+
+        overlay.classList.add('hidden');
+        triviaOverlay.classList.add('hidden');
+        startScreen.classList.add('hidden');
+        scoreEl.innerText = score;
+        timerEl.innerText = timeLeft;
+        bounceEl.innerText = bounceCount;
+
+        activeQuestions = [...gameQuestions];
+        masteredEl.innerText = "0";
+        questionPool = [...activeQuestions].sort(() => Math.random() - 0.5);
+        
+        intervalId = setInterval(() => {
+            if (timeLeft > 0 && gameRunning && !isPausedForTrivia) {
+                timeLeft--;
+                timerEl.innerText = timeLeft;
+                ball.speed += 0.005;
+                
+                if (Math.random() < 0.15) {
+                    spawnCrate();
+                }
+            } else if (timeLeft <= 0) {
+                endGame("WAR OVER", "Time expired! Final Score: " + score);
+            }
+        }, 1000);
+
+        gameLoop();
+    }
+
+    function spawnCrate() {
+        const types = ['BUFF', 'NERF', 'GOLD'];
+        const weights = [0.5, 0.4, 0.1];
+        let random = Math.random();
+        let type;
+        
+        if (random < weights[0]) type = 'BUFF';
+        else if (random < weights[0] + weights[1]) type = 'NERF';
+        else type = 'GOLD';
+
+        crates.push({
+            x: 50 + Math.random() * (canvas.width - 100),
+            y: ceilingY - 20,
+            width: 30,
+            height: 30,
+            speed: 0.8 + Math.random() * 1.0, 
+            type: type
+        });
+    }
+
+    function triggerTrivia() {
+        if (activeQuestions.length === 0) {
+            endGame("VICTORY", "You've mastered all intel! Perfect score!");
+            return;
+        }
+
+        isPausedForTrivia = true;
+        triviaOverlay.classList.remove('hidden');
+        
+        // If current shuffled round is finished, refill from remaining active questions
+        if (questionPool.length === 0) {
+            questionPool = [...activeQuestions].sort(() => Math.random() - 0.5);
+        }
+        
+        currentQ = questionPool.pop();
+        questionText.innerText = currentQ.q;
+        
+        const shuffledOptions = [...currentQ.options].sort(() => Math.random() - 0.5);
+        
+        optionsGrid.innerHTML = '';
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = "ans-btn bg-slate-700 hover:bg-blue-600 py-3 px-2 rounded font-mono text-xs border-b-4 border-slate-900 shadow-lg";
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt);
+            optionsGrid.appendChild(btn);
+        });
+    }
+
+    function checkAnswer(selected) {
+        if (selected === currentQ.a) {
+            score += 50;
+            paddle.width = Math.min(220, paddle.width + 30);
+            floorY = Math.min(canvas.height - 10, floorY + 20);
+            
+            // REMOVE the question from active rotation
+            activeQuestions = activeQuestions.filter(q => q.q !== currentQ.q);
+            masteredEl.innerText = gameQuestions.length - activeQuestions.length;
+
+            if (activeQuestions.length === 0) {
+                endGame("MASTERY!", "All intel secured! Total Score: " + score);
+                return;
+            }
+        } else {
+            paddle.width = Math.max(40, paddle.width - 25);
+            floorY -= 35;
+            // NOTE: We do NOT remove it from activeQuestions, so it will reappear later.
+        }
+
+        scoreEl.innerText = score;
+        bounceCount = 0;
+        bounceEl.innerText = bounceCount;
+        
+        if (floorY < ceilingY + 60) {
+            endGame("OVERRUN!", "The zone became too small to survive!");
+        } else {
+            isPausedForTrivia = false;
+            triviaOverlay.classList.add('hidden');
+        }
+    }
+
+    function endGame(title, msg) {
+        gameRunning = false;
+        clearInterval(intervalId);
+        document.getElementById('overlay-title').innerText = title;
+        document.getElementById('overlay-msg').innerText = msg;
+        overlay.classList.remove('hidden');
+        triviaOverlay.classList.add('hidden');
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Ceiling/Floor
+        ctx.fillStyle = "#334155";
+        ctx.fillRect(0, 0, canvas.width, ceilingY);
+        ctx.fillStyle = "#991b1b"; 
+        ctx.fillRect(0, floorY, canvas.width, canvas.height - floorY);
+
+        // Paddle
+        ctx.fillStyle = "#60a5fa";
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = "#3b82f6";
+        ctx.fillRect(paddle.x, floorY - paddle.height, paddle.width, paddle.height);
+        ctx.shadowBlur = 0;
+
+        // Ball
+        ctx.beginPath();
+        ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#fbbf24";
+        ctx.fill();
+        ctx.closePath();
+
+        // Crates
+        crates.forEach(crate => {
+            switch(crate.type) {
+                case 'BUFF': ctx.fillStyle = "#3b82f6"; break;
+                case 'NERF': ctx.fillStyle = "#ef4444"; break;
+                case 'GOLD': ctx.fillStyle = "#fbbf24"; break;
+            }
+            ctx.fillRect(crate.x, crate.y, crate.width, crate.height);
+            ctx.strokeStyle = "rgba(255,255,255,0.5)";
+            ctx.strokeRect(crate.x + 5, crate.y + 5, crate.width - 10, crate.height - 10);
+        });
+
+        // Hit markers
+        if (bounceCount > 0) {
+            ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+            for(let i=0; i<bounceCount; i++) {
+                ctx.beginPath();
+                ctx.arc(paddle.x + 15 + (i*15), floorY - paddle.height/2, 4, 0, Math.PI*2);
+                ctx.fill();
+            }
+        }
+    }
+
+    function update() {
+        if (!gameRunning || isPausedForTrivia) return;
+
+        // Move Paddle
+        if (keys['Left'] && paddle.x > 0) paddle.x -= 8;
+        if (keys['Right'] && paddle.x < canvas.width - paddle.width) paddle.x += 8;
+
+        ball.x += ball.dx;
+        ball.y += ball.dy;
+
+        if (ball.x + ball.radius > canvas.width || ball.x - ball.radius < 0) ball.dx *= -1;
+        if (ball.y - ball.radius < ceilingY) ball.dy *= -1;
+
+        if (ball.y + ball.radius > floorY - paddle.height) {
+            if (ball.x > paddle.x && ball.x < paddle.x + paddle.width) {
+                bounceCount++;
+                bounceEl.innerText = bounceCount;
+                let hitPos = (ball.x - (paddle.x + paddle.width / 2)) / (paddle.width / 2);
+                ball.dx = hitPos * ball.speed;
+                ball.dy = -Math.sqrt(Math.pow(ball.speed, 2) - Math.pow(ball.dx, 2));
+                if (isNaN(ball.dy)) ball.dy = -ball.speed;
+                ball.y = floorY - paddle.height - ball.radius;
+
+                if (bounceCount >= 3) {
+                    triggerTrivia();
+                }
+            } else if (ball.y + ball.radius > floorY) {
+                endGame("M.I.A.", "Artillery lost in transit!");
+            }
+        }
+
+        // Update Crates
+        for (let i = crates.length - 1; i >= 0; i--) {
+            let crate = crates[i];
+            crate.y += crate.speed;
+
+            if (crate.x < paddle.x + paddle.width && crate.x + crate.width > paddle.x &&
+                crate.y + crate.height > floorY - paddle.height && crate.y < floorY) {
+                
+                if (crate.type === 'BUFF') {
+                    paddle.width = Math.min(220, paddle.width + 20);
+                    score += 10;
+                } else if (crate.type === 'NERF') {
+                    floorY -= 20;
+                } else if (crate.type === 'GOLD') {
+                    score += 100;
+                    triggerTrivia();
+                }
+                
+                crates.splice(i, 1);
+                scoreEl.innerText = score;
+                continue;
+            }
+
+            if (crate.y > floorY) {
+                if (crate.type === 'NERF') floorY -= 15;
+                crates.splice(i, 1);
+            }
+        }
+
+        if (floorY < ceilingY + 60) {
+            endGame("OVERRUN!", "The zone became too small!");
+        }
+    }
+
+    function gameLoop() {
+        update();
+        draw();
+        if (gameRunning) {
+            animationId = requestAnimationFrame(gameLoop);
+        }
+    }
+
+    // Input Listeners
+    const startBtn = document.getElementById('startBtn');
+    const restartBtn = document.getElementById('restartBtn');
+    const leftBtn = document.getElementById('leftBtn');
+    const rightBtn = document.getElementById('rightBtn');
+
+    startBtn.onclick = initGame;
+    restartBtn.onclick = initGame;
+
+    leftBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['Left'] = true; });
+    leftBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['Left'] = false; });
+    rightBtn.addEventListener('touchstart', (e) => { e.preventDefault(); keys['Right'] = true; });
+    rightBtn.addEventListener('touchend', (e) => { e.preventDefault(); keys['Right'] = false; });
+
+    window.addEventListener('keydown', (e) => {
+        if (e.code === 'ArrowLeft') keys['Left'] = true;
+        if (e.code === 'ArrowRight') keys['Right'] = true;
+    });
+    window.addEventListener('keyup', (e) => {
+        if (e.code === 'ArrowLeft') keys['Left'] = false;
+        if (e.code === 'ArrowRight') keys['Right'] = false;
+    });
+
+</script>
+</body>
+</html>
