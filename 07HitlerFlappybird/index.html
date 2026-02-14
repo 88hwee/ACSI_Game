@@ -12,7 +12,7 @@
         .btn { pointer-events: auto; background: #991b1b; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: none; }
         .btn:hover { background: #7f1d1d; transform: translateY(-2px); }
         .btn:active { transform: translateY(0); }
-        #quizModal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.95); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+        #quizModal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(12px); }
         .correct { background-color: #065f46 !important; border-color: #10b981 !important; transform: scale(1.02); }
         .wrong { background-color: #991b1b !important; border-color: #ef4444 !important; opacity: 0.7; }
         .heart { color: #ef4444; font-size: 1.5rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
@@ -41,21 +41,21 @@
         <!-- Screens -->
         <div id="startScreen" class="ui-overlay w-80 bg-slate-800 p-8 rounded-xl border-b-4 border-red-700 pointer-events-auto">
             <div class="text-6xl mb-4">🐦</div>
-            <h2 class="text-2xl font-bold text-white mb-2 italic">80-Question Gauntlet</h2>
-            <p class="text-xs text-slate-400 mb-6 leading-relaxed">3 Lives. ⭐ = +5s Bonus.<br>Answer every 2 pillars. Incorrect repeats.</p>
-            <button class="btn w-full" onclick="startGame()">BEGIN SESSION</button>
+            <h2 class="text-2xl font-bold text-white mb-2 italic">Revision Gauntlet</h2>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">Focus: High-speed MCQ training.<br>Thin pillars, frequent questions.<br>Wrong answers repeat soon.</p>
+            <button class="btn w-full" onclick="startGame()">START MISSION</button>
         </div>
 
         <div id="collisionOverlay" class="ui-overlay hidden w-72 bg-slate-900/90 p-6 rounded-xl border-2 border-red-500 pointer-events-none">
             <div class="text-3xl mb-2 text-red-500 font-black">PILLAR HIT!</div>
-            <p class="text-sm text-slate-300 animate-pulse">Tap or Space to Respawn</p>
+            <p class="text-sm text-slate-300 animate-pulse">Tap or Space to Continue</p>
         </div>
 
         <div id="gameOverScreen" class="ui-overlay hidden w-80 bg-slate-800 p-8 rounded-xl border-b-4 border-red-900 pointer-events-auto">
             <h2 class="text-2xl font-bold text-red-500 mb-2 uppercase">Session Ended</h2>
             <p id="finalMsg" class="text-xs text-slate-400 mb-4"></p>
             <div class="text-5xl font-black text-white mb-6" id="finalScore">0</div>
-            <button class="btn w-full" onclick="startGame()">RETRY MISSION</button>
+            <button class="btn w-full" onclick="startGame()">RETRY</button>
         </div>
     </div>
 
@@ -63,7 +63,7 @@
     <div id="quizModal">
         <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-red-600 max-w-md w-full shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <span id="quizBadge" class="bg-red-900/50 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">History MCQ</span>
+                <span id="quizBadge" class="bg-red-900/50 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Revision MCQ</span>
                 <span id="qRemaining" class="text-slate-500 text-[10px] font-mono"></span>
             </div>
             <p id="questionText" class="text-white font-medium mb-8 text-lg leading-snug"></p>
@@ -85,16 +85,16 @@
         const livesContainer = document.getElementById('livesContainer');
         const scoreLabel = document.getElementById('scoreLabel');
 
-        // ADJUSTED CONSTANTS FOR EASIER GAMEPLAY
-        const GRAVITY = 0.19;      // Reduced (was 0.22) - slower fall
-        const FLAP = -4.2;         // Reduced (was -4.5) - gentler jump
-        const SPAWN_RATE = 130;    // Increased (was 100) - more time between pillars
-        const BLOCK_WIDTH = 50;    // Reduced (was 60) - thinner obstacles
-        const BLOCK_GAP = 185;     // Increased (was 160) - much larger gap to fly through
-        const SPEED = 2.1;         // Reduced (was 2.2) - slower scroll speed
+        // REFINED FOR BETTER FOCUS ON MCQ & CHALLENGING BUT THIN PILLARS
+        const GRAVITY = 0.22;      // Back to snappier physics
+        const FLAP = -4.5;         // Match snappier gravity
+        const SPAWN_RATE = 95;     // Faster spawns to reach quiz points quickly
+        const BLOCK_WIDTH = 25;    // MUCH THINNER PILLARS (reduced from 50)
+        const BLOCK_GAP = 165;     // Tightened gap slightly for "difficulty" focus
+        const SPEED = 2.6;         // Brisk scroll speed
         const TOTAL_TIME = 180;
 
-        let bird = { x: 60, y: 250, velocity: 0, width: 28, height: 22 }; // Slightly smaller hitbox
+        let bird = { x: 70, y: 250, velocity: 0, width: 26, height: 20 };
         let blocks = [];
         let stars = [];
         let score = 0; 
@@ -149,7 +149,7 @@
 
         function startGame() {
             currentPool = [...masterQuestions].sort(() => Math.random() - 0.5);
-            bird = { x: 60, y: 250, velocity: 0, width: 28, height: 22 };
+            bird = { x: 70, y: 250, velocity: 0, width: 26, height: 20 };
             blocks = [];
             stars = [];
             score = 0; 
@@ -181,10 +181,8 @@
                 if (gameActive && !quizActive && gameStarted && !collisionPaused) {
                     timeLeft--;
                     timerEl.innerText = timeLeft + "s";
-                    
                     if (timeLeft <= 15) timerEl.classList.add('timer-flash');
                     else timerEl.classList.remove('timer-flash');
-
                     if (timeLeft <= 0) endGame("Time's up!");
                 }
             }, 1000);
@@ -204,7 +202,7 @@
             lives--;
             updateLivesDisplay();
             if (lives <= 0) {
-                endGame("Out of lives. Revision incomplete.");
+                endGame("Mission Failed.");
             } else {
                 collisionPaused = true;
                 collisionOverlay.classList.remove('hidden');
@@ -249,15 +247,15 @@
             if (repeatIdx !== -1) {
                 qObj = wrongAnswersQueue[repeatIdx].question;
                 wrongAnswersQueue.splice(repeatIdx, 1);
-                document.getElementById('quizBadge').innerText = "REVIEW QUESTION";
+                document.getElementById('quizBadge').innerText = "PRIORITY REVIEW";
             } else {
                 if (qIndex >= currentPool.length) qIndex = 0; 
                 qObj = currentPool[qIndex];
-                document.getElementById('quizBadge').innerText = "HISTORY MCQ";
+                document.getElementById('quizBadge').innerText = "KNOWLEDGE CHECK";
             }
 
             questionText.innerText = qObj.q;
-            document.getElementById('qRemaining').innerText = `POOL: ${qIndex + 1}/${currentPool.length}`;
+            document.getElementById('qRemaining').innerText = `ID: ${qIndex + 1}/${currentPool.length}`;
             
             let opts = [qObj.a, ...qObj.o].sort(() => Math.random() - 0.5);
             optionsContainer.innerHTML = '';
@@ -271,15 +269,15 @@
                     allButtons.forEach(btn => btn.disabled = true);
                     
                     if (opt === qObj.a) { 
-                        score += 10; 
+                        score += 15; // Higher reward for quiz focus
                         scoreLabel.innerText = "SCORE: " + score;
                         b.classList.add('correct'); 
-                        setTimeout(() => { finishQuiz(); }, 800);
+                        setTimeout(() => { finishQuiz(); }, 700);
                     } else { 
                         b.classList.add('wrong');
                         allButtons.forEach(btn => { if (btn.innerText === qObj.a) btn.classList.add('correct'); });
-                        wrongAnswersQueue.push({ question: qObj, repeatAt: score + 20 });
-                        setTimeout(() => { finishQuiz(); }, 2200); 
+                        wrongAnswersQueue.push({ question: qObj, repeatAt: score + 15 });
+                        setTimeout(() => { finishQuiz(); }, 2000); 
                     }
                 };
                 optionsContainer.appendChild(b);
@@ -304,23 +302,16 @@
                     bird.y += bird.velocity;
 
                     if (frameCount % SPAWN_RATE === 0) {
-                        const minH = 60;
-                        const maxH = canvas.height - BLOCK_GAP - 60;
+                        const minH = 70;
+                        const maxH = canvas.height - BLOCK_GAP - 70;
                         const topH = Math.random() * (maxH - minH) + minH;
                         blocks.push({ x: canvas.width, topH, passed: false });
-                        
-                        if (Math.random() > 0.35) {
-                            stars.push({ 
-                                x: canvas.width + 120, 
-                                y: topH + (BLOCK_GAP / 2) + (Math.random() * 80 - 40), 
-                                collected: false 
-                            });
-                        }
                     }
 
                     for (let i = blocks.length - 1; i >= 0; i--) {
                         blocks[i].x -= SPEED;
 
+                        // Collision with thinner hitbox logic
                         if (bird.x + bird.width > blocks[i].x && bird.x < blocks[i].x + BLOCK_WIDTH) {
                             if (bird.y < blocks[i].topH || bird.y + bird.height > blocks[i].topH + BLOCK_GAP) {
                                 triggerDeath();
@@ -328,6 +319,7 @@
                             }
                         }
 
+                        // Trigger quiz every 2 pillars
                         if (!blocks[i].passed && blocks[i].x + BLOCK_WIDTH < bird.x) {
                             blocks[i].passed = true;
                             score++;
@@ -340,27 +332,9 @@
                         
                         if (blocks[i].x < -BLOCK_WIDTH) blocks.splice(i, 1);
                     }
-
-                    for (let i = stars.length - 1; i >= 0; i--) {
-                        stars[i].x -= SPEED;
-                        
-                        const centerX = bird.x + bird.width / 2;
-                        const centerY = bird.y + bird.height / 2;
-                        const dist = Math.hypot(centerX - stars[i].x, centerY - stars[i].y);
-
-                        if (!stars[i].collected && dist < 35) {
-                            stars[i].collected = true;
-                            timeLeft += 5;
-                            timerEl.innerText = timeLeft + "s";
-                            scoreLabel.classList.add('text-yellow-400');
-                            setTimeout(() => scoreLabel.classList.remove('text-yellow-400'), 500);
-                        }
-                        if (stars[i].x < -50) stars.splice(i, 1);
-                    }
-
                     frameCount++;
                 } else {
-                    bird.y = 250 + Math.sin(Date.now() / 250) * 15;
+                    bird.y = 250 + Math.sin(Date.now() / 200) * 15;
                 }
 
                 if (bird.y + bird.height > canvas.height || bird.y < 0) {
@@ -369,56 +343,42 @@
             }
 
             // --- DRAWING ---
-            ctx.strokeStyle = "rgba(255,255,255,0.03)";
+            ctx.strokeStyle = "rgba(255,255,255,0.05)";
             for(let i=0; i<canvas.width; i+=40) {
                 ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
             }
 
             blocks.forEach(block => {
-                const grad = ctx.createLinearGradient(block.x, 0, block.x + BLOCK_WIDTH, 0);
-                grad.addColorStop(0, "#1e40af");
-                grad.addColorStop(1, "#3b82f6");
-                ctx.fillStyle = grad;
-                
+                ctx.fillStyle = "#334155"; // Neutral color to focus on bird/modal
                 ctx.fillRect(block.x, 0, BLOCK_WIDTH, block.topH);
-                ctx.fillStyle = "#60a5fa";
-                ctx.fillRect(block.x, block.topH - 10, BLOCK_WIDTH, 10);
-                
-                ctx.fillStyle = grad;
                 ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, canvas.height);
-                ctx.fillStyle = "#60a5fa";
-                ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, 10);
-            });
-
-            stars.forEach(star => {
-                if (!star.collected) {
-                    ctx.font = "28px serif";
-                    ctx.textAlign = "center";
-                    ctx.fillText("⭐", star.x, star.y + 10);
-                }
+                // Pillar tip highlight
+                ctx.fillStyle = "#ef4444";
+                ctx.fillRect(block.x, block.topH - 3, BLOCK_WIDTH, 3);
+                ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, 3);
             });
 
             if (!gameStarted && !collisionPaused && !quizActive) {
-                ctx.fillStyle = "rgba(255,255,255,0.8)";
-                ctx.font = "bold 14px sans-serif";
+                ctx.fillStyle = "rgba(255,255,255,0.6)";
+                ctx.font = "bold 13px sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText("TAP OR SPACE TO START", canvas.width/2, 340);
+                ctx.fillText("TAP OR SPACE", canvas.width/2, 340);
             }
 
             ctx.save();
             ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
             ctx.scale(-1, 1);
-            let rotation = Math.max(-0.4, Math.min(0.4, bird.velocity * 0.12));
+            let rotation = Math.max(-0.6, Math.min(0.6, bird.velocity * 0.15));
             ctx.rotate(rotation);
             
             if (!collisionPaused) {
-                ctx.shadowBlur = 15;
+                ctx.shadowBlur = 10;
                 ctx.shadowColor = "#ef4444";
             }
             
-            let flapCycle = Math.floor(frameCount / 8) % 2;
+            let flapCycle = Math.floor(frameCount / 6) % 2;
             let birdEmoji = (flapCycle === 0 || bird.velocity < -0.5 || collisionPaused) ? "🐦" : "🕊️"; 
-            ctx.font = "32px serif";
+            ctx.font = "30px serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(birdEmoji, 0, 0); 
