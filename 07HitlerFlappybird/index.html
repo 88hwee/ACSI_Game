@@ -86,12 +86,12 @@
         const scoreLabel = document.getElementById('scoreLabel');
 
         // REFINED FOR BETTER FOCUS ON MCQ & CHALLENGING BUT THIN PILLARS
-        const GRAVITY = 0.22;      // Back to snappier physics
-        const FLAP = -4.5;         // Match snappier gravity
-        const SPAWN_RATE = 95;     // Faster spawns to reach quiz points quickly
-        const BLOCK_WIDTH = 25;    // MUCH THINNER PILLARS (reduced from 50)
-        const BLOCK_GAP = 165;     // Tightened gap slightly for "difficulty" focus
-        const SPEED = 2.6;         // Brisk scroll speed
+        const GRAVITY = 0.22;      
+        const FLAP = -4.5;         
+        const SPAWN_RATE = 95;     
+        const BLOCK_WIDTH = 12;    // EVEN THINNER PILLARS (reduced from 25)
+        const BLOCK_GAP = 165;     
+        const SPEED = 2.6;         
         const TOTAL_TIME = 180;
 
         let bird = { x: 70, y: 250, velocity: 0, width: 26, height: 20 };
@@ -269,7 +269,7 @@
                     allButtons.forEach(btn => btn.disabled = true);
                     
                     if (opt === qObj.a) { 
-                        score += 15; // Higher reward for quiz focus
+                        score += 15; 
                         scoreLabel.innerText = "SCORE: " + score;
                         b.classList.add('correct'); 
                         setTimeout(() => { finishQuiz(); }, 700);
@@ -311,7 +311,6 @@
                     for (let i = blocks.length - 1; i >= 0; i--) {
                         blocks[i].x -= SPEED;
 
-                        // Collision with thinner hitbox logic
                         if (bird.x + bird.width > blocks[i].x && bird.x < blocks[i].x + BLOCK_WIDTH) {
                             if (bird.y < blocks[i].topH || bird.y + bird.height > blocks[i].topH + BLOCK_GAP) {
                                 triggerDeath();
@@ -319,7 +318,6 @@
                             }
                         }
 
-                        // Trigger quiz every 2 pillars
                         if (!blocks[i].passed && blocks[i].x + BLOCK_WIDTH < bird.x) {
                             blocks[i].passed = true;
                             score++;
@@ -349,13 +347,13 @@
             }
 
             blocks.forEach(block => {
-                ctx.fillStyle = "#334155"; // Neutral color to focus on bird/modal
+                ctx.fillStyle = "#334155"; 
                 ctx.fillRect(block.x, 0, BLOCK_WIDTH, block.topH);
                 ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, canvas.height);
-                // Pillar tip highlight
+                // Subtle tip highlight
                 ctx.fillStyle = "#ef4444";
-                ctx.fillRect(block.x, block.topH - 3, BLOCK_WIDTH, 3);
-                ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, 3);
+                ctx.fillRect(block.x, block.topH - 2, BLOCK_WIDTH, 2);
+                ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, 2);
             });
 
             if (!gameStarted && !collisionPaused && !quizActive) {
