@@ -85,15 +85,16 @@
         const livesContainer = document.getElementById('livesContainer');
         const scoreLabel = document.getElementById('scoreLabel');
 
-        const GRAVITY = 0.22;
-        const FLAP = -4.5;
-        const SPAWN_RATE = 100;
-        const BLOCK_WIDTH = 60;
-        const BLOCK_GAP = 160; 
-        const SPEED = 2.2;
+        // ADJUSTED CONSTANTS FOR EASIER GAMEPLAY
+        const GRAVITY = 0.19;      // Reduced (was 0.22) - slower fall
+        const FLAP = -4.2;         // Reduced (was -4.5) - gentler jump
+        const SPAWN_RATE = 130;    // Increased (was 100) - more time between pillars
+        const BLOCK_WIDTH = 50;    // Reduced (was 60) - thinner obstacles
+        const BLOCK_GAP = 185;     // Increased (was 160) - much larger gap to fly through
+        const SPEED = 2.1;         // Reduced (was 2.2) - slower scroll speed
         const TOTAL_TIME = 180;
 
-        let bird = { x: 60, y: 250, velocity: 0, width: 30, height: 24 };
+        let bird = { x: 60, y: 250, velocity: 0, width: 28, height: 22 }; // Slightly smaller hitbox
         let blocks = [];
         let stars = [];
         let score = 0; 
@@ -148,7 +149,7 @@
 
         function startGame() {
             currentPool = [...masterQuestions].sort(() => Math.random() - 0.5);
-            bird = { x: 60, y: 250, velocity: 0, width: 30, height: 24 };
+            bird = { x: 60, y: 250, velocity: 0, width: 28, height: 22 };
             blocks = [];
             stars = [];
             score = 0; 
@@ -244,7 +245,6 @@
             quizActive = true;
             let qObj;
             
-            // Prioritize wrong answers
             const repeatIdx = wrongAnswersQueue.findIndex(item => item.repeatAt <= score);
             if (repeatIdx !== -1) {
                 qObj = wrongAnswersQueue[repeatIdx].question;
@@ -303,28 +303,24 @@
                     bird.velocity += GRAVITY;
                     bird.y += bird.velocity;
 
-                    // Spawn blocks
                     if (frameCount % SPAWN_RATE === 0) {
-                        const minH = 50;
-                        const maxH = canvas.height - BLOCK_GAP - 50;
+                        const minH = 60;
+                        const maxH = canvas.height - BLOCK_GAP - 60;
                         const topH = Math.random() * (maxH - minH) + minH;
                         blocks.push({ x: canvas.width, topH, passed: false });
                         
-                        // Spawn star
-                        if (Math.random() > 0.4) {
+                        if (Math.random() > 0.35) {
                             stars.push({ 
-                                x: canvas.width + 100, 
-                                y: topH + (BLOCK_GAP / 2) + (Math.random() * 60 - 30), 
+                                x: canvas.width + 120, 
+                                y: topH + (BLOCK_GAP / 2) + (Math.random() * 80 - 40), 
                                 collected: false 
                             });
                         }
                     }
 
-                    // Process blocks
                     for (let i = blocks.length - 1; i >= 0; i--) {
                         blocks[i].x -= SPEED;
 
-                        // Collision
                         if (bird.x + bird.width > blocks[i].x && bird.x < blocks[i].x + BLOCK_WIDTH) {
                             if (bird.y < blocks[i].topH || bird.y + bird.height > blocks[i].topH + BLOCK_GAP) {
                                 triggerDeath();
@@ -332,7 +328,6 @@
                             }
                         }
 
-                        // Scoring & Quiz Trigger
                         if (!blocks[i].passed && blocks[i].x + BLOCK_WIDTH < bird.x) {
                             blocks[i].passed = true;
                             score++;
@@ -346,7 +341,6 @@
                         if (blocks[i].x < -BLOCK_WIDTH) blocks.splice(i, 1);
                     }
 
-                    // Process stars
                     for (let i = stars.length - 1; i >= 0; i--) {
                         stars[i].x -= SPEED;
                         
@@ -358,7 +352,6 @@
                             stars[i].collected = true;
                             timeLeft += 5;
                             timerEl.innerText = timeLeft + "s";
-                            // Tiny pop effect
                             scoreLabel.classList.add('text-yellow-400');
                             setTimeout(() => scoreLabel.classList.remove('text-yellow-400'), 500);
                         }
@@ -367,43 +360,36 @@
 
                     frameCount++;
                 } else {
-                    bird.y = 250 + Math.sin(Date.now() / 200) * 15;
+                    bird.y = 250 + Math.sin(Date.now() / 250) * 15;
                 }
 
-                // Floor/Ceiling
                 if (bird.y + bird.height > canvas.height || bird.y < 0) {
                     triggerDeath();
                 }
             }
 
             // --- DRAWING ---
-            
-            // Draw Background (Static grid for depth)
             ctx.strokeStyle = "rgba(255,255,255,0.03)";
             for(let i=0; i<canvas.width; i+=40) {
                 ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
             }
 
-            // Draw blocks
             blocks.forEach(block => {
                 const grad = ctx.createLinearGradient(block.x, 0, block.x + BLOCK_WIDTH, 0);
                 grad.addColorStop(0, "#1e40af");
                 grad.addColorStop(1, "#3b82f6");
                 ctx.fillStyle = grad;
                 
-                // Top
                 ctx.fillRect(block.x, 0, BLOCK_WIDTH, block.topH);
                 ctx.fillStyle = "#60a5fa";
                 ctx.fillRect(block.x, block.topH - 10, BLOCK_WIDTH, 10);
                 
-                // Bottom
                 ctx.fillStyle = grad;
                 ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, canvas.height);
                 ctx.fillStyle = "#60a5fa";
                 ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, 10);
             });
 
-            // Draw stars
             stars.forEach(star => {
                 if (!star.collected) {
                     ctx.font = "28px serif";
@@ -412,7 +398,6 @@
                 }
             });
 
-            // Start Text
             if (!gameStarted && !collisionPaused && !quizActive) {
                 ctx.fillStyle = "rgba(255,255,255,0.8)";
                 ctx.font = "bold 14px sans-serif";
@@ -420,11 +405,10 @@
                 ctx.fillText("TAP OR SPACE TO START", canvas.width/2, 340);
             }
 
-            // Draw Bird
             ctx.save();
             ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
             ctx.scale(-1, 1);
-            let rotation = Math.max(-0.5, Math.min(0.5, bird.velocity * 0.1));
+            let rotation = Math.max(-0.4, Math.min(0.4, bird.velocity * 0.12));
             ctx.rotate(rotation);
             
             if (!collisionPaused) {
@@ -432,9 +416,9 @@
                 ctx.shadowColor = "#ef4444";
             }
             
-            let flapCycle = Math.floor(frameCount / 6) % 2;
-            let birdEmoji = (flapCycle === 0 || bird.velocity < -1 || collisionPaused) ? "🐦" : "🕊️"; 
-            ctx.font = "34px serif";
+            let flapCycle = Math.floor(frameCount / 8) % 2;
+            let birdEmoji = (flapCycle === 0 || bird.velocity < -0.5 || collisionPaused) ? "🐦" : "🕊️"; 
+            ctx.font = "32px serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
             ctx.fillText(birdEmoji, 0, 0); 
