@@ -82,14 +82,14 @@
 <div id="game-container">
     <div id="start-screen">
         <h1 style="color: #facc15; font-size: 48px; margin-bottom: 10px;">COLD WAR MASTERY</h1>
-        <p style="margin-bottom: 30px; font-weight: bold; color: #94a3b8;">BOOSTED TRIPLE JUMP. BRICKS LOWERED FOR BETTER REACH.</p>
+        <p style="margin-bottom: 30px; font-weight: bold; color: #94a3b8;">50-QUESTION INTEL GAUNTLET. TRIPLE JUMP TO HIT BRICKS.</p>
         <button id="btn-start">INITIALIZE MISSION</button>
     </div>
 
     <div id="ui-layer">
         <div id="stats-lives" style="color:#ef4444">HP: ❤️❤️❤️</div>
         <div id="stats-coins">INTEL: 0</div>
-        <div id="stats-timer">120s</div>
+        <div id="stats-timer">300s</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
@@ -109,8 +109,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let gameStarted = false, gameActive = false, isFalling = false;
-let timer = 120, lives = 3, coins = 0;
-// REDUCED GRAVITY for more air time
+let timer = 300, lives = 3, coins = 0;
 const gravity = 0.45;
 
 const player = { 
@@ -121,7 +120,6 @@ const player = {
     vx: 0, 
     vy: 0, 
     speed: 7, 
-    // INCREASED JUMP POWER for higher reach
     jumpPower: -13, 
     grounded: false, 
     facingRight: true,
@@ -139,18 +137,71 @@ function shuffle(array) {
 }
 
 const masterDeck = [
+    // ATOMIC BOMB / WWII END
     { q: "What were the code names for the two atomic bombs used against Japan?", a: ["Trinity and Mike", "Little Boy and Fat Man", "Olympic and Coronet", "Silver and Copper"], correct: "Little Boy and Fat Man" },
-    { q: "Which city was the primary target of the first atomic mission on 6 August 1945?", a: ["Nagasaki", "Kokura", "Hiroshima", "Kyoto"], correct: "Hiroshima" },
-    { q: "What was the name of the first nuclear test explosion in July 1945?", a: ["Centerboard", "Trinity", "Manhattan", "Overlord"], correct: "Trinity" },
-    { q: "Why did Henry Stimson insist on removing Kyoto from the target list?", a: ["Lacked any military value", "Great cultural significance", "Target was firebombed already", "Planned for Allied HQ use"], correct: "Great cultural significance" },
-    { q: "Stalin requested a Second Front primarily to:", a: ["Invasion of Britain", "Force a two-front war", "Seize nuclear technology", "End the Nazi-Soviet Pact"], correct: "Force a two-front war" },
+    { q: "Which city was the primary target of the first atomic mission on 6 August 1945?", a: ["Nagasaki", "Hiroshima", "Kokura", "Kyoto"], correct: "Hiroshima" },
+    { q: "What was the name of the first nuclear test explosion in July 1945?", a: ["Trinity", "Manhattan", "Overlord", "Coronet"], correct: "Trinity" },
+    { q: "Why did Henry Stimson insist on removing Kyoto from the target list?", a: ["Lacked military value", "Great cultural value", "Already firebombed", "Planned for Allied HQ"], correct: "Great cultural value" },
+    { q: "Stalin requested a Second Front primarily to:", a: ["Invasion of Britain", "Force a two-front war", "Seize atomic secrets", "End the Nazi-Soviet Pact"], correct: "Force a two-front war" },
+
+    // LONG TELEGRAM / CONTAINMENT
+    { q: "Who sent the 'Long Telegram' from Moscow in 1946?", a: ["George Kennan", "Winston Churchill", "George Marshall", "Harry Truman"], correct: "George Kennan" },
+    { q: "The 'Long Telegram' argued that the Soviet Union was:", a: ["Ready to cooperate", "Fanatically hostile", "Economically stable", "Weak and defensive"], correct: "Fanatically hostile" },
+    { q: "George Kennan's recommended strategy for the US was:", a: ["Total rollback", "Policy of containment", "Isolationist trade", "Direct naval attack"], correct: "Policy of containment" },
+    { q: "Winston Churchill's 1946 speech popularized which term?", a: ["The Steel Curtain", "The Iron Curtain", "The Velvet Divide", "The Berlin Barrier"], correct: "The Iron Curtain" },
+
+    // TRUMAN DOCTRINE / MARSHALL PLAN
     { q: "The Truman Doctrine (1947) responded to a power vacuum left by:", a: ["Germany", "Great Britain", "France", "Japan"], correct: "Great Britain" },
-    { q: "George Kennan's 'Long Telegram' proposed what strategy?", a: ["Appeasement", "Containment", "Isolationism", "Rollback"], correct: "Containment" },
-    { q: "The Truman Doctrine primarily supported which two nations initially?", a: ["France and Italy", "Greece and Turkey", "Germany and Poland", "China and Japan"], correct: "Greece and Turkey" },
-    { q: "Stalin attacked the Marshall Plan as:", a: ["Capitalist Charity", "Dollar Imperialism", "Economic Expansion", "Western Propaganda"], correct: "Dollar Imperialism" },
+    { q: "The Truman Doctrine primarily supported which two nations initially?", a: ["Poland and Italy", "Greece and Turkey", "Germany and France", "China and Japan"], correct: "Greece and Turkey" },
+    { q: "What was the primary purpose of the Marshall Plan?", a: ["Nuclear development", "Economic reconstruction", "Direct military aid", "Secret spy funding"], correct: "Economic reconstruction" },
+    { q: "Stalin attacked the Marshall Plan as being:", a: ["Capitalist Charity", "Dollar Imperialism", "Economic Expansion", "Western Propaganda"], correct: "Dollar Imperialism" },
+    { q: "Which nation was the largest recipient of Marshall Plan aid?", a: ["West Germany", "Great Britain", "France", "Italy"], correct: "Great Britain" },
+    { q: "Why did Stalin forbid Eastern European states from taking Marshall aid?", a: ["Feared US influence", "Feared UK dominance", "Hated free markets", "Wanted Soviet trade"], correct: "Feared US influence" },
+
+    // STALIN'S TAKEOVER / SALAMI TACTICS
+    { q: "The pro-Soviet regimes in Eastern Europe were often called:", a: ["Democratic Allies", "Satellite States", "Communist Cores", "Socialist Unions"], correct: "Satellite States" },
+    { q: "Which leader is famous for using 'Salami Tactics' in Hungary?", a: ["Joseph Stalin", "Matyas Rakosi", "Nikita Khrushchev", "Imre Nagy"], correct: "Matyas Rakosi" },
+    { q: "What is the core idea of 'Salami Tactics'?", a: ["Sudden revolution", "Slice-by-slice control", "Large scale invasion", "Mass economic trade"], correct: "Slice-by-slice control" },
+    { q: "By which year were almost all Eastern European states communist?", a: ["1946", "1948", "1950", "1953"], correct: "1948" },
+    { q: "Which country's 1948 coup shocked the West into forming NATO?", a: ["Poland", "Czechoslovakia", "Hungary", "Bulgaria"], correct: "Czechoslovakia" },
+
+    // COMECON / COMINFORM
+    { q: "Cominform was established in 1947 primarily to:", a: ["Direct Soviet trade", "Coordinate world parties", "Manage atomic bombs", "Fight the Marshall Plan"], correct: "Coordinate world parties" },
+    { q: "Which country was famously expelled from Cominform in 1948?", a: ["Poland", "Yugoslavia", "Hungary", "Romania"], correct: "Yugoslavia" },
+    { q: "Comecon was the Soviet economic response to:", a: ["The UN Charter", "The Marshall Plan", "The Truman Doctrine", "The Berlin Airlift"], correct: "The Marshall Plan" },
+    { q: "Comecon's primary objective was to:", a: ["Spread global democracy", "Coordinate bloc trade", "Fund secret research", "Create a common army"], correct: "Coordinate bloc trade" },
+
+    // BERLIN BLOCKADE / AIRLIFT
     { q: "What was the immediate trigger for the Berlin Blockade?", a: ["NATO was formed", "New Deutsche Mark", "The Korean War", "Iron Curtain Speech"], correct: "New Deutsche Mark" },
+    { q: "West Berlin was located roughly 100 miles inside which zone?", a: ["American Zone", "Soviet Zone", "British Zone", "French Zone"], correct: "Soviet Zone" },
+    { q: "How did Stalin carry out the 1948 Blockade of Berlin?", a: ["Built a high wall", "Cut road and rail links", "Air-to-air combat", "Naval mining of ports"], correct: "Cut road and rail links" },
     { q: "What was the US code name for the Berlin Airlift?", a: ["Operation Downfall", "Operation Vittles", "Operation Silver", "Operation Overlord"], correct: "Operation Vittles" },
-    { q: "What core concept does NATO's Article 5 represent?", a: ["Shared economic aid", "Collective defense pact", "Banning nuclear arms", "Creation of trade unions"], correct: "Collective defense pact" }
+    { q: "Who was the 'Candy Bomber' during the Berlin Airlift?", a: ["Curtis LeMay", "Gail Halvorsen", "William Tunner", "George Marshall"], correct: "Gail Halvorsen" },
+    { q: "The success of the Berlin Airlift resulted in Stalin:", a: ["Invading West Germany", "Lifting the blockade", "Bombing the airports", "Joining the UN Council"], correct: "Lifting the blockade" },
+    { q: "Which two states were created after the Berlin Blockade failed?", a: ["FRG and GDR", "USA and USSR", "EEC and EFTA", "NATO and SEATO"], correct: "FRG and GDR" },
+
+    // NATO / WARSAW PACT
+    { q: "NATO was established in which year?", a: ["1945", "1949", "1953", "1955"], correct: "1949" },
+    { q: "What core concept does NATO's Article 5 represent?", a: ["Shared economic aid", "Collective defense pact", "Banning nuclear arms", "Creation of trade unions"], correct: "Collective defense pact" },
+    { q: "The Warsaw Pact was created in 1955 as a direct reaction to:", a: ["Stalin's death", "West Germany joining NATO", "The Korean War end", "The death of Hitler"], correct: "West Germany joining NATO" },
+    { q: "The Warsaw Pact was a military alliance of:", a: ["The Western Powers", "The Soviet Union and allies", "The neutral nations", "The United Nations"], correct: "The Soviet Union and allies" },
+    { q: "Which communist nation never joined the Warsaw Pact?", a: ["Poland", "Yugoslavia", "Hungary", "Bulgaria"], correct: "Yugoslavia" },
+
+    // ADDITIONAL ORIGINS QUESTIONS
+    { q: "The 'Percentages Agreement' was an informal deal between:", a: ["Truman and Stalin", "Churchill and Stalin", "Roosevelt and Stalin", "Attlee and Stalin"], correct: "Churchill and Stalin" },
+    { q: "What was the main topic of the 1945 Yalta Conference?", a: ["Japan's surrender", "Post-war Europe division", "The atomic bomb tests", "The League of Nations"], correct: "Post-war Europe division" },
+    { q: "Truman's style at the Potsdam Conference was described as:", a: ["Soft and diplomatic", "Brunt and assertive", "Fearful and weak", "Distant and quiet"], correct: "Brunt and assertive" },
+    { q: "The Allied Control Council was set up to manage which country?", a: ["Poland", "Germany", "Japan", "Italy"], correct: "Germany" },
+    { q: "Stalin's main goal at the end of WWII was to create a:", a: ["Global trade zone", "Buffer zone in Europe", "Religious revival", "Pacific naval fleet"], correct: "Buffer zone in Europe" },
+    { q: "The Molotov Plan was the Soviet precursor to:", a: ["Cominform", "Comecon", "Warsaw Pact", "NATO"], correct: "Comecon" },
+    { q: "Which leader attended all three major conferences (Tehran, Yalta, Potsdam)?", a: ["Winston Churchill", "Joseph Stalin", "Franklin Roosevelt", "Harry Truman"], correct: "Joseph Stalin" },
+    { q: "The Bizone (1947) was the merger of which two occupation zones?", a: ["Soviet and French", "US and British", "US and Soviet", "British and French"], correct: "US and British" },
+    { q: "The Trizone (1948) added which country's zone to the Bizone?", a: ["Soviet Union", "France", "Italy", "Belgium"], correct: "France" },
+    { q: "Kennan compared the Soviet Union's worldview to a:", a: ["Malignant parasite", "Slow moving tortoise", "Healthy organism", "Protective shield"], correct: "Malignant parasite" },
+    { q: "The first Secretary General of NATO famously said its goal was to keep:", a: ["Peace and stability", "Russians out, Americans in", "Trade open and free", "Nuclear weapons away"], correct: "Russians out, Americans in" },
+    { q: "How many flights were made during the Berlin Airlift?", a: ["Over 10,000", "Over 270,000", "Over 500,000", "Exactly 1 million"], correct: "Over 270,000" },
+    { q: "Which country received a fourth occupation zone in Germany?", a: ["Poland", "France", "Italy", "Canada"], correct: "France" },
+    { q: "At Potsdam, Truman informed Stalin of a powerful new weapon via:", a: ["Formal letter", "Casual conversation", "Secret radio cable", "A coded map"], correct: "Casual conversation" }
 ];
 
 let questionsDeck = shuffle([...masterDeck]);
@@ -158,10 +209,8 @@ let questionsDeck = shuffle([...masterDeck]);
 let blocks = [];
 function generateBlocks() {
     const groundY = canvas.height - 80;
-    blocks = Array.from({length: 40}, (_, i) => ({ 
+    blocks = Array.from({length: 60}, (_, i) => ({ 
         x: 500 + (i * 350), 
-        // LOWERED MAXIMUM HEIGHT: Now 130px to 350px from ground
-        // Reachable with double jump, easily cleared with triple jump
         y: groundY - (130 + (Math.random() * 220)), 
         w: 60, 
         h: 60, 
