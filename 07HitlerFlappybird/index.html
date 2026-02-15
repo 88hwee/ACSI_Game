@@ -7,64 +7,59 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #0f172a; font-family: sans-serif; color: #f1f5f9; }
-        canvas { display: block; margin: 0 auto; background: #1e293b; border-left: 4px solid #334155; border-right: 4px solid #334155; touch-action: none; cursor: pointer; }
+        canvas { display: block; margin: 0 auto; background: #1e293b; border-left: 4px solid #334155; border-right: 4px solid #334155; touch-action: none; }
         .ui-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 50; pointer-events: none; }
-        .btn { pointer-events: auto; background: #991b1b; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: none; }
-        .btn:hover { background: #7f1d1d; transform: translateY(-2px); }
-        .btn:active { transform: translateY(0); }
-        #quizModal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(12px); }
+        .btn { pointer-events: auto; background: #991b1b; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .btn:hover { background: #7f1d1d; }
+        #quizModal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
         .correct { background-color: #065f46 !important; border-color: #10b981 !important; transform: scale(1.02); }
         .wrong { background-color: #991b1b !important; border-color: #ef4444 !important; opacity: 0.7; }
-        .heart { color: #ef4444; font-size: 1.5rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
-        .timer-flash { animation: flash 0.5s infinite alternate; color: #ef4444; }
-        @keyframes flash { from { opacity: 1; } to { opacity: 0.5; } }
+        .heart { color: #ef4444; font-size: 1.5rem; }
     </style>
 </head>
 <body class="flex flex-col items-center justify-center min-h-screen">
 
     <div class="w-full max-w-lg px-4 mb-4 flex justify-between items-end">
         <div>
-            <h1 class="text-xl font-bold text-red-500 tracking-tighter">HISTORY REVISION</h1>
+            <h1 class="text-xl font-bold text-red-500">HISTORY REVISION</h1>
             <div id="livesContainer" class="flex gap-1 mt-1">
                 <span class="heart">❤️</span><span class="heart">❤️</span><span class="heart">❤️</span>
             </div>
         </div>
         <div class="text-right">
-            <div class="text-3xl font-black text-white leading-none" id="timer">180s</div>
-            <div id="scoreLabel" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest mt-1">Score: 0</div>
+            <div class="text-2xl font-black text-white" id="timer">180s</div>
+            <div id="scoreLabel" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Score: 0</div>
         </div>
     </div>
 
-    <div class="relative shadow-2xl rounded-lg overflow-hidden border-2 border-slate-700">
+    <div class="relative shadow-2xl rounded-lg overflow-hidden">
         <canvas id="gameCanvas"></canvas>
         
-        <!-- Screens -->
         <div id="startScreen" class="ui-overlay w-80 bg-slate-800 p-8 rounded-xl border-b-4 border-red-700 pointer-events-auto">
-            <div class="text-6xl mb-4">🐦</div>
-            <h2 class="text-2xl font-bold text-white mb-2 italic">Revision Gauntlet</h2>
-            <p class="text-xs text-slate-400 mb-6 leading-relaxed">Focus: High-speed MCQ training.<br>Thin pillars, frequent questions.<br>Wrong answers repeat soon.</p>
-            <button class="btn w-full" onclick="startGame()">START MISSION</button>
+            <div class="text-5xl mb-4">🐦</div>
+            <h2 class="text-2xl font-bold text-white mb-2 italic">80-Question Gauntlet</h2>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">3 Lives. ⭐ = +5s. <br>Smaller Pillars. Wrong answers repeat.</p>
+            <button class="btn w-full" onclick="startGame()">BEGIN SESSION</button>
         </div>
 
         <div id="collisionOverlay" class="ui-overlay hidden w-72 bg-slate-900/90 p-6 rounded-xl border-2 border-red-500 pointer-events-none">
             <div class="text-3xl mb-2 text-red-500 font-black">PILLAR HIT!</div>
-            <p class="text-sm text-slate-300 animate-pulse">Tap or Space to Continue</p>
+            <p class="text-sm text-slate-300 animate-pulse">Tap or Space to try again</p>
         </div>
 
         <div id="gameOverScreen" class="ui-overlay hidden w-80 bg-slate-800 p-8 rounded-xl border-b-4 border-red-900 pointer-events-auto">
             <h2 class="text-2xl font-bold text-red-500 mb-2 uppercase">Session Ended</h2>
             <p id="finalMsg" class="text-xs text-slate-400 mb-4"></p>
-            <div class="text-5xl font-black text-white mb-6" id="finalScore">0</div>
+            <div class="text-4xl font-black text-white mb-6" id="finalScore">0</div>
             <button class="btn w-full" onclick="startGame()">RETRY</button>
         </div>
     </div>
 
-    <!-- Quiz Modal -->
     <div id="quizModal">
         <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-red-600 max-w-md w-full shadow-2xl">
             <div class="flex justify-between items-center mb-4">
-                <span id="quizBadge" class="bg-red-900/50 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Revision MCQ</span>
-                <span id="qRemaining" class="text-slate-500 text-[10px] font-mono"></span>
+                <span id="quizBadge" class="text-red-500 font-bold uppercase text-[10px]">History MCQ</span>
+                <span id="qRemaining" class="text-slate-500 text-[10px]"></span>
             </div>
             <p id="questionText" class="text-white font-medium mb-8 text-lg leading-snug"></p>
             <div id="optionsContainer" class="flex flex-col gap-3"></div>
@@ -85,16 +80,15 @@
         const livesContainer = document.getElementById('livesContainer');
         const scoreLabel = document.getElementById('scoreLabel');
 
-        // REFINED FOR BETTER FOCUS ON MCQ & CHALLENGING BUT THIN PILLARS
-        const GRAVITY = 0.22;      
-        const FLAP = -4.5;         
-        const SPAWN_RATE = 95;     
-        const BLOCK_WIDTH = 12;    // EVEN THINNER PILLARS (reduced from 25)
-        const BLOCK_GAP = 165;     
-        const SPEED = 2.6;         
+        const GRAVITY = 0.16;
+        const FLAP = -3.8;
+        const SPAWN_RATE = 140;
+        const BLOCK_WIDTH = 40; // REDUCED FROM 55
+        const BLOCK_GAP = 225;  // SLIGHTLY INCREASED GAP FOR BETTER PLAYABILITY
+        const SPEED = 2.0;
         const TOTAL_TIME = 180;
 
-        let bird = { x: 70, y: 250, velocity: 0, width: 26, height: 20 };
+        let bird = { x: 50, y: 250, velocity: 0, width: 34, height: 24 };
         let blocks = [];
         let stars = [];
         let score = 0; 
@@ -107,30 +101,29 @@
         let quizActive = false;
         let collisionPaused = false;
         let timerInterval;
-
         let wrongAnswersQueue = []; 
 
         const masterQuestions = [
             { q: "Which Weimar feature created unstable coalition governments?", a: "Proportional representation system", o: ["Direct presidential election system", "Emergency decree legislative system", "Upper house bicameral power system"] },
-            { q: "What did Article 48 allow the President to do in a crisis?", a: "Pass emergency laws without parliament", o: ["Remove the Chancellor from high office", "Abolish the entire democratic system", "Declare total war on neighboring states"] },
+            { q: "What did Article 48 allow the President to do in a crisis?", a: "Pass emergency laws without parliament", o: ["Remove the Chancellor from office", "Abolish the entire democratic system", "Declare total war on neighbors"] },
             { q: "What was the core claim of the 'Stab in the Back' myth?", a: "Politicians betrayed the army at home", o: ["Communist spies infiltrated the navy", "The French army used illegal chemicals", "Generals intentionally lost the battle"] },
-            { q: "Who was blamed by Hitler for the Reichstag Fire of 1933?", a: "The Communist Party of Germany", o: ["The Jewish Business Association", "The Regular German Army Command", "The British Intelligence Service"] },
+            { q: "Who was blamed by Hitler for the Reichstag Fire of 1933?", a: "The Communist Party (KPD)", o: ["The Jewish Business Association", "The Regular German Army Command", "The British Intelligence Service"] },
             { q: "Why did the 'Fear of Communism' help the Nazi Party?", a: "It won support from the middle class", o: ["It led to a pact with the Soviet Union", "It secured funding from Jewish banks", "It caused a general strike by workers"] },
             { q: "What was the primary effect of the March 1933 Enabling Act?", a: "Hitler could legislate without the Reichstag", o: ["Hindenburg was forced into retirement", "The Great Depression was officially ended", "Jewish citizens lost their citizenship"] },
             { q: "What occurred during the Night of the Long Knives in 1934?", a: "The leadership of the SA was eliminated", o: ["Jewish property was widely destroyed", "Communist leaders were all arrested", "The President was removed from power"] },
-            { q: "What was Hitler's 1923 failed attempt to seize power called?", a: "The Beer Hall Putsch in Munich", o: ["The Kapp Putsch in Berlin", "The Spartacist Uprising in Saxony", "The Reichstag Fire"] },
+            { q: "What was Hitler's 1923 failed attempt to seize power called?", a: "The Beer Hall Putsch", o: ["The Kapp Putsch", "The Spartacist Uprising", "The Reichstag Fire"] },
             { q: "What were the 'Three Ks' for women in Nazi ideology?", a: "Children, Kitchen, Church", o: ["Struggle, Chancellor, Class", "Culture, Military, Arts", "Strength, Workplace, Clothing"] },
-            { q: "What was the main purpose of the Hitler Youth groups?", a: "To indoctrinate boys for future war", o: ["To provide high level science tutoring", "To promote peace through youth exchange", "To encourage debate on government policy"] },
+            { q: "What was the main purpose of the Hitler Youth groups?", a: "To indoctrinate boys for future war", o: ["To provide high level science tutoring", "To promote peace through exchange", "To encourage debate on policy"] },
             { q: "Which laws of 1935 removed citizenship from Jewish people?", a: "The Nuremberg Laws", o: ["The Berlin Decree", "The Munich Pact", "The Aryan Laws"] },
-            { q: "What was the Concordat of 1933 between Hitler and the Pope?", a: "An agreement of non-interference", o: ["An alliance against the Soviet Union", "A trade deal for religious artifacts", "A treaty to make Catholicism official"] },
-            { q: "What happened on Kristallnacht in November 1938?", a: "Synagogues and Jewish shops were burned", o: ["Political parties were officially banned", "The German army invaded Austrian lands", "The SA leadership was executed by the SS"] },
-            { q: "Who led the Confessing Church in opposition to the Nazis?", a: "Pastor Martin Niemöller", o: ["Reich Bishop Ludwig Müller", "Minister Joseph Goebbels", "Leader Heinrich Himmler"] },
-            { q: "What was 'Gleichschaltung' in the Nazi state?", a: "Control over all aspects of daily life", o: ["A plan for rapid military expansion", "A system of high economic self-reliance", "A method for restoring the old Kaiser"] },
-            { q: "What was the goal of the Nazi 'Lebensborn' program?", a: "To increase the 'pure' Aryan population", o: ["To draft young men into the navy", "To provide tools for peasant farmers", "To give welfare to unemployed workers"] },
-            { q: "Which organization replaced Trade Unions in Nazi Germany?", a: "The German Labour Front (DAF)", o: ["The Sturmabteilung (SA)", "The Gestapo", "The National Hitler Youth (HJ)"] },
+            { q: "What was the Concordat of 1933 between Hitler and the Pope?", a: "An agreement of non-interference", o: ["An alliance against the Soviet Union", "A deal for religious artifacts", "A treaty to make Catholicism official"] },
+            { q: "What happened on Kristallnacht in November 1938?", a: "Synagogues and Jewish shops were burned", o: ["Political parties were banned", "The German army invaded Austria", "The SA leadership was executed"] },
+            { q: "Who led the Confessing Church in opposition to the Nazis?", a: "Martin Niemöller", o: ["Ludwig Müller", "Joseph Goebbels", "Heinrich Himmler"] },
+            { q: "What was 'Gleichschaltung' in the Nazi state?", a: "Total coordination of all society", o: ["A plan for rapid military expansion", "A system of economic self-reliance", "Restoring the old Kaiser"] },
+            { q: "What was the goal of the Nazi 'Lebensborn' program?", a: "To increase the Aryan population", o: ["To draft young men into the navy", "To provide tools for peasant farmers", "To give welfare to unemployed workers"] },
+            { q: "Which organization replaced Trade Unions in Nazi Germany?", a: "The German Labour Front (DAF)", o: ["The Sturmabteilung (SA)", "The Gestapo", "The National Hitler Youth"] },
             { q: "Who held the title of Minister of Public Enlightenment?", a: "Joseph Goebbels", o: ["Heinrich Himmler", "Hermann Göring", "Albert Speer"] },
-            { q: "What did the 'Strength Through Joy' (KdF) offer workers?", a: "Leisure activities and cheap holidays", o: ["Higher wages and shorter work weeks", "Health insurance and religious study", "New housing and community gardening"] },
-            { q: "Where was the first concentration camp established in 1933?", a: "Dachau", o: ["Auschwitz", "Bergen-Belsen", "Treblinka"] }
+            { q: "What did the 'Strength Through Joy' (KdF) offer workers?", a: "Leisure activities and cheap holidays", o: ["Higher wages and shorter weeks", "Health insurance and religious study", "New housing and gardening"] },
+            { q: "Where was the first concentration camp established in 1933?", a: "Dachau", o: ["Auschwitz", "Belsen", "Treblinka"] }
         ];
 
         let currentPool = [];
@@ -149,7 +142,7 @@
 
         function startGame() {
             currentPool = [...masterQuestions].sort(() => Math.random() - 0.5);
-            bird = { x: 70, y: 250, velocity: 0, width: 26, height: 20 };
+            bird = { x: 50, y: 250, velocity: 0, width: 34, height: 24 };
             blocks = [];
             stars = [];
             score = 0; 
@@ -164,8 +157,6 @@
             collisionPaused = false;
             
             scoreLabel.innerText = "SCORE: 0";
-            timerEl.innerText = timeLeft + "s";
-            timerEl.classList.remove('timer-flash');
             updateLivesDisplay();
             startScreen.classList.add('hidden');
             collisionOverlay.classList.add('hidden');
@@ -176,20 +167,17 @@
         }
 
         function startTimer() {
-            if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (gameActive && !quizActive && gameStarted && !collisionPaused) {
                     timeLeft--;
                     timerEl.innerText = timeLeft + "s";
-                    if (timeLeft <= 15) timerEl.classList.add('timer-flash');
-                    else timerEl.classList.remove('timer-flash');
                     if (timeLeft <= 0) endGame("Time's up!");
                 }
             }, 1000);
         }
 
         function endGame(msg = "Session Ended") {
-            gameActive = false;
+            gameActive = false; 
             gameStarted = false;
             clearInterval(timerInterval);
             finalScoreEl.innerText = score;
@@ -198,11 +186,10 @@
         }
 
         function triggerDeath() {
-            if (collisionPaused) return;
             lives--;
             updateLivesDisplay();
             if (lives <= 0) {
-                endGame("Mission Failed.");
+                endGame("No lives remaining.");
             } else {
                 collisionPaused = true;
                 collisionOverlay.classList.remove('hidden');
@@ -217,7 +204,6 @@
             blocks = [];
             stars = [];
             gameStarted = false;
-            clearInterval(timerInterval);
             timerEl.innerText = timeLeft + "s";
         }
 
@@ -235,28 +221,26 @@
             }
         }
 
-        window.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') flap(); });
+        window.addEventListener('keydown', (e) => { if (e.code === 'Space') flap(); });
         canvas.addEventListener('mousedown', (e) => { if (e.button === 0) flap(); });
-        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); flap(); }, {passive: false});
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); flap(); });
 
         function showQuiz() {
             quizActive = true;
             let qObj;
+            const repeatIdx = wrongAnswersQueue.findIndex(item => item.repeatAt <= qIndex);
             
-            const repeatIdx = wrongAnswersQueue.findIndex(item => item.repeatAt <= score);
             if (repeatIdx !== -1) {
                 qObj = wrongAnswersQueue[repeatIdx].question;
                 wrongAnswersQueue.splice(repeatIdx, 1);
-                document.getElementById('quizBadge').innerText = "PRIORITY REVIEW";
+                document.getElementById('quizBadge').innerText = "REVIEW QUESTION";
             } else {
                 if (qIndex >= currentPool.length) qIndex = 0; 
                 qObj = currentPool[qIndex];
-                document.getElementById('quizBadge').innerText = "KNOWLEDGE CHECK";
+                document.getElementById('quizBadge').innerText = "HISTORY MCQ";
             }
 
             questionText.innerText = qObj.q;
-            document.getElementById('qRemaining').innerText = `ID: ${qIndex + 1}/${currentPool.length}`;
-            
             let opts = [qObj.a, ...qObj.o].sort(() => Math.random() - 0.5);
             optionsContainer.innerHTML = '';
             
@@ -269,14 +253,14 @@
                     allButtons.forEach(btn => btn.disabled = true);
                     
                     if (opt === qObj.a) { 
-                        score += 15; 
+                        score += 10; 
                         scoreLabel.innerText = "SCORE: " + score;
                         b.classList.add('correct'); 
-                        setTimeout(() => { finishQuiz(); }, 700);
+                        setTimeout(() => { finishQuiz(); }, 800);
                     } else { 
                         b.classList.add('wrong');
                         allButtons.forEach(btn => { if (btn.innerText === qObj.a) btn.classList.add('correct'); });
-                        wrongAnswersQueue.push({ question: qObj, repeatAt: score + 15 });
+                        wrongAnswersQueue.push({ question: qObj, repeatAt: qIndex + 2 });
                         setTimeout(() => { finishQuiz(); }, 2000); 
                     }
                 };
@@ -300,39 +284,51 @@
                 if (gameStarted) {
                     bird.velocity += GRAVITY;
                     bird.y += bird.velocity;
-
+                    
                     if (frameCount % SPAWN_RATE === 0) {
-                        const minH = 70;
-                        const maxH = canvas.height - BLOCK_GAP - 70;
-                        const topH = Math.random() * (maxH - minH) + minH;
+                        const topH = Math.random() * (canvas.height - BLOCK_GAP - 120) + 60;
                         blocks.push({ x: canvas.width, topH, passed: false });
+                        if (Math.random() > 0.7) {
+                            stars.push({ x: canvas.width + 100, y: topH + (BLOCK_GAP / 2), collected: false });
+                        }
                     }
 
                     for (let i = blocks.length - 1; i >= 0; i--) {
                         blocks[i].x -= SPEED;
-
-                        if (bird.x + bird.width > blocks[i].x && bird.x < blocks[i].x + BLOCK_WIDTH) {
-                            if (bird.y < blocks[i].topH || bird.y + bird.height > blocks[i].topH + BLOCK_GAP) {
-                                triggerDeath();
-                                break; 
-                            }
+                        
+                        // Collision
+                        if (bird.x < blocks[i].x + BLOCK_WIDTH && bird.x + bird.width > blocks[i].x && 
+                           (bird.y < blocks[i].topH || bird.y + bird.height > blocks[i].topH + BLOCK_GAP)) {
+                            triggerDeath();
+                            break; 
                         }
 
+                        // Score & Quiz
                         if (!blocks[i].passed && blocks[i].x + BLOCK_WIDTH < bird.x) {
                             blocks[i].passed = true;
                             score++;
                             scoreLabel.innerText = "SCORE: " + score;
-                            if (score > 0 && score % 2 === 0) {
+                            if (score > 0 && score % 3 === 0) {
                                 showQuiz();
                                 break;
                             }
                         }
-                        
                         if (blocks[i].x < -BLOCK_WIDTH) blocks.splice(i, 1);
+                    }
+
+                    for (let i = stars.length - 1; i >= 0; i--) {
+                        stars[i].x -= SPEED;
+                        const dist = Math.sqrt(Math.pow(bird.x - stars[i].x, 2) + Math.pow(bird.y - stars[i].y, 2));
+                        if (!stars[i].collected && dist < 35) {
+                            stars[i].collected = true;
+                            timeLeft += 5;
+                            timerEl.innerText = timeLeft + "s";
+                        }
+                        if (stars[i].x < -50) stars.splice(i, 1);
                     }
                     frameCount++;
                 } else {
-                    bird.y = 250 + Math.sin(Date.now() / 200) * 15;
+                    bird.y = 250 + Math.sin(Date.now() / 250) * 15;
                 }
 
                 if (bird.y + bird.height > canvas.height || bird.y < 0) {
@@ -340,46 +336,41 @@
                 }
             }
 
-            // --- DRAWING ---
-            ctx.strokeStyle = "rgba(255,255,255,0.05)";
-            for(let i=0; i<canvas.width; i+=40) {
-                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, canvas.height); ctx.stroke();
-            }
-
+            // Draw blocks
             blocks.forEach(block => {
-                ctx.fillStyle = "#334155"; 
+                ctx.fillStyle = "#1e3a8a"; 
                 ctx.fillRect(block.x, 0, BLOCK_WIDTH, block.topH);
                 ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, canvas.height);
-                // Subtle tip highlight
-                ctx.fillStyle = "#ef4444";
-                ctx.fillRect(block.x, block.topH - 2, BLOCK_WIDTH, 2);
-                ctx.fillRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, 2);
+                ctx.strokeStyle = "#3b82f6";
+                ctx.strokeRect(block.x, 0, BLOCK_WIDTH, block.topH);
+                ctx.strokeRect(block.x, block.topH + BLOCK_GAP, BLOCK_WIDTH, canvas.height);
+            });
+
+            // Draw stars
+            stars.forEach(star => {
+                if (!star.collected) {
+                    ctx.font = "24px serif";
+                    ctx.fillText("⭐", star.x - 12, star.y + 8);
+                }
             });
 
             if (!gameStarted && !collisionPaused && !quizActive) {
-                ctx.fillStyle = "rgba(255,255,255,0.6)";
-                ctx.font = "bold 13px sans-serif";
+                ctx.fillStyle = "white";
+                ctx.font = "bold 14px sans-serif";
                 ctx.textAlign = "center";
-                ctx.fillText("TAP OR SPACE", canvas.width/2, 340);
+                ctx.fillText("TAP OR SPACE TO START", canvas.width/2, 320);
             }
 
+            // Draw Bird
             ctx.save();
             ctx.translate(bird.x + bird.width / 2, bird.y + bird.height / 2);
             ctx.scale(-1, 1);
-            let rotation = Math.max(-0.6, Math.min(0.6, bird.velocity * 0.15));
+            let rotation = -Math.min(Math.PI / 4, Math.max(-Math.PI / 4, bird.velocity * 0.15));
             ctx.rotate(rotation);
-            
-            if (!collisionPaused) {
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = "#ef4444";
-            }
-            
-            let flapCycle = Math.floor(frameCount / 6) % 2;
-            let birdEmoji = (flapCycle === 0 || bird.velocity < -0.5 || collisionPaused) ? "🐦" : "🕊️"; 
-            ctx.font = "30px serif";
+            ctx.font = "34px serif";
             ctx.textAlign = "center";
             ctx.textBaseline = "middle";
-            ctx.fillText(birdEmoji, 0, 0); 
+            ctx.fillText(collisionPaused ? "💥" : "🐦", 0, 0); 
             ctx.restore();
 
             requestAnimationFrame(update);
