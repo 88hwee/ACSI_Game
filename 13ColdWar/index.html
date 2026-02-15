@@ -82,7 +82,7 @@
 <div id="game-container">
     <div id="start-screen">
         <h1 style="color: #facc15; font-size: 48px; margin-bottom: 10px;">COLD WAR MASTERY</h1>
-        <p style="margin-bottom: 30px; font-weight: bold; color: #94a3b8;">JUMP TO HIT BRICKS. CORRECT REMOVES. WRONG REPEATS.</p>
+        <p style="margin-bottom: 30px; font-weight: bold; color: #94a3b8;">TRIPLE JUMP (3 TAPS) ENABLED. HIT BRICKS TO MASTER INTEL.</p>
         <button id="btn-start">INITIALIZE MISSION</button>
     </div>
 
@@ -112,7 +112,21 @@ let gameStarted = false, gameActive = false, isFalling = false;
 let timer = 120, lives = 3, coins = 0;
 const gravity = 0.5;
 
-const player = { x: 100, y: 200, w: 40, h: 65, vx: 0, vy: 0, speed: 6, jumpPower: -12, grounded: false, facingRight: true };
+const player = { 
+    x: 100, 
+    y: 200, 
+    w: 40, 
+    h: 65, 
+    vx: 0, 
+    vy: 0, 
+    speed: 6, 
+    jumpPower: -12, 
+    grounded: false, 
+    facingRight: true,
+    jumpsLeft: 3 // TRIPLE JUMP
+};
+
+let spaceReleased = true;
 
 // SHUFFLE FUNCTION
 function shuffle(array) {
@@ -141,18 +155,24 @@ const masterDeck = [
 
 let questionsDeck = shuffle([...masterDeck]);
 
-// STAGGERED BLOCKS
-const blocks = Array.from({length: 40}, (_, i) => ({ 
-    x: 500 + (i * 350), 
-    y: 120 + (Math.random() * 100), 
-    w: 60, 
-    h: 60, 
-    active: true 
-}));
+// STAGGERED BLOCKS - RECALIBRATED FOR TRIPLE JUMP
+let blocks = [];
+function generateBlocks() {
+    const groundY = canvas.height - 80;
+    blocks = Array.from({length: 40}, (_, i) => ({ 
+        x: 500 + (i * 350), 
+        // Heights staggered between 150px (1 jump) and 420px (3 jumps) from ground
+        y: groundY - (130 + (Math.random() * 280)), 
+        w: 60, 
+        h: 60, 
+        active: true 
+    }));
+}
 
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
+    generateBlocks(); // Re-generate to ensure they fit current height
 }
 window.addEventListener('resize', resize);
 resize();
@@ -164,7 +184,10 @@ document.getElementById('btn-start').onclick = () => {
 
 const keys = {};
 window.onkeydown = e => keys[e.code] = true;
-window.onkeyup = e => keys[e.code] = false;
+window.onkeyup = e => {
+    keys[e.code] = false;
+    if (e.code === 'Space') spaceReleased = true;
+};
 
 function drawPlayer() {
     ctx.save();
@@ -191,7 +214,6 @@ function triggerQuiz() {
     feedback.innerText = "";
     container.innerHTML = '';
 
-    // Shuffle the options before displaying them
     let opts = shuffle([...currentQ.a]);
 
     opts.forEach(opt => {
@@ -266,7 +288,13 @@ function update() {
         else if (keys['ArrowLeft']) { player.vx = -player.speed; player.facingRight = false; }
         else player.vx *= 0.8;
 
-        if (keys['Space'] && player.grounded) { player.vy = player.jumpPower; player.grounded = false; }
+        // TRIPLE JUMP LOGIC
+        if (keys['Space'] && player.jumpsLeft > 0 && spaceReleased) { 
+            player.vy = player.jumpPower; 
+            player.jumpsLeft--;
+            player.grounded = false; 
+            spaceReleased = false;
+        }
 
         player.vy += gravity; player.x += player.vx; player.y += player.vy;
 
@@ -275,6 +303,7 @@ function update() {
             player.y = groundY - player.h; 
             player.vy = 0; 
             player.grounded = true; 
+            player.jumpsLeft = 3; // Reset jumps on ground
         }
 
         blocks.forEach((b) => {
