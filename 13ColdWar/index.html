@@ -82,7 +82,7 @@
 <div id="game-container">
     <div id="start-screen">
         <h1 style="color: #facc15; font-size: 48px; margin-bottom: 10px;">COLD WAR MASTERY</h1>
-        <p style="margin-bottom: 30px; font-weight: bold; color: #94a3b8;">TRIPLE JUMP (3 TAPS) ENABLED. HIT BRICKS TO MASTER INTEL.</p>
+        <p style="margin-bottom: 30px; font-weight: bold; color: #94a3b8;">BOOSTED TRIPLE JUMP. BRICKS LOWERED FOR BETTER REACH.</p>
         <button id="btn-start">INITIALIZE MISSION</button>
     </div>
 
@@ -110,7 +110,8 @@ const ctx = canvas.getContext('2d');
 
 let gameStarted = false, gameActive = false, isFalling = false;
 let timer = 120, lives = 3, coins = 0;
-const gravity = 0.5;
+// REDUCED GRAVITY for more air time
+const gravity = 0.45;
 
 const player = { 
     x: 100, 
@@ -119,16 +120,16 @@ const player = {
     h: 65, 
     vx: 0, 
     vy: 0, 
-    speed: 6, 
-    jumpPower: -12, 
+    speed: 7, 
+    // INCREASED JUMP POWER for higher reach
+    jumpPower: -13, 
     grounded: false, 
     facingRight: true,
-    jumpsLeft: 3 // TRIPLE JUMP
+    jumpsLeft: 3 
 };
 
 let spaceReleased = true;
 
-// SHUFFLE FUNCTION
 function shuffle(array) {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -137,7 +138,6 @@ function shuffle(array) {
     return array;
 }
 
-/* ===== COLD WAR MCQ DECK - OPTION LENGTH BALANCED ===== */
 const masterDeck = [
     { q: "What were the code names for the two atomic bombs used against Japan?", a: ["Trinity and Mike", "Little Boy and Fat Man", "Olympic and Coronet", "Silver and Copper"], correct: "Little Boy and Fat Man" },
     { q: "Which city was the primary target of the first atomic mission on 6 August 1945?", a: ["Nagasaki", "Kokura", "Hiroshima", "Kyoto"], correct: "Hiroshima" },
@@ -155,14 +155,14 @@ const masterDeck = [
 
 let questionsDeck = shuffle([...masterDeck]);
 
-// STAGGERED BLOCKS - RECALIBRATED FOR TRIPLE JUMP
 let blocks = [];
 function generateBlocks() {
     const groundY = canvas.height - 80;
     blocks = Array.from({length: 40}, (_, i) => ({ 
         x: 500 + (i * 350), 
-        // Heights staggered between 150px (1 jump) and 420px (3 jumps) from ground
-        y: groundY - (130 + (Math.random() * 280)), 
+        // LOWERED MAXIMUM HEIGHT: Now 130px to 350px from ground
+        // Reachable with double jump, easily cleared with triple jump
+        y: groundY - (130 + (Math.random() * 220)), 
         w: 60, 
         h: 60, 
         active: true 
@@ -172,7 +172,7 @@ function generateBlocks() {
 function resize() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    generateBlocks(); // Re-generate to ensure they fit current height
+    generateBlocks();
 }
 window.addEventListener('resize', resize);
 resize();
@@ -232,7 +232,7 @@ function triggerQuiz() {
                 
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    questionsDeck.shift(); // Remove correct answer
+                    questionsDeck.shift(); 
                     gameActive = (timer > 0);
                 }, 1200);
             } else {
@@ -241,9 +241,9 @@ function triggerQuiz() {
                 
                 setTimeout(() => {
                     overlay.style.display = 'none';
-                    isFalling = true; // Punishment fall
+                    isFalling = true; 
                     const missed = questionsDeck.shift();
-                    questionsDeck.push(missed); // Move to end of deck
+                    questionsDeck.push(missed); 
                 }, 2500);
             }
         };
@@ -288,7 +288,6 @@ function update() {
         else if (keys['ArrowLeft']) { player.vx = -player.speed; player.facingRight = false; }
         else player.vx *= 0.8;
 
-        // TRIPLE JUMP LOGIC
         if (keys['Space'] && player.jumpsLeft > 0 && spaceReleased) { 
             player.vy = player.jumpPower; 
             player.jumpsLeft--;
@@ -303,7 +302,7 @@ function update() {
             player.y = groundY - player.h; 
             player.vy = 0; 
             player.grounded = true; 
-            player.jumpsLeft = 3; // Reset jumps on ground
+            player.jumpsLeft = 3; 
         }
 
         blocks.forEach((b) => {
