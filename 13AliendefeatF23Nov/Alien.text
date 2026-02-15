@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Alien Defeat Germany – Tactical Intelligence Shooter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #020617;
+            color: #e5e7eb;
+            overflow: hidden;
+            height: 100vh;
+            /* Improved base font size for general readability */
+            font-size: 18px; 
+        }
+
+        .loud-font {
+            font-family: 'Black Ops One', cursive;
+            letter-spacing: 0.05em;
+        }
+
+        canvas {
+            background: radial-gradient(circle at 50% 100%, #1e1b4b 0%, #020617 70%);
+            display: block;
+            margin: 0 auto;
+            border-bottom: 4px solid #3b82f6;
+            cursor: crosshair;
+        }
+
+        #questionOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
+
+        /* Increased Option Button Size & Readability */
+        .option-btn {
+            width: 100%;
+            padding: 1.5rem;
+            margin: 0.75rem 0;
+            background: #1e293b;
+            border: 3px solid #334155;
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            text-align: left;
+            color: #fff;
+            font-size: 1.25rem; /* Larger font */
+            line-height: 1.2;
+        }
+
+        .option-btn:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateX(10px);
+            border-color: #60a5fa;
+        }
+
+        .correct { background: #16a34a !important; border-color: #22c55e !important; color: white; }
+        .wrong { background: #dc2626 !important; border-color: #ef4444 !important; color: white; }
+
+        .hud {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            right: 25px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 50;
+        }
+
+        /* Larger HUD Stats */
+        .stat-box {
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #3b82f6;
+            padding: 15px 25px;
+            font-size: 1.5rem; /* Increased size */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
+
+        /* High-Visibility Fact Bar */
+        #fact-bar {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e40af; /* Solid high-contrast blue */
+            border: 4px solid #60a5fa;
+            padding: 25px 40px;
+            border-radius: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-style: italic;
+            display: none;
+            z-index: 60;
+            width: 90%;
+            max-width: 1000px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            font-size: 1.8rem; /* Dramatically larger font */
+            color: #ffffff;
+            line-height: 1.3;
+        }
+
+        #focus-notice {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(59, 130, 246, 0.3);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid #3b82f6;
+            pointer-events: none;
+            color: #93c5fd;
+        }
+    </style>
+</head>
+<body>
+
+<div class="hud loud-font">
+    <div class="stat-box text-blue-400">DECK: <span id="q-count">0</span></div>
+    <div class="stat-box text-green-400">SCORE: <span id="score">0</span></div>
+    <div class="stat-box text-red-400">TIME: <span id="time">180</span></div>
+</div>
+
+<canvas id="game"></canvas>
+
+<div id="fact-bar" class="loud-font"></div>
+<div id="focus-notice" class="loud-font">CLICK TO FOCUS (ARROWS TO MOVE | SPACE TO SHOOT)</div>
+
+<div id="questionOverlay">
+    <div class="bg-slate-900 border-t-[12px] border-blue-600 p-10 w-full max-w-3xl shadow-2xl">
+        <div class="text-blue-400 font-black uppercase tracking-[0.2em] text-sm mb-4">CRITICAL DECRYPTION</div>
+        <!-- Very large question text -->
+        <h2 id="questionText" class="text-4xl font-black italic uppercase mb-10 leading-tight text-white"></h2>
+        <div id="options"></div>
+        <div id="feedback" class="mt-8 text-center font-black h-12 uppercase italic text-2xl"></div>
+    </div>
+</div>
+
+<div id="endOverlay" class="fixed inset-0 bg-black z-[200] hidden flex flex-col items-center justify-center p-12 text-center">
+    <h1 class="text-9xl loud-font italic text-blue-600 mb-8">MISSION END</h1>
+    <div class="text-6xl loud-font mb-12 text-white">FINAL SCORE: <span id="finalScore">0</span></div>
+    <button onclick="location.reload()" class="bg-white text-black px-16 py-6 loud-font text-3xl hover:bg-blue-600 hover:text-white transition transform hover:scale-105">RESTART MISSION</button>
+</div>
+
+<script>
+    const questions = [
+        { q: "Which nation first defied the League by invading Manchuria?", options: ["Italy", "Germany", "Japan", "USSR"], answer: "Japan" },
+        { q: "What was the core aim of Hitler's 'Lebensraum' policy?", options: ["Peace treaty", "Living space", "Economic trade", "Naval power"], answer: "Living space" },
+        { q: "What territory did Hitler remilitarize in 1936?", options: ["Sudetenland", "Poland", "Rhineland", "Austria"], answer: "Rhineland" },
+        { q: "The union of Germany and Austria in 1938 was called...", options: ["Anschluss", "Autarky", "Munich Pact", "Détente"], answer: "Anschluss" },
+        { q: "Which British PM is associated with Appeasement?", options: ["Churchill", "Eden", "Attlee", "Chamberlain"], answer: "Chamberlain" },
+        { q: "The Munich Agreement gave Hitler control of which region?", options: ["Bohemia", "Sudetenland", "Danzig", "The Corridor"], answer: "Sudetenland" },
+        { q: "Which event officially triggered WWII in Europe?", options: ["Munich Pact", "Rhineland entry", "Invasion of Poland", "Spanish Civil War"], answer: "Invasion of Poland" },
+        { q: "The 1939 Pact between Germany and USSR was the...", options: ["Steel Pact", "Anti-Comintern", "Molotov-Ribbentrop", "Berlin Pact"], answer: "Molotov-Ribbentrop" },
+        { q: "Why did Hitler sign the Pact with Stalin?", options: ["Friendship", "To avoid a two-front war", "To share tanks", "To stop Japan"], answer: "To avoid a two-front war" },
+        { q: "Which country was NOT invited to the Munich Conference?", options: ["Britain", "France", "Germany", "Czechoslovakia"], answer: "Czechoslovakia" }
+    ];
+
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resize);
+    resize();
+
+    let quizPool = [];
+    let score = 0;
+    let timeLeft = 180;
+    let gameActive = false;
+    let paused = false;
+    let player = { x: 0, w: 70, h: 45, speed: 12 };
+    let bullets = [];
+    let enemies = [];
+    let keys = {};
+    let factTimeout = null;
+
+    function shuffle(arr) {
+        let newArr = [...arr];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+        }
+        return newArr;
+    }
+
+    function init() {
+        quizPool = shuffle([...questions]);
+        document.getElementById('q-count').innerText = quizPool.length;
+        player.x = canvas.width / 2 - player.w / 2;
+        gameActive = true;
+        
+        const spawnLoop = () => {
+            if (gameActive) {
+                if (!paused) spawnEnemy();
+                setTimeout(spawnLoop, 1500);
+            }
+        };
+        spawnLoop();
+
+        requestAnimationFrame(gameLoop);
+        
+        setInterval(() => {
+            if (!paused && gameActive) {
+                timeLeft--;
+                document.getElementById('time').innerText = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }
+        }, 1000);
+    }
+
+    function spawnEnemy() {
+        const radius = 45; // LARGE HITBOXES
+        enemies.push({
+            x: Math.random() * (canvas.width - radius * 2) + radius,
+            y: -radius,
+            r: radius,
+            speed: 1.8 + Math.random() * 2,
+            type: Math.random() > 0.3 ? 'mcq' : 'bonus'
+        });
+    }
+
+    function showFact() {
+        const qObj = questions[Math.floor(Math.random() * questions.length)];
+        const factBar = document.getElementById('fact-bar');
+        
+        factBar.innerHTML = `<span class="text-blue-200">INTEL:</span> ${qObj.q} <span class="text-yellow-300">➜ ${qObj.answer}</span>`;
+        factBar.style.display = 'block';
+        
+        if (factTimeout) clearTimeout(factTimeout);
+        factTimeout = setTimeout(() => {
+            factBar.style.display = 'none';
+        }, 5000); // Displayed slightly longer for reading
+    }
+
+    function showQuestion() {
+        if (quizPool.length === 0) {
+            quizPool = shuffle([...questions]);
+        }
+        
+        paused = true;
+        keys = {}; 
+        
+        const qObj = quizPool[0];
+        const overlay = document.getElementById('questionOverlay');
+        const text = document.getElementById('questionText');
+        const optsDiv = document.getElementById('options');
+        const feedback = document.getElementById('feedback');
+
+        text.innerText = qObj.q;
+        optsDiv.innerHTML = '';
+        feedback.innerText = '';
+        overlay.style.display = 'flex';
+
+        const shuffledOpts = shuffle([...qObj.options]);
+
+        shuffledOpts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => {
+                const btns = optsDiv.querySelectorAll('button');
+                btns.forEach(b => b.disabled = true);
+                
+                if (opt === qObj.answer) {
+                    btn.classList.add('correct');
+                    feedback.innerText = "Target Destroyed! +50 Points";
+                    feedback.className = "mt-8 text-center font-black uppercase italic text-green-500 text-2xl";
+                    score += 50;
+                    quizPool.shift(); 
+                } else {
+                    btn.classList.add('wrong');
+                    feedback.innerText = "Miss! Correct: " + qObj.answer;
+                    feedback.className = "mt-8 text-center font-black uppercase italic text-red-500 text-2xl";
+                    const missed = quizPool.shift();
+                    quizPool.push(missed);
+                }
+                
+                document.getElementById('score').innerText = score;
+                document.getElementById('q-count').innerText = quizPool.length;
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    paused = false;
+                }, 1800);
+            };
+            optsDiv.appendChild(btn);
+        });
+    }
+
+    function shoot() {
+        bullets.push({ x: player.x + player.w / 2 - 3, y: canvas.height - 50, speed: 14 });
+    }
+
+    window.addEventListener('keydown', e => {
+        const code = e.code || e.key;
+        keys[code] = true;
+        if (["Space", " ", "ArrowLeft", "ArrowRight"].includes(code)) e.preventDefault();
+        if ((code === 'Space' || code === ' ') && !paused && gameActive) shoot();
+    });
+
+    window.addEventListener('keyup', e => {
+        const code = e.code || e.key;
+        keys[code] = false;
+    });
+
+    function gameLoop() {
+        if (!gameActive) return;
+
+        if (!paused) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if ((keys['ArrowLeft'] || keys['left']) && player.x > 0) player.x -= player.speed;
+            if ((keys['ArrowRight'] || keys['right']) && player.x < canvas.width - player.w) player.x += player.speed;
+
+            // Stars
+            ctx.fillStyle = "#fff";
+            for(let i=0; i<30; i++) {
+                ctx.fillRect((Date.now()/50 + i*130) % canvas.width, (i*160) % canvas.height, 2, 2);
+            }
+
+            // Ship
+            ctx.fillStyle = "#3b82f6";
+            ctx.fillRect(player.x, canvas.height - 50, player.w, player.h);
+            ctx.fillStyle = "#60a5fa";
+            ctx.fillRect(player.x + 10, canvas.height - 70, player.w - 20, 20);
+
+            // Bullets
+            ctx.fillStyle = "#fbbf24";
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.y -= b.speed;
+                ctx.fillRect(b.x, b.y, 6, 22);
+                if (b.y < 0) bullets.splice(i, 1);
+            }
+
+            // Aliens
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const en = enemies[i];
+                en.y += en.speed;
+                
+                ctx.beginPath();
+                ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+                ctx.fillStyle = en.type === 'mcq' ? "#dc2626" : "#2563eb";
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                
+                ctx.fillStyle = "#fff";
+                ctx.font = "900 30px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText(en.type === 'mcq' ? "?" : "!", en.x, en.y + 10);
+
+                if (en.y > canvas.height + en.r) {
+                    enemies.splice(i, 1);
+                    continue;
+                }
+
+                for (let j = bullets.length - 1; j >= 0; j--) {
+                    const b = bullets[j];
+                    const dist = Math.hypot(b.x - en.x, b.y - en.y);
+                    if (dist < en.r) {
+                        bullets.splice(j, 1);
+                        enemies.splice(i, 1);
+                        if (en.type === 'mcq') showQuestion();
+                        else {
+                            score += 20;
+                            document.getElementById('score').innerText = score;
+                            showFact(); 
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+        gameActive = false;
+        document.getElementById('endOverlay').style.display = 'flex';
+        document.getElementById('finalScore').innerText = score;
+    }
+
+    init();
+</script>
+</body>
+</html>
