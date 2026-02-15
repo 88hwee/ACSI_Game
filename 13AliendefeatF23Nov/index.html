@@ -1,685 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Alien Defeat Germany – Shooter MCQ</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0;
-    font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-    background: #020617;
-    color: #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-  }
-  header {
-    background: #0f172a;
-    padding: 0.6rem 1rem;
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    box-shadow: 0 2px 6px rgba(0,0,0,.6);
-  }
-  header h1 {
-    margin: 0;
-    font-size: 1.1rem;
-  }
-  .stats {
-    margin-left: auto;
-    display: flex;
-    gap: 1rem;
-    font-size: 0.9rem;
-  }
-  .tag {
-    font-size: 0.8rem;
-    padding: 0.15rem 0.4rem;
-    border-radius: 999px;
-    background: rgba(148,163,184,0.15);
-  }
-  .dot {
-    display: inline-block;
-    width: 10px;
-    height: 10px;
-    border-radius: 999px;
-    margin-right: 0.25rem;
-  }
-  .blue { background: #38bdf8; }
-  .red { background: #f97373; }
+    <meta charset="UTF-8">
+    <title>Alien Defeat Germany – Tactical Intelligence Shooter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
+        
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: #020617;
+            color: #e5e7eb;
+            overflow: hidden;
+            height: 100vh;
+            /* Improved base font size for general readability */
+            font-size: 18px; 
+        }
 
-  #gameWrapper {
-    position: relative;
-    flex: 1;
-    padding: 0.5rem;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+        .loud-font {
+            font-family: 'Black Ops One', cursive;
+            letter-spacing: 0.05em;
+        }
 
-  canvas {
-    background: radial-gradient(circle at 30% 0%, #1d4ed8 0%, #020617 55%, #000 100%);
-    border-radius: 14px;
-    box-shadow: 0 12px 30px rgba(0,0,0,.9);
-    max-width: 100%;
-  }
+        canvas {
+            background: radial-gradient(circle at 50% 100%, #1e1b4b 0%, #020617 70%);
+            display: block;
+            margin: 0 auto;
+            border-bottom: 4px solid #3b82f6;
+            cursor: crosshair;
+        }
 
-  #hintBar {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(15,23,42,0.9);
-    padding: 0.3rem 0.7rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    max-width: 95%;
-    text-align: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s;
-  }
+        #questionOverlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+        }
 
-  #onScreenHelp {
-    position: absolute;
-    top: 10px;
-    left: 50%;
-    transform: translateX(-50%);
-    text-align: center;
-    font-size: 0.8rem;
-    opacity: 0.9;
-  }
+        /* Increased Option Button Size & Readability */
+        .option-btn {
+            width: 100%;
+            padding: 1.5rem;
+            margin: 0.75rem 0;
+            background: #1e293b;
+            border: 3px solid #334155;
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: all 0.2s;
+            text-align: left;
+            color: #fff;
+            font-size: 1.25rem; /* Larger font */
+            line-height: 1.2;
+        }
 
-  /* Question overlay */
-  #questionOverlay,
-  #endOverlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(15,23,42,0.85);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 1rem;
-    visibility: hidden;
-    opacity: 0;
-    transition: opacity 0.2s;
-    z-index: 10;
-  }
+        .option-btn:hover {
+            background: #3b82f6;
+            color: white;
+            transform: translateX(10px);
+            border-color: #60a5fa;
+        }
 
-  .card {
-    background: #020617;
-    border-radius: 12px;
-    padding: 1rem 1.2rem;
-    width: 100%;
-    max-width: 450px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.9);
-  }
+        .correct { background: #16a34a !important; border-color: #22c55e !important; color: white; }
+        .wrong { background: #dc2626 !important; border-color: #ef4444 !important; color: white; }
 
-  .card h2 {
-    margin: 0 0 0.5rem;
-    font-size: 1rem;
-  }
+        .hud {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            right: 25px;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 50;
+        }
 
-  #questionText {
-    font-size: 0.9rem;
-    margin-bottom: 0.6rem;
-  }
+        /* Larger HUD Stats */
+        .stat-box {
+            background: rgba(0,0,0,0.9);
+            border: 3px solid #3b82f6;
+            padding: 15px 25px;
+            font-size: 1.5rem; /* Increased size */
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
+        }
 
-  #options {
-    display: grid;
-    gap: 0.35rem;
-  }
+        /* High-Visibility Fact Bar */
+        #fact-bar {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e40af; /* Solid high-contrast blue */
+            border: 4px solid #60a5fa;
+            padding: 25px 40px;
+            border-radius: 8px;
+            font-weight: 900;
+            text-transform: uppercase;
+            font-style: italic;
+            display: none;
+            z-index: 60;
+            width: 90%;
+            max-width: 1000px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
+            font-size: 1.8rem; /* Dramatically larger font */
+            color: #ffffff;
+            line-height: 1.3;
+        }
 
-  .optionBtn {
-    width: 100%;
-    border-radius: 999px;
-    padding: 0.35rem 0.7rem;
-    border: 1px solid rgba(148,163,184,0.6);
-    background: rgba(15,23,42,0.8);
-    color: inherit;
-    font-size: 0.9rem;
-    text-align: left;
-    cursor: pointer;
-  }
-  .optionBtn:hover {
-    background: rgba(37,99,235,0.4);
-  }
-
-  #feedback {
-    font-size: 0.8rem;
-    margin-top: 0.3rem;
-    min-height: 1.2em;
-  }
-
-  .actions {
-    margin-top: 0.6rem;
-    display: flex;
-    justify-content: flex-end;
-    gap: 0.4rem;
-  }
-
-  .btnTiny {
-    border-radius: 999px;
-    border: 1px solid rgba(148,163,184,0.7);
-    background: transparent;
-    color: inherit;
-    font-size: 0.8rem;
-    padding: 0.3rem 0.7rem;
-    cursor: pointer;
-  }
-
-  .btnTiny.primary {
-    border: none;
-    background: linear-gradient(90deg,#38bdf8,#60a5fa);
-    color: #0f172a;
-  }
-</style>
+        #focus-notice {
+            position: fixed;
+            bottom: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(59, 130, 246, 0.3);
+            padding: 8px 20px;
+            border-radius: 30px;
+            font-size: 1rem;
+            font-weight: bold;
+            border: 2px solid #3b82f6;
+            pointer-events: none;
+            color: #93c5fd;
+        }
+    </style>
 </head>
 <body>
-<header>
-  <h1>👾 Alien: Defeat of Germany</h1>
-  <div class="stats">
-    <div>Score: <span id="scoreEl">0</span></div>
-    <div>Time: <span id="timeEl">3:00</span></div>
-    <div class="tag"><span class="dot blue"></span>Blue = Fact</div>
-    <div class="tag"><span class="dot red"></span>Red = MCQ</div>
-  </div>
-</header>
 
-<div id="gameWrapper">
-  <canvas id="game" width="900" height="520"></canvas>
+<div class="hud loud-font">
+    <div class="stat-box text-blue-400">DECK: <span id="q-count">0</span></div>
+    <div class="stat-box text-green-400">SCORE: <span id="score">0</span></div>
+    <div class="stat-box text-red-400">TIME: <span id="time">180</span></div>
+</div>
 
-  <div id="onScreenHelp">
-    <div>Press <b>Space</b> to START + SHOOT</div>
-    <div>Use ⬅️ ➡️ to move</div>
-  </div>
+<canvas id="game"></canvas>
 
-  <div id="hintBar"></div>
+<div id="fact-bar" class="loud-font"></div>
+<div id="focus-notice" class="loud-font">CLICK TO FOCUS (ARROWS TO MOVE | SPACE TO SHOOT)</div>
 
-  <!-- Question overlay -->
-  <div id="questionOverlay">
-    <div class="card">
-      <h2>MCQ – Defeat of Germany</h2>
-      <div id="questionText"></div>
-      <div id="options"></div>
-      <div id="feedback"></div>
-      <div class="actions">
-        <button class="btnTiny" id="skipBtn">Skip</button>
-        <button class="btnTiny primary" id="continueBtn" disabled>Continue</button>
-      </div>
+<div id="questionOverlay">
+    <div class="bg-slate-900 border-t-[12px] border-blue-600 p-10 w-full max-w-3xl shadow-2xl">
+        <div class="text-blue-400 font-black uppercase tracking-[0.2em] text-sm mb-4">CRITICAL DECRYPTION</div>
+        <!-- Very large question text -->
+        <h2 id="questionText" class="text-4xl font-black italic uppercase mb-10 leading-tight text-white"></h2>
+        <div id="options"></div>
+        <div id="feedback" class="mt-8 text-center font-black h-12 uppercase italic text-2xl"></div>
     </div>
-  </div>
+</div>
 
-  <!-- End overlay -->
-  <div id="endOverlay">
-    <div class="card">
-      <h2>⏰ Time's up!</h2>
-      <p>Final score: <span id="finalScore"></span></p>
-      <p>Correct MCQs: <span id="correctCount"></span></p>
-      <div class="actions">
-        <button class="btnTiny primary" id="restartBtn">Play Again</button>
-      </div>
-    </div>
-  </div>
+<div id="endOverlay" class="fixed inset-0 bg-black z-[200] hidden flex flex-col items-center justify-center p-12 text-center">
+    <h1 class="text-9xl loud-font italic text-blue-600 mb-8">MISSION END</h1>
+    <div class="text-6xl loud-font mb-12 text-white">FINAL SCORE: <span id="finalScore">0</span></div>
+    <button onclick="location.reload()" class="bg-white text-black px-16 py-6 loud-font text-3xl hover:bg-blue-600 hover:text-white transition transform hover:scale-105">RESTART MISSION</button>
 </div>
 
 <script>
-  // ===========================
-  // QUESTIONS FROM YOUR LIST
-  // ===========================
-  const questions = [
-    { q: "Which battle marked the turning point on the Eastern Front?", options: ["Berlin", "Dunkirk", "Stalingrad", "Kursk"], answer: "Stalingrad" },
-    { q: "Which country was NOT part of the Allied Powers?", options: ["France", "Britain", "Italy", "Soviet Union"], answer: "Italy" },
-    { q: "What was the name of the Allied invasion of Normandy?", options: ["Operation Torch", "Operation Barbarossa", "Operation Sea Lion", "Operation Overlord"], answer: "Operation Overlord" },
-    { q: "What was the purpose of the Yalta Conference?", options: ["Plan the invasion of France", "Discuss surrender terms with Japan", "Divide post-war Europe", "Capture Hitler"], answer: "Divide post-war Europe" },
+    const questions = [
+        { q: "Which nation first defied the League by invading Manchuria?", options: ["Italy", "Germany", "Japan", "USSR"], answer: "Japan" },
+        { q: "What was the core aim of Hitler's 'Lebensraum' policy?", options: ["Peace treaty", "Living space", "Economic trade", "Naval power"], answer: "Living space" },
+        { q: "What territory did Hitler remilitarize in 1936?", options: ["Sudetenland", "Poland", "Rhineland", "Austria"], answer: "Rhineland" },
+        { q: "The union of Germany and Austria in 1938 was called...", options: ["Anschluss", "Autarky", "Munich Pact", "Détente"], answer: "Anschluss" },
+        { q: "Which British PM is associated with Appeasement?", options: ["Churchill", "Eden", "Attlee", "Chamberlain"], answer: "Chamberlain" },
+        { q: "The Munich Agreement gave Hitler control of which region?", options: ["Bohemia", "Sudetenland", "Danzig", "The Corridor"], answer: "Sudetenland" },
+        { q: "Which event officially triggered WWII in Europe?", options: ["Munich Pact", "Rhineland entry", "Invasion of Poland", "Spanish Civil War"], answer: "Invasion of Poland" },
+        { q: "The 1939 Pact between Germany and USSR was the...", options: ["Steel Pact", "Anti-Comintern", "Molotov-Ribbentrop", "Berlin Pact"], answer: "Molotov-Ribbentrop" },
+        { q: "Why did Hitler sign the Pact with Stalin?", options: ["Friendship", "To avoid a two-front war", "To share tanks", "To stop Japan"], answer: "To avoid a two-front war" },
+        { q: "Which country was NOT invited to the Munich Conference?", options: ["Britain", "France", "Germany", "Czechoslovakia"], answer: "Czechoslovakia" }
+    ];
 
-    { q: "Which city was heavily bombed by the Allies near the end of the war?", options: ["Berlin", "Munich", "Hamburg", "Dresden"], answer: "Dresden" },
-    { q: "Who was the British Prime Minister at the end of WWII?", options: ["Neville Chamberlain", "Winston Churchill", "Clement Attlee", "Anthony Eden"], answer: "Clement Attlee" },
-    { q: "Who led the Soviet Union during WWII?", options: ["Lenin", "Trotsky", "Stalin", "Khrushchev"], answer: "Stalin" },
-    { q: "What German military tactic failed in the Soviet Union?", options: ["Trench warfare", "Island hopping", "Blitzkrieg", "Guerrilla warfare"], answer: "Blitzkrieg" },
+    const canvas = document.getElementById("game");
+    const ctx = canvas.getContext("2d");
 
-    { q: "What was Hitler\u2019s title in Nazi Germany?", options: ["Kaiser", "Chancellor", "F\u00fchrer", "General"], answer: "F\u00fchrer" },
-    { q: "What country did Germany annex in 1938?", options: ["Poland", "Austria", "Czechoslovakia", "France"], answer: "Austria" },
-    { q: "Which Allied leader famously said \u2018We shall fight on the beaches\u2019?", options: ["Roosevelt", "Churchill", "De Gaulle", "Stalin"], answer: "Churchill" },
-    { q: "What key resource did the Allies cut off from Germany via strategic bombing?", options: ["Coal", "Iron", "Oil", "Wheat"], answer: "Oil" },
-
-    { q: "What beach was NOT part of the D-Day landings?", options: ["Omaha", "Utah", "Gold", "Silver"], answer: "Silver" },
-    { q: "Which nation suffered the highest military casualties in WWII?", options: ["USA", "Germany", "Japan", "Soviet Union"], answer: "Soviet Union" },
-    { q: "What was the Nazi secret police called?", options: ["SA", "SS", "Gestapo", "Wehrmacht"], answer: "Gestapo" },
-    { q: "Which German general was known as the \u2018Desert Fox\u2019?", options: ["Ludendorff", "Rommel", "Manstein", "Guderian"], answer: "Rommel" },
-
-    { q: "Which country did Germany invade to start WWII?", options: ["France", "Poland", "Belgium", "Austria"], answer: "Poland" },
-    { q: "What was the Maginot Line?", options: ["German airbase", "French defense line", "Russian supply route", "British naval plan"], answer: "French defense line" },
-    { q: "Who commanded Allied forces on D-Day?", options: ["Patton", "Montgomery", "Eisenhower", "Bradley"], answer: "Eisenhower" },
-    { q: "Which operation was Germany\u2019s last major offensive in the west?", options: ["Operation Barbarossa", "Battle of Berlin", "Battle of the Bulge", "Dunkirk Evacuation"], answer: "Battle of the Bulge" },
-
-    { q: "Which German city fell to the Soviets in the final stages of the war?", options: ["Munich", "Hamburg", "Berlin", "Cologne"], answer: "Berlin" },
-    { q: "Who was the leader of Nazi Germany?", options: ["Hindenburg", "Goebbels", "Himmler", "Hitler"], answer: "Hitler" },
-    { q: "Which country suffered immense destruction on the Eastern Front?", options: ["France", "Poland", "Soviet Union", "Italy"], answer: "Soviet Union" },
-    { q: "What was the significance of the Battle of Kursk?", options: ["It ended the war", "Germany lost air superiority", "It was the largest tank battle", "It marked the Allied invasion"], answer: "It was the largest tank battle" },
-
-    { q: "What policy delayed Allied aid to the USSR until later in the war?", options: ["Lend-Lease", "Cash and Carry", "Atlantic Charter", "Europe First"], answer: "Lend-Lease" },
-    { q: "Why was the Battle of the Atlantic crucial?", options: ["To support D-Day", "To maintain trade with the USSR", "To cut off German U-boats", "To bomb Berlin"], answer: "To cut off German U-boats" },
-    { q: "Which event revealed Hitler\u2019s misjudgment of Allied strength in the Ardennes?", options: ["Operation Torch", "Battle of the Bulge", "Operation Overlord", "Market Garden"], answer: "Battle of the Bulge" },
-    { q: "Which country did Germany invade to start WWII?", options: ["France", "Poland", "Belgium", "Austria"], answer: "Poland" },
-
-    { q: "Which conference confirmed the post-war occupation zones in Germany?", options: ["Tehran", "Potsdam", "Casablanca", "Yalta"], answer: "Yalta" },
-    { q: "Which industrial region of Germany was a key target of Allied bombing?", options: ["Saarland", "Bavaria", "Ruhr", "Saxony"], answer: "Ruhr" },
-    { q: "Why did Operation Market Garden fail?", options: ["Poor weather", "German resistance underestimated", "Lack of air support", "Shortage of fuel"], answer: "German resistance underestimated" },
-    { q: "Which city was symbolic of Nazi power and targeted in Allied bombings?", options: ["Dresden", "Nuremberg", "Leipzig", "Cologne"], answer: "Nuremberg" },
-
-    { q: "What was the significance of Ultra intelligence?", options: ["Helped in economic planning", "Cracked the German Enigma code", "Located Hitler", "Rebuilt post-war Europe"], answer: "Cracked the German Enigma code" },
-    { q: "Which Allied deception operation misled the Germans before D-Day?", options: ["Operation Fortitude", "Operation Torch", "Operation Husky", "Operation Neptune"], answer: "Operation Fortitude" },
-    { q: "What was the German Volkssturm?", options: ["Elite SS troops", "Youth labor force", "Civilian militia", "Propaganda agency"], answer: "Civilian militia" },
-    { q: "Which army liberated Paris in 1944?", options: ["British Army", "Soviet Army", "Free French Forces", "US Marines"], answer: "Free French Forces" },
-
-    { q: "What was Hitler\u2019s last known military decision?", options: ["To retreat from Berlin", "To negotiate peace", "To launch the Ardennes Offensive", "To stay in Berlin and fight"], answer: "To stay in Berlin and fight" },
-    { q: "Which city was the center of Hitler\u2019s last stand?", options: ["Munich", "Nuremberg", "Berlin", "Hamburg"], answer: "Berlin" },
-    { q: "What caused Germany\u2019s fuel crisis in 1944\u201345?", options: ["Soviet capture of oil fields", "Allied bombing of refineries", "Blockade by submarines", "Italian betrayal"], answer: "Allied bombing of refineries" },
-    { q: "Which Allied power reached Berlin first?", options: ["USA", "France", "Britain", "Soviet Union"], answer: "Soviet Union" }
-  ];
-
-  // Shuffle questions
-  function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [arr[i], arr[j]] = [arr[j], arr[i]];
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
     }
-  }
-  shuffle(questions);
+    window.addEventListener('resize', resize);
+    resize();
 
-  // ===========================
-  // GAME STATE
-  // ===========================
-  const canvas = document.getElementById("game");
-  const ctx = canvas.getContext("2d");
+    let quizPool = [];
+    let score = 0;
+    let timeLeft = 180;
+    let gameActive = false;
+    let paused = false;
+    let player = { x: 0, w: 70, h: 45, speed: 12 };
+    let bullets = [];
+    let enemies = [];
+    let keys = {};
+    let factTimeout = null;
 
-  const scoreEl = document.getElementById("scoreEl");
-  const timeEl = document.getElementById("timeEl");
-  const hintBar = document.getElementById("hintBar");
-  const helpText = document.getElementById("onScreenHelp");
-
-  const qOverlay = document.getElementById("questionOverlay");
-  const qText = document.getElementById("questionText");
-  const optionsDiv = document.getElementById("options");
-  const feedbackEl = document.getElementById("feedback");
-  const skipBtn = document.getElementById("skipBtn");
-  const contBtn = document.getElementById("continueBtn");
-
-  const endOverlay = document.getElementById("endOverlay");
-  const finalScoreEl = document.getElementById("finalScore");
-  const correctCountEl = document.getElementById("correctCount");
-  const restartBtn = document.getElementById("restartBtn");
-
-  let player = { x: canvas.width / 2 - 25, y: canvas.height - 60, w: 50, h: 30, speed: 7 };
-
-  let bullets = [];
-  let drops = []; // falling objects
-  let keys = {};
-
-  let running = false;
-  let pausedForQuestion = false;
-  let gameOver = false;
-
-  let score = 0;
-  let timeLeft = 180;
-  let timerId = null;
-  let dropId = null;
-
-  let currentQIndex = 0;
-  let correctCount = 0;
-  let answeredThisQ = false;
-
-  // ===========================
-  // HELPER FUNCTIONS
-  // ===========================
-  function formatTime(s) {
-    const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return m + ":" + sec.toString().padStart(2, "0");
-  }
-
-  function showHint(text, ms = 4000) {
-    hintBar.textContent = text;
-    hintBar.style.opacity = "1";
-    if (ms > 0) {
-      setTimeout(() => {
-        hintBar.style.opacity = "0";
-      }, ms);
-    }
-  }
-
-  function resetGame() {
-    player.x = canvas.width / 2 - 25;
-    bullets = [];
-    drops = [];
-    keys = {};
-
-    running = false;
-    pausedForQuestion = false;
-    gameOver = false;
-
-    score = 0;
-    timeLeft = 180;
-    correctCount = 0;
-    currentQIndex = 0;
-    answeredThisQ = false;
-
-    shuffle(questions);
-
-    scoreEl.textContent = score;
-    timeEl.textContent = formatTime(timeLeft);
-    hintBar.style.opacity = "0";
-    helpText.style.display = "block";
-
-    if (timerId) clearInterval(timerId);
-    if (dropId) clearInterval(dropId);
-  }
-
-  function startTimer() {
-    if (timerId) clearInterval(timerId);
-    timerId = setInterval(() => {
-      if (!running || pausedForQuestion || gameOver) return;
-      timeLeft--;
-      timeEl.textContent = formatTime(timeLeft);
-      if (timeLeft <= 0) {
-        timeLeft = 0;
-        timeEl.textContent = formatTime(timeLeft);
-        endGame();
-      }
-    }, 1000);
-  }
-
-  function startDrops() {
-    if (dropId) clearInterval(dropId);
-    dropId = setInterval(() => {
-      if (!running || pausedForQuestion || gameOver) return;
-      const type = Math.random() < 0.5 ? "blue" : "red";
-      const radius = 16;
-      const x = Math.random() * (canvas.width - radius * 2) + radius;
-      const y = -radius;
-      const speed = 2 + Math.random() * 1.5;
-      drops.push({ x, y, r: radius, speed, type });
-    }, 900); // one object every 0.9s
-  }
-
-  function endGame() {
-    gameOver = true;
-    running = false;
-    if (timerId) clearInterval(timerId);
-    if (dropId) clearInterval(dropId);
-
-    finalScoreEl.textContent = score;
-    correctCountEl.textContent = correctCount;
-    endOverlay.style.visibility = "visible";
-    endOverlay.style.opacity = "1";
-  }
-
-  // ===========================
-  // QUESTION HANDLING
-  // ===========================
-  function showQuestion() {
-    if (currentQIndex >= questions.length) {
-      currentQIndex = 0;
-      shuffle(questions);
-    }
-    const qObj = questions[currentQIndex];
-
-    answeredThisQ = false;
-    contBtn.disabled = true;
-    feedbackEl.textContent = "";
-    feedbackEl.style.color = "#e5e7eb";
-
-    qText.textContent = qObj.q;
-    optionsDiv.innerHTML = "";
-
-    qObj.options.forEach(opt => {
-      const btn = document.createElement("button");
-      btn.className = "optionBtn";
-      btn.textContent = opt;
-      btn.onclick = () => handleAnswer(opt);
-      optionsDiv.appendChild(btn);
-    });
-
-    qOverlay.style.visibility = "visible";
-    qOverlay.style.opacity = "1";
-  }
-
-  function hideQuestion() {
-    qOverlay.style.visibility = "hidden";
-    qOverlay.style.opacity = "0";
-  }
-
-  function handleAnswer(selected) {
-    if (answeredThisQ) return;
-    answeredThisQ = true;
-    const qObj = questions[currentQIndex];
-
-    if (selected === qObj.answer) {
-      score += 10;
-      correctCount++;
-      scoreEl.textContent = score;
-      feedbackEl.textContent = "✅ Correct! +10 points.";
-      feedbackEl.style.color = "#4ade80";
-      showHint("Nice! Correct answer. +10 points.", 2500);
-    } else {
-      feedbackEl.textContent = "❌ Incorrect. Correct: " + qObj.answer;
-      feedbackEl.style.color = "#f97373";
-      showHint("Wrong this time – but now you know the answer.", 2500);
-    }
-    currentQIndex++;
-    contBtn.disabled = false;
-  }
-
-  contBtn.addEventListener("click", () => {
-    hideQuestion();
-    pausedForQuestion = false;
-    running = true;
-  });
-
-  skipBtn.addEventListener("click", () => {
-    answeredThisQ = true;
-    feedbackEl.textContent = "Skipped – no points added.";
-    feedbackEl.style.color = "#facc15";
-    contBtn.disabled = false;
-    showHint("Skipped. Shoot another red orb for the next question.", 2000);
-  });
-
-  function showFact() {
-    const qObj = questions[Math.floor(Math.random() * questions.length)];
-    showHint("FACT: " + qObj.q + " → " + qObj.answer, 5000);
-  }
-
-  // ===========================
-  // INPUT
-  // ===========================
-  document.addEventListener("keydown", (e) => {
-    const k = e.key;
-    keys[k] = true;
-
-    // Start / shoot with Space
-    if (k === " " || k === "Spacebar" || e.code === "Space") {
-      e.preventDefault();
-      if (!running && !gameOver && !pausedForQuestion) {
-        running = true;
-        helpText.style.display = "none";
-        startTimer();
-        startDrops();
-        showHint("Game started! Shoot 🔵 for facts and 🔴 for MCQs.", 3000);
-      }
-      if (!pausedForQuestion && !gameOver) {
-        shoot();
-      }
-    }
-  });
-
-  document.addEventListener("keyup", (e) => {
-    keys[e.key] = false;
-  });
-
-  function shoot() {
-    const bw = 4;
-    const bh = 14;
-    bullets.push({
-      x: player.x + player.w / 2 - bw / 2,
-      y: player.y - bh,
-      w: bw,
-      h: bh,
-      speed: 8
-    });
-  }
-
-  // ===========================
-  // GAME LOOP
-  // ===========================
-  function update() {
-    if (running && !pausedForQuestion && !gameOver) {
-      // Move player
-      if (keys["ArrowLeft"] || keys["a"] || keys["A"]) {
-        player.x -= player.speed;
-      }
-      if (keys["ArrowRight"] || keys["d"] || keys["D"]) {
-        player.x += player.speed;
-      }
-      if (player.x < 0) player.x = 0;
-      if (player.x + player.w > canvas.width) player.x = canvas.width - player.w;
-
-      // Move bullets
-      bullets.forEach(b => b.y -= b.speed);
-      bullets = bullets.filter(b => b.y + b.h > 0);
-
-      // Move drops
-      drops.forEach(d => d.y += d.speed);
-      drops = drops.filter(d => d.y - d.r < canvas.height + 10);
-
-      // Collisions (bullet vs drop)
-      for (let i = drops.length - 1; i >= 0; i--) {
-        const d = drops[i];
-        for (let j = bullets.length - 1; j >= 0; j--) {
-          const b = bullets[j];
-          if (
-            b.x < d.x + d.r &&
-            b.x + b.w > d.x - d.r &&
-            b.y < d.y + d.r &&
-            b.y + b.h > d.y - d.r
-          ) {
-            // Hit
-            bullets.splice(j, 1);
-            const type = d.type;
-            drops.splice(i, 1);
-
-            if (type === "blue") {
-              // fact
-              showFact();
-            } else {
-              // MCQ
-              pausedForQuestion = true;
-              running = false;
-              showQuestion();
-            }
-            break;
-          }
+    function shuffle(arr) {
+        let newArr = [...arr];
+        for (let i = newArr.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
         }
-      }
+        return newArr;
     }
 
-    draw();
-    requestAnimationFrame(update);
-  }
+    function init() {
+        quizPool = shuffle([...questions]);
+        document.getElementById('q-count').innerText = quizPool.length;
+        player.x = canvas.width / 2 - player.w / 2;
+        gameActive = true;
+        
+        const spawnLoop = () => {
+            if (gameActive) {
+                if (!paused) spawnEnemy();
+                setTimeout(spawnLoop, 1500);
+            }
+        };
+        spawnLoop();
 
-  function drawBackground() {
-    // a few stars
-    ctx.fillStyle = "rgba(148,163,184,0.5)";
-    for (let i = 0; i < 60; i++) {
-      const x = (i * 73 + 19) % canvas.width;
-      const y = (i * 41 + 7) % canvas.height;
-      const r = (i % 5 === 0) ? 1.7 : 1;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
+        requestAnimationFrame(gameLoop);
+        
+        setInterval(() => {
+            if (!paused && gameActive) {
+                timeLeft--;
+                document.getElementById('time').innerText = timeLeft;
+                if (timeLeft <= 0) endGame();
+            }
+        }, 1000);
     }
-  }
 
-  function drawPlayer() {
-    const p = player;
-    ctx.save();
-    ctx.translate(p.x + p.w / 2, p.y + p.h / 2);
+    function spawnEnemy() {
+        const radius = 45; // LARGE HITBOXES
+        enemies.push({
+            x: Math.random() * (canvas.width - radius * 2) + radius,
+            y: -radius,
+            r: radius,
+            speed: 1.8 + Math.random() * 2,
+            type: Math.random() > 0.3 ? 'mcq' : 'bonus'
+        });
+    }
 
-    // saucer
-    ctx.beginPath();
-    ctx.ellipse(0, 5, p.w / 2 + 8, p.h / 2, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#38bdf8";
-    ctx.fill();
+    function showFact() {
+        const qObj = questions[Math.floor(Math.random() * questions.length)];
+        const factBar = document.getElementById('fact-bar');
+        
+        factBar.innerHTML = `<span class="text-blue-200">INTEL:</span> ${qObj.q} <span class="text-yellow-300">➜ ${qObj.answer}</span>`;
+        factBar.style.display = 'block';
+        
+        if (factTimeout) clearTimeout(factTimeout);
+        factTimeout = setTimeout(() => {
+            factBar.style.display = 'none';
+        }, 5000); // Displayed slightly longer for reading
+    }
 
-    ctx.beginPath();
-    ctx.ellipse(0, -2, p.w / 2.5, p.h / 2.1, 0, 0, Math.PI * 2);
-    ctx.fillStyle = "#e0f2fe";
-    ctx.fill();
+    function showQuestion() {
+        if (quizPool.length === 0) {
+            quizPool = shuffle([...questions]);
+        }
+        
+        paused = true;
+        keys = {}; 
+        
+        const qObj = quizPool[0];
+        const overlay = document.getElementById('questionOverlay');
+        const text = document.getElementById('questionText');
+        const optsDiv = document.getElementById('options');
+        const feedback = document.getElementById('feedback');
 
-    ctx.beginPath();
-    ctx.arc(0, -4, 5, 0, Math.PI * 2);
-    ctx.fillStyle = "#020617";
-    ctx.fill();
+        text.innerText = qObj.q;
+        optsDiv.innerHTML = '';
+        feedback.innerText = '';
+        overlay.style.display = 'flex';
 
-    ctx.restore();
-  }
+        const shuffledOpts = shuffle([...qObj.options]);
 
-  function drawBullets() {
-    ctx.fillStyle = "#facc15";
-    bullets.forEach(b => {
-      ctx.fillRect(b.x, b.y, b.w, b.h);
+        shuffledOpts.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => {
+                const btns = optsDiv.querySelectorAll('button');
+                btns.forEach(b => b.disabled = true);
+                
+                if (opt === qObj.answer) {
+                    btn.classList.add('correct');
+                    feedback.innerText = "Target Destroyed! +50 Points";
+                    feedback.className = "mt-8 text-center font-black uppercase italic text-green-500 text-2xl";
+                    score += 50;
+                    quizPool.shift(); 
+                } else {
+                    btn.classList.add('wrong');
+                    feedback.innerText = "Miss! Correct: " + qObj.answer;
+                    feedback.className = "mt-8 text-center font-black uppercase italic text-red-500 text-2xl";
+                    const missed = quizPool.shift();
+                    quizPool.push(missed);
+                }
+                
+                document.getElementById('score').innerText = score;
+                document.getElementById('q-count').innerText = quizPool.length;
+
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    paused = false;
+                }, 1800);
+            };
+            optsDiv.appendChild(btn);
+        });
+    }
+
+    function shoot() {
+        bullets.push({ x: player.x + player.w / 2 - 3, y: canvas.height - 50, speed: 14 });
+    }
+
+    window.addEventListener('keydown', e => {
+        const code = e.code || e.key;
+        keys[code] = true;
+        if (["Space", " ", "ArrowLeft", "ArrowRight"].includes(code)) e.preventDefault();
+        if ((code === 'Space' || code === ' ') && !paused && gameActive) shoot();
     });
-  }
 
-  function drawDrops() {
-    drops.forEach(d => {
-      ctx.beginPath();
-      ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2);
-      ctx.fillStyle = d.type === "blue" ? "#38bdf8" : "#f97373";
-      ctx.fill();
-      ctx.lineWidth = 2;
-      ctx.strokeStyle = "rgba(15,23,42,0.9)";
-      ctx.stroke();
-
-      ctx.fillStyle = "#0f172a";
-      ctx.font = "bold 11px system-ui";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(d.type === "blue" ? "F" : "?", d.x, d.y);
+    window.addEventListener('keyup', e => {
+        const code = e.code || e.key;
+        keys[code] = false;
     });
-  }
 
-  function drawHUD() {
-    ctx.fillStyle = "rgba(15,23,42,0.7)";
-    ctx.fillRect(0, 0, canvas.width, 24);
-    ctx.fillStyle = "#e5e7eb";
-    ctx.font = "12px system-ui";
-    ctx.textBaseline = "middle";
-    ctx.fillText("Score: " + score, 10, 12);
-    ctx.textAlign = "right";
-    ctx.fillText("Time: " + formatTime(timeLeft), canvas.width - 10, 12);
-    ctx.textAlign = "left";
-  }
+    function gameLoop() {
+        if (!gameActive) return;
 
-  function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    drawBackground();
-    drawPlayer();
-    drawBullets();
-    drawDrops();
-    drawHUD();
-  }
+        if (!paused) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  restartBtn.addEventListener("click", () => {
-    endOverlay.style.visibility = "hidden";
-    endOverlay.style.opacity = "0";
-    resetGame();
-  });
+            if ((keys['ArrowLeft'] || keys['left']) && player.x > 0) player.x -= player.speed;
+            if ((keys['ArrowRight'] || keys['right']) && player.x < canvas.width - player.w) player.x += player.speed;
 
-  // Init
-  resetGame();
-  update(); // start animation loop
+            // Stars
+            ctx.fillStyle = "#fff";
+            for(let i=0; i<30; i++) {
+                ctx.fillRect((Date.now()/50 + i*130) % canvas.width, (i*160) % canvas.height, 2, 2);
+            }
+
+            // Ship
+            ctx.fillStyle = "#3b82f6";
+            ctx.fillRect(player.x, canvas.height - 50, player.w, player.h);
+            ctx.fillStyle = "#60a5fa";
+            ctx.fillRect(player.x + 10, canvas.height - 70, player.w - 20, 20);
+
+            // Bullets
+            ctx.fillStyle = "#fbbf24";
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                const b = bullets[i];
+                b.y -= b.speed;
+                ctx.fillRect(b.x, b.y, 6, 22);
+                if (b.y < 0) bullets.splice(i, 1);
+            }
+
+            // Aliens
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const en = enemies[i];
+                en.y += en.speed;
+                
+                ctx.beginPath();
+                ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+                ctx.fillStyle = en.type === 'mcq' ? "#dc2626" : "#2563eb";
+                ctx.fill();
+                ctx.strokeStyle = "#fff";
+                ctx.lineWidth = 5;
+                ctx.stroke();
+                
+                ctx.fillStyle = "#fff";
+                ctx.font = "900 30px Inter";
+                ctx.textAlign = "center";
+                ctx.fillText(en.type === 'mcq' ? "?" : "!", en.x, en.y + 10);
+
+                if (en.y > canvas.height + en.r) {
+                    enemies.splice(i, 1);
+                    continue;
+                }
+
+                for (let j = bullets.length - 1; j >= 0; j--) {
+                    const b = bullets[j];
+                    const dist = Math.hypot(b.x - en.x, b.y - en.y);
+                    if (dist < en.r) {
+                        bullets.splice(j, 1);
+                        enemies.splice(i, 1);
+                        if (en.type === 'mcq') showQuestion();
+                        else {
+                            score += 20;
+                            document.getElementById('score').innerText = score;
+                            showFact(); 
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+        requestAnimationFrame(gameLoop);
+    }
+
+    function endGame() {
+        gameActive = false;
+        document.getElementById('endOverlay').style.display = 'flex';
+        document.getElementById('finalScore').innerText = score;
+    }
+
+    init();
 </script>
 </body>
 </html>
