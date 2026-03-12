@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <!-- Mandatory Viewport Settings -->
+    <!-- Mandatory Viewport Settings for Mobile Responsiveness -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Local Hero: Versailles Defense Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
@@ -346,7 +346,7 @@
             }, 1000);
         }
 
-        // Fixes the 404 issue by resetting state instead of reloading page
+        // Prevents browser 404 by resetting in-memory instead of reloading
         function resetGame() {
             if (timerInterval) clearInterval(timerInterval);
             
