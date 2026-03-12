@@ -2,27 +2,46 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <!-- Mandatory Viewport Settings -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Local Hero: Treaty of Versailles Defense</title>
+    <title>Local Hero: Versailles Defense Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
         
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
         body {
             margin: 0;
-            overflow: hidden;
+            padding: 0;
+            overflow: hidden; /* Prevents horizontal and vertical scrolling */
             background-color: #050505;
             font-family: 'Courier New', Courier, monospace;
             user-select: none;
             touch-action: none;
             -webkit-tap-highlight-color: transparent;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
             background: radial-gradient(circle at bottom, #1a1a2e 0%, #000 70%);
+            overflow: hidden;
+        }
+
+        /* Responsive Canvas Scaling */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
         }
 
         .scanline {
@@ -43,52 +62,58 @@
         }
 
         .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
         }
 
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(3px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-5px, 0, 0); }
+            40%, 60% { transform: translate3d(5px, 0, 0); }
         }
 
-        .flash-red {
-            animation: flashRed 0.5s;
-        }
-
-        @keyframes flashRed {
-            0% { background-color: rgba(255, 0, 0, 0); }
-            50% { background-color: rgba(255, 0, 0, 0.3); }
-            100% { background-color: rgba(255, 0, 0, 0); }
-        }
-
+        /* Touch-Friendly Option Buttons */
         .option-btn {
-            transition: all 0.2s;
-            border: 2px solid #4a5568;
-            min-height: 3.5rem;
-        }
-
-        .option-btn:hover:not(:disabled) {
-            background-color: #2d3748;
-            border-color: #63b3ed;
-            transform: scale(1.02);
+            transition: all 0.15s;
+            border: 2px solid #374151;
+            touch-action: manipulation;
+            min-height: 3.5rem; /* Ensure large touch target */
         }
 
         .correct {
-            background-color: #2f855a !important;
-            border-color: #48bb78 !important;
+            background-color: #059669 !important;
+            border-color: #34d399 !important;
             color: white !important;
+            transform: scale(0.98);
         }
 
         .wrong {
-            background-color: #9b2c2c !important;
-            border-color: #f56565 !important;
+            background-color: #dc2626 !important;
+            border-color: #f87171 !important;
             color: white !important;
+            animation: shake 0.3s;
         }
 
-        canvas {
-            touch-action: none;
+        /* HUD Safe Area Padding */
+        #hud {
+            padding-top: calc(0.75rem + var(--sat));
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
+        }
+
+        /* Controls Safe Area Padding */
+        #mobile-controls {
+            padding-bottom: calc(1.5rem + var(--sab));
+            padding-left: calc(1.5rem + env(safe-area-inset-left));
+            padding-right: calc(1.5rem + env(safe-area-inset-right));
+        }
+
+        /* Responsive adjustments for screens below 768px */
+        @media (max-width: 767px) {
+            .hero-title { font-size: 2.25rem; }
+            .option-btn { font-size: 0.875rem; padding: 0.75rem; }
+            .control-btn { width: 4.5rem; height: 4.5rem; }
+            .fire-btn { width: 5.5rem; height: 5.5rem; }
         }
     </style>
 </head>
@@ -97,138 +122,116 @@
     <div id="game-container">
         <div class="scanline"></div>
         
-        <!-- HUD -->
-        <div id="hud" class="absolute top-0 left-0 w-full p-2 md:p-4 flex justify-between items-center z-40 bg-black/60 border-b border-blue-900/50 pt-[env(safe-area-inset-top)]">
+        <!-- HUD - Flexbox Layout -->
+        <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-center z-40 bg-black/40 backdrop-blur-sm border-b border-blue-900/30">
             <div class="flex flex-col">
-                <span class="text-blue-400 text-[10px] md:text-xs uppercase tracking-widest font-bold">Shield</span>
-                <span class="text-white text-sm md:text-xl font-mono" id="score-val">0000</span>
+                <span class="text-blue-400 text-[10px] uppercase font-bold tracking-widest">Score</span>
+                <span class="text-white text-base md:text-lg font-mono" id="score-val">0000</span>
             </div>
             <div class="flex flex-col items-center">
-                <span class="text-red-400 text-[10px] md:text-xs uppercase tracking-widest font-bold">Stability</span>
-                <span class="text-white text-lg md:text-2xl font-mono" id="timer-val">90s</span>
+                <span class="text-red-400 text-[10px] uppercase font-bold tracking-widest">Stability</span>
+                <span class="text-white text-lg md:text-xl font-mono" id="timer-val">90s</span>
             </div>
             <div class="flex flex-col items-end">
-                <span class="text-green-400 text-[10px] md:text-xs uppercase tracking-widest font-bold">Integrity</span>
-                <div id="lives-container" class="flex gap-0.5 mt-0.5 text-sm md:text-xl"></div>
+                <span class="text-green-400 text-[10px] uppercase font-bold tracking-widest">Integrity</span>
+                <div id="lives-container" class="flex gap-1 mt-1 text-xs md:text-sm"></div>
             </div>
         </div>
 
-        <!-- Canvas -->
+        <!-- Canvas scales to fill container -->
         <canvas id="gameCanvas"></canvas>
 
-        <!-- Start Screen -->
+        <!-- Start Screen - Flexbox Centering -->
         <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-6 text-center">
-            <div class="mb-6">
-                <h1 class="text-3xl md:text-6xl font-bold text-white mb-1 tracking-tighter uppercase italic">Local Hero</h1>
-                <h2 class="text-lg md:text-2xl text-blue-500 font-mono">VERSAILLES DEFENSE</h2>
-                <div class="w-16 md:w-24 h-1 bg-blue-600 mx-auto mt-4"></div>
+            <div class="mb-8 md:mb-12 w-full max-w-lg">
+                <h1 class="hero-title text-4xl md:text-7xl font-black text-white mb-2 tracking-tighter uppercase italic drop-shadow-lg">Local Hero</h1>
+                <h2 class="text-base md:text-2xl text-blue-500 font-mono tracking-widest">VERSAILLES DEFENSE</h2>
+                <div class="w-16 md:w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
             </div>
-            <div class="max-w-md text-gray-400 mb-8 space-y-3 text-xs md:text-base">
-                <p>Preserve the 1919 Peace Settlement. Neutralize the oversized obstacles to keep history on track.</p>
-                <div class="grid grid-cols-2 gap-3 text-left border border-gray-800 p-3 rounded bg-gray-900/50">
-                    <div>
-                        <span class="text-white font-bold block">Aggressors</span>
-                        <span class="text-[10px] md:text-xs text-gray-500">Hit for Versailles questions (+100)</span>
+            
+            <div class="w-full max-w-xs md:max-w-md text-gray-400 mb-8 md:mb-12 space-y-4 text-sm md:text-base">
+                <p>Preserve the 1919 settlement by neutralizing oversized historical obstacles.</p>
+                <div class="bg-gray-900/80 border border-gray-800 p-4 rounded-2xl text-left grid grid-cols-1 gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
+                        <span class="text-xs"><b>Aggressors:</b> Trigger historical fact-checks.</span>
                     </div>
-                    <div>
-                        <span class="text-red-500 font-bold block">Heavy Mines</span>
-                        <span class="text-[10px] md:text-xs text-gray-500">Large & Heavy. Impact = 10s Crisis!</span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 bg-gray-600 rounded-full flex-shrink-0"></div>
+                        <span class="text-xs"><b>Heavy Mines:</b> Trigger 10s Treaty Crisis events.</span>
                     </div>
                 </div>
             </div>
-            <button id="start-btn" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(37,99,235,0.4)] uppercase text-sm tracking-widest">
+
+            <button id="start-btn" class="w-full max-w-xs py-4 md:py-5 bg-blue-600 active:bg-blue-700 text-white font-black rounded-2xl transition-all transform active:scale-95 shadow-xl uppercase tracking-widest text-lg">
                 Start Mission
             </button>
         </div>
 
-        <!-- MCQ Modal -->
-        <div id="mcq-modal" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-black/80 p-4">
-            <div class="bg-gray-900 border-2 border-blue-500 rounded-2xl w-full max-w-xl p-5 md:p-8 shadow-[0_0_50px_rgba(0,0,0,1)] relative overflow-hidden">
-                <div id="crisis-banner" class="hidden bg-red-600 text-white py-1 px-4 text-center text-[10px] md:text-xs font-bold uppercase tracking-widest absolute top-0 left-0 w-full animate-pulse">
-                    Crisis Protocol: TREATY BREACH: <span id="crisis-timer">10</span>s
+        <!-- MCQ Modal - Responsive Grid -->
+        <div id="mcq-modal" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
+            <div class="bg-gray-900 border-2 border-blue-500 rounded-3xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden">
+                <div id="crisis-banner" class="hidden bg-red-600 text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-tighter absolute top-0 left-0 w-full animate-pulse">
+                    CRISIS: TREATY BREACH — <span id="crisis-timer">10</span>s REMAINING
                 </div>
-                <div class="mt-4">
-                    <p id="q-category" class="text-blue-400 text-[10px] md:text-xs font-bold uppercase mb-2">Fact Check: Versailles</p>
-                    <h3 id="question-text" class="text-lg md:text-2xl text-white font-semibold leading-tight mb-6"></h3>
-                    <div id="options-container" class="grid grid-cols-1 gap-2 md:gap-3"></div>
-                    <div id="feedback-text" class="mt-4 h-5 text-center text-xs md:text-sm font-bold"></div>
+                <div class="mt-6">
+                    <p id="q-category" class="text-blue-400 text-[10px] font-bold uppercase mb-2">History Log: 1919</p>
+                    <h3 id="question-text" class="text-lg md:text-xl text-white font-bold leading-tight mb-6 md:mb-8"></h3>
+                    <div id="options-container" class="grid grid-cols-1 gap-3"></div>
+                    <div id="feedback-text" class="mt-4 h-6 text-center text-xs md:text-sm font-bold"></div>
                 </div>
             </div>
         </div>
 
         <!-- End Screen -->
-        <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black p-6 text-center">
-            <h2 id="end-status" class="text-3xl md:text-6xl font-bold text-red-500 mb-2 italic">TREATY REJECTED</h2>
-            <div class="text-6xl md:text-8xl font-black text-white mb-4" id="final-score-display">0000</div>
-            <p id="end-message" class="text-gray-400 text-sm mb-8 max-w-xs">The settlement has failed. History is in chaos.</p>
-            <button id="restart-btn" class="px-8 py-3 bg-white text-black font-bold rounded hover:bg-gray-200 transition-colors uppercase tracking-widest text-sm">
-                Re-negotiate
+        <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black p-8 text-center">
+            <h2 id="end-status" class="text-3xl md:text-5xl font-black text-red-500 mb-2 italic uppercase">Mission Failed</h2>
+            <div class="text-6xl md:text-8xl font-black text-white mb-6" id="final-score-display">0000</div>
+            <p id="end-message" class="text-gray-500 text-sm mb-12 max-w-xs">The settlement has failed. History is in chaos.</p>
+            <button id="restart-btn" class="w-full max-w-xs py-4 bg-white text-black font-black rounded-2xl active:bg-gray-200 transition-colors uppercase tracking-widest">
+                Re-Negotiate
             </button>
         </div>
         
-        <!-- Mobile Touch Controls -->
-        <div class="absolute bottom-8 left-0 w-full flex justify-between px-6 md:hidden z-30 pointer-events-none pb-[env(safe-area-inset-bottom)]">
-            <div class="flex gap-4">
-                <div id="btn-left" class="w-14 h-14 bg-white/10 rounded-full border border-white/20 flex items-center justify-center pointer-events-auto active:bg-white/30 backdrop-blur-sm">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+        <!-- Mobile Touch Controls - Ergonomic Placement -->
+        <div id="mobile-controls" class="absolute bottom-0 left-0 w-full flex justify-between items-end z-30 pointer-events-none">
+            <div class="flex gap-3 md:gap-4 pointer-events-auto">
+                <div id="btn-left" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl border-2 border-white/10 flex items-center justify-center active:bg-white/20 backdrop-blur-md">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
                 </div>
-                <div id="btn-right" class="w-14 h-14 bg-white/10 rounded-full border border-white/20 flex items-center justify-center pointer-events-auto active:bg-white/30 backdrop-blur-sm">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                <div id="btn-right" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl border-2 border-white/10 flex items-center justify-center active:bg-white/20 backdrop-blur-md">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
                 </div>
             </div>
-            <div id="btn-fire" class="w-20 h-20 bg-red-600/20 rounded-full border-2 border-red-600/40 flex items-center justify-center pointer-events-auto active:bg-red-600/50 backdrop-blur-sm">
-                <div class="w-12 h-12 bg-red-600 rounded-full shadow-[0_0_15px_rgba(220,38,38,0.5)]"></div>
+            <div id="btn-fire" class="fire-btn w-20 h-20 md:w-24 md:h-24 bg-red-600/10 rounded-full border-4 border-red-600/30 flex items-center justify-center pointer-events-auto active:bg-red-600/40 backdrop-blur-md">
+                <div class="w-12 h-12 md:w-16 md:h-16 bg-red-600 rounded-full shadow-lg flex items-center justify-center">
+                    <div class="w-4 h-4 md:w-6 md:h-6 bg-white/20 rounded-full"></div>
+                </div>
             </div>
         </div>
     </div>
 
     <script>
         /**
-         * ASSETS (SVG Data)
+         * ASSETS & DATA
          */
         const ASSETS = {
-            hero: `<svg width="80" height="80" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 50 L50 50 L45 35 L15 35 Z" fill="#3B82F6"/>
-                    <rect x="25" y="20" width="10" height="15" fill="#60A5FA"/>
-                    <rect x="22" y="15" width="16" height="5" fill="#2563EB"/>
-                    <circle cx="20" cy="50" r="5" fill="#1E40AF"/>
-                    <circle cx="40" cy="50" r="5" fill="#1E40AF"/>
-                  </svg>`,
-            alien: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M5 20 Q20 5 35 20 Q20 35 5 20" fill="#EF4444"/>
-                    <circle cx="20" cy="20" r="8" fill="#B91C1C"/>
-                    <rect x="18" y="5" width="4" height="10" fill="#FCA5A5"/>
-                  </svg>`,
-            bomb: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="20" cy="20" r="15" fill="#111" stroke="#444" stroke-width="2"/>
-                    <rect x="18" y="2" width="4" height="6" fill="#444"/>
-                    <rect x="18" y="32" width="4" height="6" fill="#444"/>
-                    <rect x="2" y="18" width="6" height="4" fill="#444"/>
-                    <rect x="32" y="18" width="6" height="4" fill="#444"/>
-                    <circle cx="20" cy="20" r="3" fill="#DC2626"/>
-                  </svg>`
+            hero: `<svg width="80" height="80" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L50 50 L45 35 L15 35 Z" fill="#3B82F6"/><rect x="25" y="20" width="10" height="15" fill="#60A5FA"/><rect x="22" y="15" width="16" height="5" fill="#2563EB"/><circle cx="20" cy="50" r="5" fill="#1E40AF"/><circle cx="40" cy="50" r="5" fill="#1E40AF"/></svg>`,
+            alien: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 20 Q20 5 35 20 Q20 35 5 20" fill="#EF4444"/><circle cx="20" cy="20" r="8" fill="#B91C1C"/><rect x="18" y="5" width="4" height="10" fill="#FCA5A5"/></svg>`,
+            bomb: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="15" fill="#111" stroke="#444" stroke-width="2"/><rect x="18" y="2" width="4" height="6" fill="#444"/><rect x="18" y="32" width="4" height="6" fill="#444"/><rect x="2" y="18" width="6" height="4" fill="#444"/><rect x="32" y="18" width="6" height="4" fill="#444"/><circle cx="20" cy="20" r="3" fill="#DC2626"/></svg>`
         };
 
-        // All answers normalized to similar lengths to prevent "length guessing"
         const QUESTIONS = [
-            { q: "Which article of the Treaty of Versailles was known as the 'War Guilt Clause'?", a: "Article 231", o: ["Article 231", "Article 105", "Article 042", "Article 015"] },
-            { q: "How much was Germany forced to pay in reparations (set in 1921)?", a: "£6,600 million", o: ["£6,600 million", "£3,300 million", "£1,100 million", "£9,900 million"] },
-            { q: "The German army was limited to how many men by the Treaty?", a: "100,000 soldiers", o: ["100,000 soldiers", "250,000 soldiers", "500,000 soldiers", "050,000 soldiers"] },
-            { q: "Which territory was returned to France by the Treaty of Versailles?", a: "Alsace-Lorraine", o: ["Alsace-Lorraine", "The Rhineland", "The Danzig City", "Saar Coalfield"] },
-            { q: "What happened to the Rhineland under the terms of the Treaty?", a: "It was demilitarized", o: ["It was demilitarized", "It was given to Italy", "It became sovereign", "It was partitioned"] },
-            { q: "Germany was strictly forbidden from uniting with which country (Anschluss)?", a: "Republic of Austria", o: ["Republic of Austria", "Kingdom of Hungary", "State of Denmark", "Republic of France"] },
-            { q: "The 'Polish Corridor' was created to give Poland access to which sea?", a: "The Baltic Sea", o: ["The Baltic Sea", "The North Sea", "The Black Sea", "The Dead Sea"] },
-            { q: "Which international organization was established to maintain world peace?", a: "League of Nations", o: ["League of Nations", "United Nations", "Triple Entente", "The Big Three"] },
-            { q: "The German navy was restricted to how many battleships?", a: "6 battleships", o: ["6 battleships", "3 battleships", "9 battleships", "0 battleships"] },
-            { q: "Germany was completely forbidden from having which of these military wings?", a: "A combat Air Force", o: ["A combat Air Force", "A heavy Navy wing", "A Cavalry patrol", "A medical corps"] },
-            { q: "Where in the Palace of Versailles was the Treaty signed in 1919?", a: "Hall of Mirrors", o: ["Hall of Mirrors", "Hall of Statues", "Hall of Battles", "Hall of Justice"] },
-            { q: "Which leader was known as 'The Tiger' and wanted to punish Germany harshly?", a: "Georges Clemenceau", o: ["Georges Clemenceau", "David Lloyd George", "Woodrow Wilson", "Vittorio Orlando"] },
-            { q: "Which leader proposed the 'Fourteen Points' for a just peace?", a: "Woodrow Wilson", o: ["Woodrow Wilson", "Lloyd George", "Clemenceau", "Nicholas II"] },
-            { q: "What happened to Germany's overseas colonies?", a: "Became League Mandates", o: ["Became League Mandates", "Became US Territories", "Became French States", "Became Free Nations"] },
-            { q: "For how many years was the Saar coalfield placed under League control?", a: "15 total years", o: ["15 total years", "10 total years", "05 total years", "25 total years"] },
-            { q: "What was the German reaction to being forced to sign the Treaty?", a: "A Dictated Peace", o: ["A Dictated Peace", "A Secret Treaty", "A Shared Effort", "A Fair Settlement"] },
-            { q: "Which of these was NOT a member of the 'Big Three'?", a: "Vittorio Orlando", o: ["Vittorio Orlando", "Woodrow Wilson", "David George", "G. Clemenceau"] },
-            { q: "The Treaty of Versailles was part of which larger peace settlement?", a: "The Paris Peace", o: ["The Paris Peace", "The London Pact", "The Vienna Pact", "The Berlin Pact"] }
+            { q: "Which article of the Treaty was the 'War Guilt Clause'?", a: "Article 231", o: ["Article 231", "Article 105", "Article 042", "Article 015"] },
+            { q: "How much reparations was Germany forced to pay?", a: "£6,600 million", o: ["£6,600 million", "£3,300 million", "£1,100 million", "£9,900 million"] },
+            { q: "The German army was limited to how many men?", a: "100,000 men", o: ["100,000 men", "250,000 men", "500,000 men", "50,000 men"] },
+            { q: "Which territory was returned to France?", a: "Alsace-Lorraine", o: ["Alsace-Lorraine", "The Rhineland", "Danzig", "Saar"] },
+            { q: "What happened to the Rhineland?", a: "Demilitarized", o: ["Demilitarized", "Given to Italy", "Annexed by US", "Split in two"] },
+            { q: "Which union was forbidden for Germany?", a: "Anschluss", o: ["Anschluss", "The Triple Entente", "The League", "The Big Three"] },
+            { q: "Which body was created to keep peace?", a: "League of Nations", o: ["League of Nations", "United Nations", "NATO", "European Union"] },
+            { q: "Germany was forbidden from having an...", a: "Air Force", o: ["Air Force", "Navy", "Cavalry", "Medical Corps"] },
+            { q: "Who was 'The Tiger' (France)?", a: "Clemenceau", o: ["Clemenceau", "Lloyd George", "Wilson", "Orlando"] },
+            { q: "Who proposed the '14 Points'?", a: "Woodrow Wilson", o: ["Woodrow Wilson", "Lloyd George", "Clemenceau", "Kaiser Wilhelm"] }
         ];
 
         const canvas = document.getElementById('gameCanvas');
@@ -245,13 +248,22 @@
             crisisNeeded: 0,
             lastSpawn: 0,
             lastFire: 0,
-            spawnRate: 1500,
+            spawnRate: 1800,
             qIndex: 0,
             questionPool: [],
             viewport: { w: window.innerWidth, h: window.innerHeight }
         };
 
-        let player = { x: 0, y: 0, w: 70, h: 70, speed: 8, movingLeft: false, movingRight: false };
+        let player = { 
+            x: 0, 
+            y: 0, 
+            w: 0, 
+            h: 0, 
+            targetSpeed: 0,
+            movingLeft: false, 
+            movingRight: false 
+        };
+        
         let bullets = [];
         let enemies = []; 
         let effects = []; 
@@ -266,18 +278,27 @@
             images.alien.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.alien);
             images.bomb.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.bomb);
 
-            window.addEventListener('keydown', handleKeyDown);
-            window.addEventListener('keyup', handleKeyUp);
-            
-            const touchLeft = document.getElementById('btn-left');
-            const touchRight = document.getElementById('btn-right');
-            const touchFire = document.getElementById('btn-fire');
+            // Responsive Touch Listeners
+            const tLeft = document.getElementById('btn-left');
+            const tRight = document.getElementById('btn-right');
+            const tFire = document.getElementById('btn-fire');
 
-            touchLeft.onpointerdown = (e) => { player.movingLeft = true; e.preventDefault(); };
-            touchLeft.onpointerup = touchLeft.onpointerleave = (e) => { player.movingLeft = false; e.preventDefault(); };
-            touchRight.onpointerdown = (e) => { player.movingRight = true; e.preventDefault(); };
-            touchRight.onpointerup = touchRight.onpointerleave = (e) => { player.movingRight = false; e.preventDefault(); };
-            touchFire.onpointerdown = (e) => { fire(); e.preventDefault(); };
+            tLeft.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingLeft = true; });
+            tLeft.addEventListener('touchend', (e) => { e.preventDefault(); player.movingLeft = false; });
+            tRight.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingRight = true; });
+            tRight.addEventListener('touchend', (e) => { e.preventDefault(); player.movingRight = false; });
+            tFire.addEventListener('touchstart', (e) => { e.preventDefault(); fire(); });
+
+            // Keyboard support
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') player.movingLeft = true;
+                if (e.key === 'ArrowRight') player.movingRight = true;
+                if (e.key === ' ') fire();
+            });
+            window.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft') player.movingLeft = false;
+                if (e.key === 'ArrowRight') player.movingRight = false;
+            });
 
             document.getElementById('start-btn').onclick = startMission;
             document.getElementById('restart-btn').onclick = () => location.reload();
@@ -286,15 +307,25 @@
         }
 
         function resize() {
+            const dpr = window.devicePixelRatio || 1;
             state.viewport.w = window.innerWidth;
             state.viewport.h = window.innerHeight;
-            canvas.width = state.viewport.w;
-            canvas.height = state.viewport.h;
-            const isMobile = state.viewport.w < 768;
-            player.w = isMobile ? 55 : 70;
-            player.h = isMobile ? 55 : 70;
-            player.speed = isMobile ? state.viewport.w * 0.02 : 8;
-            player.y = state.viewport.h - (isMobile ? 180 : 120);
+            
+            canvas.width = state.viewport.w * dpr;
+            canvas.height = state.viewport.h * dpr;
+            canvas.style.width = state.viewport.w + 'px';
+            canvas.style.height = state.viewport.h + 'px';
+            ctx.scale(dpr, dpr);
+
+            // Responsive Entity Sizing (Percentage based)
+            const baseSize = Math.min(state.viewport.w * 0.15, 70);
+            player.w = baseSize;
+            player.h = baseSize;
+            
+            // Adjust player position (higher on mobile to avoid thumbs)
+            player.y = state.viewport.h - (state.viewport.w < 768 ? 180 : 140);
+            player.targetSpeed = state.viewport.w * 0.022;
+
             if (state.screen === 'start') player.x = state.viewport.w / 2 - player.w / 2;
         }
 
@@ -302,6 +333,8 @@
             state.screen = 'playing';
             state.questionPool = shuffle([...QUESTIONS]);
             document.getElementById('start-screen').classList.add('hidden');
+            updateHUD();
+            
             setInterval(() => {
                 if (state.screen === 'playing' && !state.pausedForMCQ) {
                     state.timeLeft--;
@@ -311,26 +344,16 @@
             }, 1000);
         }
 
-        function handleKeyDown(e) {
-            if (e.key === 'ArrowLeft') player.movingLeft = true;
-            if (e.key === 'ArrowRight') player.movingRight = true;
-            if (e.key === ' ' || e.key === 'Spacebar') fire();
-        }
-
-        function handleKeyUp(e) {
-            if (e.key === 'ArrowLeft') player.movingLeft = false;
-            if (e.key === 'ArrowRight') player.movingRight = false;
-        }
-
         function fire() {
             if (state.screen !== 'playing' || state.pausedForMCQ) return;
             const now = Date.now();
-            if (now - state.lastFire < 200) return;
+            if (now - state.lastFire < 220) return;
+            
             bullets.push({ 
                 x: player.x + player.w/2 - 2, 
                 y: player.y, 
-                w: state.viewport.w < 768 ? 4 : 5, 
-                h: 25 
+                w: 4, 
+                h: 20 
             });
             state.lastFire = now;
         }
@@ -338,12 +361,12 @@
         function update() {
             if (state.screen !== 'playing' || state.pausedForMCQ) return;
 
-            if (player.movingLeft) player.x -= player.speed;
-            if (player.movingRight) player.x += player.speed;
+            if (player.movingLeft) player.x -= player.targetSpeed;
+            if (player.movingRight) player.x += player.targetSpeed;
             player.x = Math.max(0, Math.min(state.viewport.w - player.w, player.x));
 
             bullets.forEach((b, i) => {
-                b.y -= (state.viewport.h * 0.015);
+                b.y -= (state.viewport.h * 0.018);
                 if (b.y < -30) bullets.splice(i, 1);
             });
 
@@ -351,7 +374,7 @@
             if (now - state.lastSpawn > state.spawnRate) {
                 spawnEnemy();
                 state.lastSpawn = now;
-                state.spawnRate = Math.max(800, state.spawnRate - 12);
+                state.spawnRate = Math.max(900, state.spawnRate - 15);
             }
 
             enemies.forEach((en, i) => {
@@ -368,9 +391,8 @@
                         enemies.splice(i, 1);
                         createExplosion(en.x + en.w/2, en.y + en.h/2, en.type === 'alien' ? '#EF4444' : '#FFF');
                         if (en.type === 'alien') {
-                            state.score += 50;
-                            updateHUD();
-                            triggerMCQ(false);
+                            state.score += 50; updateHUD();
+                            if (Math.random() < 0.25) triggerMCQ(false);
                         }
                     }
                 });
@@ -382,34 +404,33 @@
 
             effects.forEach((eff, i) => {
                 eff.x += eff.vx; eff.y += eff.vy;
-                eff.life -= 0.02;
+                eff.life -= 0.025;
                 if (eff.life <= 0) effects.splice(i, 1);
             });
         }
 
         function spawnEnemy() {
-            const isBomb = Math.random() < 0.22;
-            const isMobile = state.viewport.w < 768;
-            const size = isMobile ? 70 : 95; 
+            const isBomb = Math.random() < 0.2;
+            const size = Math.min(state.viewport.w * 0.18, 85); 
             enemies.push({
                 x: Math.random() * (state.viewport.w - size),
                 y: -size,
                 w: size,
                 h: size,
                 type: isBomb ? 'bomb' : 'alien',
-                speed: (isBomb ? 3.5 : 1.5 + Math.random() * 2) * (isMobile ? 1.2 : 1)
+                speed: (isBomb ? 3.5 : 1.8 + Math.random() * 1.5) * (state.viewport.h / 800)
             });
         }
 
         function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.clearRect(0, 0, state.viewport.w, state.viewport.h);
             if (state.screen === 'start') {
                 ctx.drawImage(images.hero, player.x, player.y, player.w, player.h);
                 return;
             }
             ctx.fillStyle = '#60A5FA';
             bullets.forEach(b => {
-                ctx.shadowBlur = 15; ctx.shadowColor = '#60A5FA';
+                ctx.shadowBlur = 10; ctx.shadowColor = '#60A5FA';
                 ctx.fillRect(b.x, b.y, b.w, b.h);
                 ctx.shadowBlur = 0;
             });
@@ -420,7 +441,7 @@
             effects.forEach(eff => {
                 ctx.globalAlpha = eff.life;
                 ctx.fillStyle = eff.color;
-                ctx.beginPath(); ctx.arc(eff.x, eff.y, eff.size || 3, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(eff.x, eff.y, eff.size || 2.5, 0, Math.PI * 2); ctx.fill();
             });
             ctx.globalAlpha = 1.0;
         }
@@ -432,11 +453,9 @@
         }
 
         function checkCollision(a, b) {
-            const padding = 5;
-            return a.x + padding < b.x + b.w - padding && 
-                   a.x + a.w - padding > b.x + padding && 
-                   a.y + padding < b.y + b.h - padding && 
-                   a.y + a.h - padding > b.y + padding;
+            const p = 8;
+            return a.x + p < b.x + b.w - p && a.x + a.w - p > b.x + p && 
+                   a.y + p < b.y + b.h - p && a.y + a.h - p > b.y + p;
         }
 
         function updateHUD() {
@@ -446,10 +465,9 @@
         }
 
         function takeDamage() {
-            state.lives--;
-            updateHUD();
-            document.getElementById('game-container').classList.add('shake', 'flash-red');
-            setTimeout(() => document.getElementById('game-container').classList.remove('shake', 'flash-red'), 500);
+            state.lives--; updateHUD();
+            document.getElementById('game-container').classList.add('shake');
+            setTimeout(() => document.getElementById('game-container').classList.remove('shake'), 400);
             if (state.lives <= 0) endGame("TREATY COLLAPSED");
         }
 
@@ -461,14 +479,13 @@
             modal.classList.remove('hidden');
             if (crisis) {
                 banner.classList.remove('hidden');
-                state.crisisNeeded = 2; state.crisisTimer = 10;
-                const timerSpan = document.getElementById('crisis-timer');
-                timerSpan.innerText = state.crisisTimer;
+                state.crisisTimer = 10;
+                document.getElementById('crisis-timer').innerText = state.crisisTimer;
                 const crisisInt = setInterval(() => {
                     if (!state.pausedForMCQ || !state.isCrisis) { clearInterval(crisisInt); return; }
                     state.crisisTimer--;
-                    timerSpan.innerText = state.crisisTimer;
-                    if (state.crisisTimer <= 0) { clearInterval(crisisInt); endGame("BOMB IMPACT"); }
+                    document.getElementById('crisis-timer').innerText = state.crisisTimer;
+                    if (state.crisisTimer <= 0) { clearInterval(crisisInt); endGame("CRITICAL BREACH"); }
                 }, 1000);
             } else banner.classList.add('hidden');
             renderQuestion();
@@ -484,7 +501,7 @@
             feedback.innerText = ""; container.innerHTML = "";
             shuffle([...q.o]).forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "option-btn w-full px-4 py-3 text-left text-white rounded-xl bg-gray-800 font-medium text-sm md:text-base border-gray-700 shadow-sm";
+                btn.className = "option-btn w-full px-5 py-3 text-left text-white rounded-2xl bg-gray-800 font-bold text-sm border-gray-700 shadow-lg active:scale-95";
                 btn.innerText = opt;
                 btn.onclick = () => handleAnswer(opt, q.a, btn);
                 container.appendChild(btn);
@@ -496,23 +513,15 @@
             allBtns.forEach(b => b.disabled = true);
             if (selected === correct) {
                 btn.classList.add('correct');
-                state.score += 100; state.qIndex++; updateHUD();
-                
-                // Trigger celebratory fireworks at the top of the modal
-                createFireworks(state.viewport.w / 2, state.viewport.h / 3);
-
-                if (state.isCrisis) {
-                    state.crisisNeeded--;
-                    if (state.crisisNeeded <= 0) setTimeout(resumeMission, 800);
-                    else setTimeout(renderQuestion, 800);
-                } else setTimeout(resumeMission, 800);
+                state.score += 150; state.qIndex++; updateHUD();
+                setTimeout(resumeMission, 700);
             } else {
                 btn.classList.add('wrong');
                 allBtns.forEach(b => { if (b.innerText === correct) b.classList.add('correct'); });
-                document.getElementById('feedback-text').innerText = "TREATY VIOLATION!";
+                document.getElementById('feedback-text').innerText = "DATA BREACH DETECTED";
                 document.getElementById('feedback-text').style.color = "#ef4444";
                 state.lives--; updateHUD();
-                setTimeout(() => { if (state.lives <= 0) endGame("TREATY VOIDED"); else { state.qIndex++; if (state.isCrisis) renderQuestion(); else resumeMission(); } }, 2000);
+                setTimeout(() => { if (state.lives <= 0) endGame("DATA CORRUPTION"); else { state.qIndex++; resumeMission(); } }, 1500);
             }
         }
 
@@ -522,28 +531,8 @@
         }
 
         function createExplosion(x, y, color) {
-            const count = state.viewport.w < 768 ? 12 : 20;
-            for (let i = 0; i < count; i++) {
-                effects.push({ x, y, vx: (Math.random() - 0.5) * 8, vy: (Math.random() - 0.5) * 8, life: 1.0, color });
-            }
-        }
-
-        function createFireworks(x, y) {
-            const colors = ['#fbbf24', '#60a5fa', '#34d399', '#f472b6', '#ffffff'];
-            for (let j = 0; j < 3; j++) {
-                const ox = x + (Math.random() - 0.5) * 200;
-                const oy = y + (Math.random() - 0.5) * 100;
-                for (let i = 0; i < 30; i++) {
-                    effects.push({
-                        x: ox,
-                        y: oy,
-                        vx: (Math.random() - 0.5) * 15,
-                        vy: (Math.random() - 0.5) * 15,
-                        life: 1.5,
-                        size: 2 + Math.random() * 3,
-                        color: colors[Math.floor(Math.random() * colors.length)]
-                    });
-                }
+            for (let i = 0; i < 15; i++) {
+                effects.push({ x, y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, life: 1.0, color });
             }
         }
 
