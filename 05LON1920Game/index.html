@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
+    />
+    <title>League of Nations: Peace Defender</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;700&display=swap');
+
+        :root {
+            --bg: #0f172a;
+            --panel: #1e293b;
+            --panel-2: #334155;
+            --line: #475569;
+            --blue: #3b82f6;
+            --red: #ef4444;
+            --green: #22c55e;
+            --yellow: #facc15;
+            --safe-bottom: env(safe-area-inset-bottom, 0px);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg);
+            color: white;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            height: 100%;
+            width: 100%;
+        }
+
+        body {
+            touch-action: manipulation;
+        }
+
+        .game-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background:
+                radial-gradient(circle at 50% 20%, #1e293b 0%, #020617 70%);
+        }
+
+        #canvasWrap {
+            position: relative;
+            width: min(100vw, calc(100vh * 4 / 3));
+            height: min(100vh, calc(100vw * 3 / 4));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            border: 0.35rem solid var(--panel-2);
+            background: radial-gradient(circle, #1e293b 0%, #020617 100%);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.25);
+            border-radius: 0.75rem;
+        }
+
+        .overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            padding: 1rem;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            background: var(--panel);
+            padding: 1.2rem;
+            border-radius: 1rem;
+            border: 2px solid var(--line);
+            width: min(680px, 96vw);
+            max-height: 90vh;
+            overflow-y: auto;
+            text-align: center;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            animation: popIn 0.25s ease-out;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.92); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .btn {
+            background: var(--blue);
+            color: white;
+            border: none;
+            padding: 0.9rem 1.1rem;
+            font-size: 0.82rem;
+            border-radius: 0.75rem;
+            cursor: pointer;
+            transition: transform 0.1s, background 0.2s;
+            font-family: 'Press Start 2P', cursive;
+            margin-top: 0.9rem;
+            min-height: 52px;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .btn:hover { background: #2563eb; transform: translateY(-1px); }
+        .btn:active { transform: translateY(0); }
+
+        .mcq-option {
+            display: block;
+            width: 100%;
+            padding: 0.95rem 1rem;
+            margin: 0.55rem 0;
+            background: var(--panel-2);
+            border: 2px solid var(--line);
+            border-radius: 0.75rem;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            color: white;
+            font-size: 0.98rem;
+            line-height: 1.45;
+            min-height: 62px;
+        }
+
+        .mcq-option:hover:not(:disabled) {
+            background: #475569;
+            border-color: #60a5fa;
+        }
+
+        .mcq-option:disabled {
+            opacity: 0.95;
+            cursor: default;
+        }
+
+        .hidden { display: none !important; }
+
+        #hud {
+            position: absolute;
+            top: max(10px, env(safe-area-inset-top, 0px));
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(800px, 96vw);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.55rem;
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .hud-item {
+            background: rgba(15, 23, 42, 0.86);
+            padding: 0.55rem 0.45rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--panel-2);
+            text-align: center;
+            min-width: 0;
+        }
+
+        #feedback-msg {
+            min-height: 3.5rem;
+            margin-bottom: 0.35rem;
+            line-height: 1.45;
+            font-weight: 700;
+            font-size: 0.96rem;
+        }
+
+        #mcqMeta {
+            color: #94a3b8;
+            font-size: 0.82rem;
+            margin-bottom: 0.45rem;
+        }
+
+        #touchControls {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: calc(12px + var(--safe-bottom));
+            z-index: 12;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0 0.8rem;
+        }
+
+        .touch-btn {
+            border: 2px solid #64748b;
+            background: rgba(15, 23, 42, 0.88);
+            color: white;
+            border-radius: 999px;
+            min-width: 72px;
+            min-height: 72px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            user-select: none;
+            -webkit-user-select: none;
+            touch-action: manipulation;
+        }
+
+        .touch-btn.shoot {
+            min-width: 94px;
+            min-height: 94px;
+            background: rgba(59, 130, 246, 0.92);
+            border-color: #93c5fd;
+            font-size: 0.9rem;
+            padding: 0.4rem;
+            border-radius: 1.25rem;
+        }
+
+        .helper-text {
+            color: #cbd5e1;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .result-title {
+            line-height: 1.4;
+        }
+
+        @media (max-width: 900px) {
+            #touchControls {
+                display: flex;
+            }
+
+            .modal {
+                padding: 1rem;
+            }
+
+            .btn {
+                max-width: none;
+            }
+        }
+
+        @media (max-width: 640px) {
+            #hud {
+                gap: 0.4rem;
+                width: 97vw;
+            }
+
+            .hud-item {
+                padding: 0.45rem 0.25rem;
+            }
+
+            .game-font.small-mobile {
+                font-size: 0.78rem !important;
+            }
+
+            .mcq-option {
+                font-size: 0.95rem;
+                min-height: 64px;
+            }
+        }
+
+        @media (max-height: 520px) and (orientation: landscape) {
+            .modal {
+                max-height: 94vh;
+                padding: 0.9rem;
+            }
+
+            .btn {
+                min-height: 46px;
+                font-size: 0.72rem;
+            }
+
+            #touchControls {
+                bottom: 8px;
+            }
+
+            .touch-btn {
+                min-width: 62px;
+                min-height: 62px;
+            }
+
+            .touch-btn.shoot {
+                min-width: 84px;
+                min-height: 84px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <div id="canvasWrap">
+            <canvas id="gameCanvas" width="800" height="600"></canvas>
+        </div>
+
+        <div id="hud">
+            <div class="hud-item">
+                <div class="text-[10px] sm:text-xs text-slate-400 uppercase">Score</div>
+                <div id="scoreDisplay" class="text-sm sm:text-xl font-bold text-yellow-400 game-font">0</div>
+            </div>
+            <div class="hud-item">
+                <div class="text-[10px] sm:text-xs text-slate-400 uppercase">High Score</div>
+                <div id="highScoreDisplay" class="text-sm sm:text-xl font-bold text-blue-400 game-font">0</div>
+            </div>
+            <div class="hud-item">
+                <div class="text-[10px] sm:text-xs text-slate-400 uppercase">Time</div>
+                <div id="timeDisplay" class="text-sm sm:text-xl font-bold text-white game-font">02:00</div>
+            </div>
+        </div>
+
+        <div id="touchControls">
+            <button class="touch-btn" id="leftBtn" aria-label="Move left">◀</button>
+            <button class="touch-btn shoot" id="shootBtn" aria-label="Shoot">SHOOT</button>
+            <button class="touch-btn" id="rightBtn" aria-label="Move right">▶</button>
+        </div>
+
+        <div id="startScreen" class="overlay">
+            <div class="modal border-blue-500">
+                <h1 class="text-xl sm:text-2xl md:text-3xl text-blue-400 mb-4 game-font result-title" style="line-height: 1.5;">
+                    LEAGUE OF NATIONS<br>DEFENDER
+                </h1>
+                <p class="text-gray-300 mb-5 leading-relaxed text-sm sm:text-base">
+                    Shoot a few falling orbs, then revise through MCQs.<br><br>
+                    <span class="text-blue-400 font-bold">BLUE ORBS</span> = Learn a Fact (+10)<br>
+                    <span class="text-red-400 font-bold">RED ORBS</span> = Answer a Quiz (+50)
+                </p>
+                <div class="helper-text mb-6">
+                    Desktop: ← → to move, SPACE to shoot<br>
+                    Mobile: use the big buttons below
+                </div>
+                <button class="btn" onclick="startGame()">START MISSION</button>
+            </div>
+        </div>
+
+        <div id="factModal" class="overlay hidden">
+            <div class="modal border-blue-400">
+                <div class="text-blue-400 font-bold mb-2 uppercase tracking-widest text-sm">Historical Fact</div>
+                <h2 class="text-lg sm:text-xl font-bold text-white mb-4" id="factTitle">Title</h2>
+                <p class="text-gray-300 mb-6 leading-relaxed text-sm sm:text-base" id="factText">Content goes here.</p>
+                <button class="btn" onclick="resumeGame()">CONTINUE</button>
+            </div>
+        </div>
+
+        <div id="mcqModal" class="overlay hidden">
+            <div class="modal border-red-500">
+                <div class="text-red-400 font-bold mb-2 uppercase tracking-widest text-sm">Crisis Alert</div>
+                <div id="mcqMeta"></div>
+                <h2 class="text-base sm:text-lg font-bold text-white mb-4 leading-relaxed" id="questionText">Question goes here?</h2>
+                <div id="feedback-msg"></div>
+                <div id="optionsContainer"></div>
+            </div>
+        </div>
+
+        <div id="gameOverModal" class="overlay hidden">
+            <div class="modal border-yellow-500">
+                <h1 id="resultHeading" class="text-2xl sm:text-3xl text-yellow-400 mb-4 game-font result-title">GAME OVER</h1>
+                <p id="resultSubtext" class="text-gray-300 mb-2">Your Score</p>
+                <div id="finalScore" class="text-3xl sm:text-4xl font-bold text-white mb-2 game-font">0</div>
+                <div id="newHighScoreMsg" class="text-green-400 font-bold mb-4 hidden game-font text-xs sm:text-sm">NEW HIGH SCORE!</div>
+                <div class="helper-text mb-2">Press F5 to restart</div>
+                <button class="btn" onclick="location.reload()">RESTART GAME</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MASTER_QUESTION_BANK = [
+            { difficulty: "easy", q: "Which two countries disputed the Aaland Islands in 1921?", options: ["Germany and Poland", "Sweden and Finland", "Greece and Bulgaria", "Italy and Albania"], answer: 1 },
+            { difficulty: "easy", q: "What happened to the Aaland Islands after League intervention?", options: ["They were given to Finland", "They were given to Sweden", "They were split in half", "They stayed fully neutral"], answer: 0 },
+
+            { difficulty: "hard", q: "Why was the Aaland Islands case seen as a League success?", options: ["A peaceful ruling was accepted", "Britain sent troops at once", "France used military pressure", "The USA forced a settlement"], answer: 0 },
+
+            { difficulty: "easy", q: "Which region was divided after a League-supervised plebiscite in 1921?", options: ["Upper Silesia region", "Vilna city region", "Corfu island region", "Rhineland border zone"], answer: 0 },
+            { difficulty: "easy", q: "In 1925, what did the League order Greece to do?", options: ["Withdraw troops and pay", "Take more border land", "Attack Bulgaria quickly", "Ignore the complaint fully"], answer: 0 },
+
+            { difficulty: "hard", q: "Why did Greece obey the League during the Bulgaria crisis?", options: ["It lacked strength to resist", "It feared the USA greatly", "It trusted Mussolini fully", "It wanted German support"], answer: 0 },
+
+            { difficulty: "easy", q: "Which country seized Vilna from Lithuania in 1920?", options: ["Germany took Vilna", "Poland took Vilna", "Russia took Vilna", "Latvia took Vilna"], answer: 1 },
+            { difficulty: "easy", q: "Who bombarded Corfu after an Italian general was killed?", options: ["Greece bombarded Corfu", "Albania bombarded Corfu", "Italy bombarded Corfu", "Turkey bombarded Corfu"], answer: 2 },
+
+            { difficulty: "hard", q: "Why was the Vilna dispute a failure for the League?", options: ["Britain and France refused force", "Germany blocked every vote", "The USSR sent troops in", "Lithuania left the League"], answer: 0 },
+
+            { difficulty: "easy", q: "Which three major powers were absent from the League in 1920?", options: ["USA Germany USSR", "Britain France Italy", "Japan China Brazil", "Spain Poland Sweden"], answer: 0 },
+            { difficulty: "easy", q: "Why did the USA stay out of the League?", options: ["Senate chose isolationism", "Wilson rejected membership", "Britain blocked the USA", "War kept America away"], answer: 0 },
+
+            { difficulty: "hard", q: "How did the absence of the USA weaken the League?", options: ["It reduced power and influence", "It removed all European votes", "It ended the Assembly system", "It closed the League court"], answer: 0 },
+
+            { difficulty: "easy", q: "In which year did Germany finally join the League?", options: ["1920 joined League", "1924 joined League", "1926 joined League", "1933 joined League"], answer: 2 },
+            { difficulty: "easy", q: "In which year was the USSR admitted into the League?", options: ["1920 entered League", "1926 entered League", "1930 entered League", "1934 entered League"], answer: 3 },
+
+            { difficulty: "hard", q: "What major weakness limited League action in serious crises?", options: ["No army of its own", "No council at all", "No money for meetings", "No written covenant"], answer: 0 },
+
+            { difficulty: "easy", q: "What voting rule often slowed League decision-making?", options: ["Simple majority voting", "Unanimous voting rule", "Council only voting", "Secret ballot voting"], answer: 1 },
+            { difficulty: "easy", q: "Which body campaigned for better working conditions?", options: ["Health Committee body", "ILO labour body", "Mandates body unit", "Council defence body"], answer: 1 },
+
+            { difficulty: "hard", q: "Why did unanimous voting weaken the League's effectiveness?", options: ["One state could block action", "Votes were counted wrongly", "Only Britain could decide", "Members voted too often"], answer: 0 },
+
+            { difficulty: "easy", q: "Which committee fought diseases such as malaria and leprosy?", options: ["Health Committee group", "Slavery Commission group", "Refugee Council group", "Disarmament Office group"], answer: 0 },
+            { difficulty: "easy", q: "Which commission supervised former colonies as mandates?", options: ["Mandates Commission body", "Assembly election body", "Council crisis body", "Court justice body"], answer: 0 },
+
+            { difficulty: "hard", q: "What did League moral condemnation mainly involve?", options: ["Public criticism of aggression", "Immediate armed intervention", "Automatic trade embargoes", "Loans for damaged states"], answer: 0 },
+
+            { difficulty: "easy", q: "Which League organ met several times a year and in emergencies?", options: ["Assembly met often", "Council met often", "Secretariat met often", "Court met often"], answer: 1 },
+            { difficulty: "easy", q: "What principle meant members should defend each other?", options: ["Isolationist policy idea", "Collective security idea", "Mandate system idea", "Open diplomacy idea"], answer: 1 },
+
+            { difficulty: "hard", q: "Why did Japan leave the League in 1933?", options: ["League condemned Manchuria", "League supported China only", "Britain invaded Japan first", "USA forced Japan out"], answer: 0 }
+        ];
+
+        const facts = [
+            { title: "The Secretariat", text: "The Secretariat was the League's civil service. It prepared reports, organised meetings, and kept records in Geneva." },
+            { title: "The Assembly", text: "The Assembly was the League's main meeting body. Every member had one vote, but it met only once a year." },
+            { title: "The Council", text: "The Council was smaller and could meet quickly in emergencies. This made it more important during crises." },
+            { title: "Geneva, Switzerland", text: "The League was based in neutral Switzerland so that member states would be less suspicious of bias." },
+            { title: "Mandates Commission", text: "This body supervised former colonies taken from Germany and the Ottoman Empire and was supposed to prepare them for self-government." },
+            { title: "Refugees Commission", text: "The League helped many prisoners of war return home after the First World War and supported refugees across Europe." },
+            { title: "International Labour Organisation", text: "The ILO worked to improve labour conditions, including support for shorter working hours and better treatment of workers." },
+            { title: "Upper Silesia", text: "The League used experts and a plebiscite to divide Upper Silesia peacefully between Germany and Poland." },
+            { title: "Vilna Failure", text: "Poland refused to leave Vilna, and Britain and France would not send troops. This exposed the League's weakness." },
+            { title: "Corfu Outcome", text: "Mussolini's success at Corfu showed that a strong country could ignore the League if other powers would not stop it." },
+            { title: "Greece-Bulgaria", text: "The League acted quickly and Greece obeyed. This worked partly because Greece was not strong enough to resist." },
+            { title: "USA Absent", text: "The US Senate rejected League membership because many Americans preferred isolationism and wanted to avoid European disputes." }
+        ];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameState = 'start'; // start, playing, paused, gameover
+        let score = 0;
+        let timeLeft = 120;
+        let timerInterval = null;
+        let lastTime = 0;
+        let spawnTimer = 0;
+        let highScore = Number(localStorage.getItem('lon_highscore') || 0);
+
+        let keys = { ArrowLeft: false, ArrowRight: false, Space: false };
+        let touchState = { left: false, right: false };
+
+        let questionQueue = [];
+        let questionIndex = 0;
+        let currentQuestion = null;
+        let repeatUntilCorrect = false;
+        let wrongAttemptsOnCurrent = 0;
+
+        const MISSION_COMPLETE_SCORE = 300;
+        const LOGICAL_WIDTH = 800;
+        const LOGICAL_HEIGHT = 600;
+
+        const player = {
+            x: 375,
+            y: 540,
+            width: 58,
+            height: 42,
+            speed: 7.8,
+            color: '#3b82f6',
+            cooldown: 0
+        };
+
+        let bullets = [];
+        let enemies = [];
+        let particles = [];
+        let stars = [];
+
+        function initStars() {
+            stars = [];
+            for (let i = 0; i < 55; i++) {
+                stars.push({
+                    x: Math.random() * LOGICAL_WIDTH,
+                    y: Math.random() * LOGICAL_HEIGHT,
+                    size: Math.random() * 2 + 1,
+                    alpha: Math.random() * 0.5 + 0.2
+                });
+            }
+        }
+
+        function resizeCanvas() {
+            canvas.width = LOGICAL_WIDTH;
+            canvas.height = LOGICAL_HEIGHT;
+            document.getElementById('highScoreDisplay').innerText = highScore;
+        }
+
+        function isMobileLike() {
+            return window.innerWidth <= 900 || 'ontouchstart' in window;
+        }
+
+        function buildQuestionQueue() {
+            const easy = MASTER_QUESTION_BANK.filter(q => q.difficulty === "easy");
+            const hard = MASTER_QUESTION_BANK.filter(q => q.difficulty === "hard");
+
+            const shuffledEasy = [...easy].sort(() => Math.random() - 0.5);
+            const shuffledHard = [...hard].sort(() => Math.random() - 0.5);
+
+            const queue = [];
+            let e = 0;
+            let h = 0;
+
+            while (e < shuffledEasy.length || h < shuffledHard.length) {
+                if (e < shuffledEasy.length) queue.push(shuffledEasy[e++]);
+                if (e < shuffledEasy.length) queue.push(shuffledEasy[e++]);
+                if (h < shuffledHard.length) queue.push(shuffledHard[h++]);
+            }
+
+            while (e < shuffledEasy.length) queue.push(shuffledEasy[e++]);
+            while (h < shuffledHard.length) queue.push(shuffledHard[h++]);
+
+            return queue;
+        }
+
+        function getNextQuestion() {
+            if (repeatUntilCorrect && currentQuestion) return currentQuestion;
+
+            if (questionQueue.length === 0 || questionIndex >= questionQueue.length) {
+                questionQueue = buildQuestionQueue();
+                questionIndex = 0;
+            }
+
+            currentQuestion = questionQueue[questionIndex];
+            questionIndex++;
+            wrongAttemptsOnCurrent = 0;
+            return currentQuestion;
+        }
+
+        function resetGameData() {
+            score = 0;
+            timeLeft = 120;
+            spawnTimer = 0;
+            bullets = [];
+            enemies = [];
+            particles = [];
+            player.x = 371;
+            player.cooldown = 0;
+            currentQuestion = null;
+            repeatUntilCorrect = false;
+            wrongAttemptsOnCurrent = 0;
+            questionQueue = buildQuestionQueue();
+            questionIndex = 0;
+            updateScore();
+            updateTimer();
+        }
+
+        function startGame() {
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverModal').classList.add('hidden');
+            resetGameData();
+            gameState = 'playing';
+            lastTime = performance.now();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (gameState === 'playing') {
+                    timeLeft--;
+                    updateTimer();
+                    if (timeLeft <= 0) {
+                        endGame(score >= MISSION_COMPLETE_SCORE ? "MISSION COMPLETE" : "GAME OVER");
+                    }
+                }
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(title = "GAME OVER") {
+            gameState = 'gameover';
+            clearInterval(timerInterval);
+
+            document.getElementById('resultHeading').innerText = title;
+            document.getElementById('resultSubtext').innerText = title === "MISSION COMPLETE"
+                ? "Well done. Final Score"
+                : "Mission ended. Final Score";
+
+            document.getElementById('finalScore').innerText = score;
+
+            const newHighScoreDiv = document.getElementById('newHighScoreMsg');
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('lon_highscore', highScore);
+                document.getElementById('highScoreDisplay').innerText = highScore;
+                newHighScoreDiv.classList.remove('hidden');
+            } else {
+                newHighScoreDiv.classList.add('hidden');
+            }
+
+            document.getElementById('gameOverModal').classList.remove('hidden');
+        }
+
+        function pauseGame() {
+            gameState = 'paused';
+        }
+
+        function resumeGame() {
+            document.getElementById('factModal').classList.add('hidden');
+            document.getElementById('mcqModal').classList.add('hidden');
+            if (gameState !== 'gameover') {
+                gameState = 'playing';
+                lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function updateScore() {
+            document.getElementById('scoreDisplay').innerText = score;
+        }
+
+        function updateTimer() {
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            document.getElementById('timeDisplay').innerText =
+                `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function shoot() {
+            if (gameState !== 'playing' || player.cooldown > 0) return;
+            bullets.push({
+                x: player.x + player.width / 2 - 6,
+                y: player.y - 4,
+                width: 12,
+                height: 18,
+                speed: 11,
+                color: '#facc15'
+            });
+            player.cooldown = isMobileLike() ? 10 : 12;
+        }
+
+        function createEnemy() {
+            const type = Math.random() > 0.65 ? 'red' : 'blue';
+            const size = type === 'red' ? 30 : 26;
+            const x = Math.random() * (LOGICAL_WIDTH - size * 2) + size;
+
+            enemies.push({
+                x,
+                y: -40,
+                radius: size,
+                hitRadius: size + 14,
+                speed: Math.random() * 1.1 + 0.8,
+                type,
+                color: type === 'red' ? '#ef4444' : '#3b82f6'
+            });
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 10; i++) {
+                particles.push({
+                    x,
+                    y,
+                    vx: (Math.random() - 0.5) * 5.5,
+                    vy: (Math.random() - 0.5) * 5.5,
+                    life: 1,
+                    color
+                });
+            }
+        }
+
+        function triggerFact() {
+            pauseGame();
+            const fact = facts[Math.floor(Math.random() * facts.length)];
+            document.getElementById('factTitle').innerText = fact.title;
+            document.getElementById('factText').innerText = fact.text;
+            document.getElementById('factModal').classList.remove('hidden');
+            score += 10;
+            updateScore();
+        }
+
+        function triggerMCQ() {
+            pauseGame();
+
+            const question = getNextQuestion();
+            document.getElementById('questionText').innerText = question.q;
+            document.getElementById('feedback-msg').innerText = "";
+            document.getElementById('feedback-msg').style.color = "#cbd5e1";
+            document.getElementById('mcqMeta').innerText =
+                question.difficulty === "hard"
+                    ? "Difficult revision question"
+                    : "Easy revision question";
+
+            const container = document.getElementById('optionsContainer');
+            container.innerHTML = "";
+
+            question.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'mcq-option';
+                btn.innerText = `${String.fromCharCode(65 + index)}. ${opt}`;
+                btn.onclick = () => handleMCQAnswer(index, question.answer, btn);
+                container.appendChild(btn);
+            });
+
+            document.getElementById('mcqModal').classList.remove('hidden');
+        }
+
+        function handleMCQAnswer(selectedIndex, correctIndex, btnElement) {
+            const allBtns = [...document.querySelectorAll('.mcq-option')];
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedIndex === correctIndex) {
+                btnElement.style.background = '#22c55e';
+                btnElement.style.borderColor = '#15803d';
+                score += 50;
+                updateScore();
+
+                document.getElementById('feedback-msg').innerText =
+                    wrongAttemptsOnCurrent > 0
+                        ? "Correct now. Good recovery."
+                        : "Correct. Well done.";
+                document.getElementById('feedback-msg').style.color = "#22c55e";
+
+                repeatUntilCorrect = false;
+
+                setTimeout(() => {
+                    if (score >= MISSION_COMPLETE_SCORE) {
+                        endGame("MISSION COMPLETE");
+                    } else {
+                        resumeGame();
+                    }
+                }, 800);
+            } else {
+                wrongAttemptsOnCurrent++;
+                repeatUntilCorrect = true;
+                score = Math.max(0, score - 5);
+                updateScore();
+
+                btnElement.style.background = '#ef4444';
+                btnElement.style.borderColor = '#991b1b';
+
+                const correctBtn = allBtns[correctIndex];
+                correctBtn.style.background = '#22c55e';
+                correctBtn.style.borderColor = '#15803d';
+
+                const chosenLetter = String.fromCharCode(65 + selectedIndex);
+                const correctLetter = String.fromCharCode(65 + correctIndex);
+                const correctText = currentQuestion.options[correctIndex];
+
+                document.getElementById('feedback-msg').innerText =
+                    `Incorrect. You chose ${chosenLetter}. The correct answer is ${correctLetter}: ${correctText}. Try the same question again.`;
+                document.getElementById('feedback-msg').style.color = "#fca5a5";
+
+                setTimeout(() => {
+                    allBtns.forEach((b, idx) => {
+                        b.disabled = false;
+                        b.style.background = '';
+                        b.style.borderColor = '';
+                        b.blur();
+                        if (idx === correctIndex) {
+                            b.style.background = '';
+                            b.style.borderColor = '';
+                        }
+                    });
+                }, 1200);
+            }
+        }
+
+        function updatePlayerMovement() {
+            const movingLeft = keys.ArrowLeft || touchState.left;
+            const movingRight = keys.ArrowRight || touchState.right;
+
+            if (movingLeft && !movingRight) player.x -= player.speed;
+            if (movingRight && !movingLeft) player.x += player.speed;
+
+            player.x = Math.max(0, Math.min(LOGICAL_WIDTH - player.width, player.x));
+
+            if (player.cooldown > 0) player.cooldown--;
+        }
+
+        function gameLoop(timestamp) {
+            if (gameState !== 'playing') return;
+
+            const dt = timestamp - lastTime;
+            lastTime = timestamp;
+
+            updatePlayerMovement();
+
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= bullets[i].speed;
+                if (bullets[i].y + bullets[i].height < 0) bullets.splice(i, 1);
+            }
+
+            spawnTimer += dt;
+            const spawnEvery = isMobileLike() ? 950 : 1050;
+            if (spawnTimer >= spawnEvery) {
+                createEnemy();
+                spawnTimer = 0;
+            }
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                const e = enemies[i];
+                e.y += e.speed;
+
+                if (e.y - e.radius > LOGICAL_HEIGHT) {
+                    enemies.splice(i, 1);
+                    continue;
+                }
+
+                for (let j = bullets.length - 1; j >= 0; j--) {
+                    const b = bullets[j];
+                    const bulletCenterX = b.x + b.width / 2;
+                    const bulletCenterY = b.y + b.height / 2;
+                    const dist = Math.hypot(e.x - bulletCenterX, e.y - bulletCenterY);
+
+                    if (dist < e.hitRadius) {
+                        createExplosion(e.x, e.y, e.color);
+
+                        enemies.splice(i, 1);
+                        bullets.splice(j, 1);
+
+                        if (e.type === 'blue') triggerFact();
+                        else triggerMCQ();
+
+                        break;
+                    }
+                }
+            }
+
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.05;
+                if (p.life <= 0) particles.splice(i, 1);
+            }
+
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, LOGICAL_WIDTH, LOGICAL_HEIGHT);
+
+            stars.forEach(star => {
+                ctx.globalAlpha = star.alpha;
+                ctx.fillStyle = "#ffffff";
+                ctx.fillRect(star.x, star.y, star.size, star.size);
+                ctx.globalAlpha = 1;
+            });
+
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.moveTo(player.x, player.y + player.height);
+            ctx.lineTo(player.x + player.width / 2, player.y);
+            ctx.lineTo(player.x + player.width, player.y + player.height);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath();
+            ctx.moveTo(player.x + 16, player.y + player.height);
+            ctx.lineTo(player.x + player.width / 2, player.y + player.height + 12 + Math.random() * 4);
+            ctx.lineTo(player.x + player.width - 16, player.y + player.height);
+            ctx.fill();
+
+            bullets.forEach(b => {
+                ctx.fillStyle = b.color;
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+
+            enemies.forEach(e => {
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+                ctx.fillStyle = e.color;
+                ctx.fill();
+
+                ctx.beginPath();
+                ctx.arc(e.x - e.radius / 3, e.y - e.radius / 3, e.radius / 4, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                ctx.fill();
+
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 16px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(e.type === 'red' ? '?' : '!', e.x, e.y);
+            });
+
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function bindPointerHold(element, startFn, endFn) {
+            const start = (e) => {
+                e.preventDefault();
+                startFn();
+            };
+            const end = (e) => {
+                e.preventDefault();
+                endFn();
+            };
+
+            element.addEventListener('pointerdown', start);
+            element.addEventListener('pointerup', end);
+            element.addEventListener('pointerleave', end);
+            element.addEventListener('pointercancel', end);
+        }
+
+        window.addEventListener('keydown', e => {
+            if (e.code === 'ArrowLeft') keys.ArrowLeft = true;
+            if (e.code === 'ArrowRight') keys.ArrowRight = true;
+            if (e.code === 'Space') {
+                if (!keys.Space && gameState === 'playing') shoot();
+                keys.Space = true;
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            if (e.code === 'ArrowLeft') keys.ArrowLeft = false;
+            if (e.code === 'ArrowRight') keys.ArrowRight = false;
+            if (e.code === 'Space') keys.Space = false;
+        });
+
+        document.getElementById('shootBtn').addEventListener('pointerdown', (e) => {
+            e.preventDefault();
+            shoot();
+        });
+
+        bindPointerHold(
+            document.getElementById('leftBtn'),
+            () => { touchState.left = true; },
+            () => { touchState.left = false; }
+        );
+
+        bindPointerHold(
+            document.getElementById('rightBtn'),
+            () => { touchState.right = true; },
+            () => { touchState.right = false; }
+        );
+
+        canvas.addEventListener('pointerdown', (e) => {
+            if (gameState !== 'playing') return;
+            e.preventDefault();
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * (LOGICAL_WIDTH / rect.width);
+
+            if (x < LOGICAL_WIDTH * 0.4) {
+                touchState.left = true;
+                setTimeout(() => touchState.left = false, 180);
+            } else if (x > LOGICAL_WIDTH * 0.6) {
+                touchState.right = true;
+                setTimeout(() => touchState.right = false, 180);
+            }
+
+            shoot();
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        initStars();
+        resizeCanvas();
+        updateTimer();
+        updateScore();
+    </script>
+</body>
+</html>
