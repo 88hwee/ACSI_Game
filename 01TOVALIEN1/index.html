@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Mandatory Viewport Settings for Mobile Responsiveness -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Local Hero: Versailles Defense Mobile</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents horizontal and vertical scrolling */
+            background-color: #050505;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+            touch-action: none;
+            -webkit-tap-highlight-color: transparent;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at bottom, #1a1a2e 0%, #000 70%);
+            overflow: hidden;
+        }
+
+        /* Responsive Canvas Scaling */
+        canvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+
+        .scanline {
+            width: 100%;
+            height: 2px;
+            background: rgba(18, 16, 16, 0.1);
+            opacity: 0.75;
+            position: absolute;
+            bottom: 100%;
+            animation: scanline 6s linear infinite;
+            z-index: 50;
+            pointer-events: none;
+        }
+
+        @keyframes scanline {
+            0% { bottom: 100%; }
+            100% { bottom: 0%; }
+        }
+
+        .shake {
+            animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(3px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-5px, 0, 0); }
+            40%, 60% { transform: translate3d(5px, 0, 0); }
+        }
+
+        /* Touch-Friendly Option Buttons */
+        .option-btn {
+            transition: all 0.15s;
+            border: 2px solid #374151;
+            touch-action: manipulation;
+            min-height: 3.5rem; /* Ensure large touch target */
+        }
+
+        .correct {
+            background-color: #059669 !important;
+            border-color: #34d399 !important;
+            color: white !important;
+            transform: scale(0.98);
+        }
+
+        .wrong {
+            background-color: #dc2626 !important;
+            border-color: #f87171 !important;
+            color: white !important;
+            animation: shake 0.3s;
+        }
+
+        /* HUD Safe Area Padding */
+        #hud {
+            padding-top: calc(0.75rem + var(--sat));
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
+        }
+
+        /* Controls Safe Area Padding */
+        #mobile-controls {
+            padding-bottom: calc(1.5rem + var(--sab));
+            padding-left: calc(1.5rem + env(safe-area-inset-left));
+            padding-right: calc(1.5rem + env(safe-area-inset-right));
+        }
+
+        /* Responsive adjustments for screens below 768px */
+        @media (max-width: 767px) {
+            .hero-title { font-size: 2.25rem; }
+            .option-btn { font-size: 0.875rem; padding: 0.75rem; }
+            .control-btn { width: 4.5rem; height: 4.5rem; }
+            .fire-btn { width: 5.5rem; height: 5.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <div class="scanline"></div>
+        
+        <!-- HUD - Flexbox Layout -->
+        <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-center z-40 bg-black/40 backdrop-blur-sm border-b border-blue-900/30">
+            <div class="flex flex-col">
+                <span class="text-blue-400 text-[10px] uppercase font-bold tracking-widest">Score</span>
+                <span class="text-white text-base md:text-lg font-mono" id="score-val">0000</span>
+            </div>
+            <div class="flex flex-col items-center">
+                <span class="text-red-400 text-[10px] uppercase font-bold tracking-widest">Stability</span>
+                <span class="text-white text-lg md:text-xl font-mono" id="timer-val">90s</span>
+            </div>
+            <div class="flex flex-col items-end">
+                <span class="text-green-400 text-[10px] uppercase font-bold tracking-widest">Integrity</span>
+                <div id="lives-container" class="flex gap-1 mt-1 text-xs md:text-sm"></div>
+            </div>
+        </div>
+
+        <!-- Canvas scales to fill container -->
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- Start Screen - Flexbox Centering -->
+        <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-6 text-center">
+            <div class="mb-8 md:mb-12 w-full max-w-lg">
+                <h1 class="hero-title text-4xl md:text-7xl font-black text-white mb-2 tracking-tighter uppercase italic drop-shadow-lg">Local Hero</h1>
+                <h2 class="text-base md:text-2xl text-blue-500 font-mono tracking-widest">VERSAILLES DEFENSE</h2>
+                <div class="w-16 md:w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
+            </div>
+            
+            <div class="w-full max-w-xs md:max-w-md text-gray-400 mb-8 md:mb-12 space-y-4 text-sm md:text-base">
+                <p>Preserve the 1919 settlement by neutralizing oversized historical obstacles.</p>
+                <div class="bg-gray-900/80 border border-gray-800 p-4 rounded-2xl text-left grid grid-cols-1 gap-3">
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
+                        <span class="text-xs"><b>Aggressors:</b> Trigger historical fact-checks.</span>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="w-3 h-3 bg-gray-600 rounded-full flex-shrink-0"></div>
+                        <span class="text-xs"><b>Heavy Mines:</b> Trigger 10s Treaty Crisis events.</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="start-btn" class="w-full max-w-xs py-4 md:py-5 bg-blue-600 active:bg-blue-700 text-white font-black rounded-2xl transition-all transform active:scale-95 shadow-xl uppercase tracking-widest text-lg">
+                Start Mission
+            </button>
+        </div>
+
+        <!-- MCQ Modal - Responsive Grid -->
+        <div id="mcq-modal" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
+            <div class="bg-gray-900 border-2 border-blue-500 rounded-3xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden">
+                <div id="crisis-banner" class="hidden bg-red-600 text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-tighter absolute top-0 left-0 w-full animate-pulse">
+                    CRISIS: TREATY BREACH — <span id="crisis-timer">10</span>s REMAINING
+                </div>
+                <div class="mt-6">
+                    <p id="q-category" class="text-blue-400 text-[10px] font-bold uppercase mb-2">History Log: 1919</p>
+                    <h3 id="question-text" class="text-lg md:text-xl text-white font-bold leading-tight mb-6 md:mb-8"></h3>
+                    <div id="options-container" class="grid grid-cols-1 gap-3"></div>
+                    <div id="feedback-text" class="mt-4 h-6 text-center text-xs md:text-sm font-bold"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- End Screen -->
+        <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black p-8 text-center">
+            <h2 id="end-status" class="text-3xl md:text-5xl font-black text-red-500 mb-2 italic uppercase">Mission Failed</h2>
+            <div class="text-6xl md:text-8xl font-black text-white mb-6" id="final-score-display">0000</div>
+            <p id="end-message" class="text-gray-500 text-sm mb-12 max-w-xs">The settlement has failed. History is in chaos.</p>
+            <button id="restart-btn" class="w-full max-w-xs py-4 bg-white text-black font-black rounded-2xl active:bg-gray-200 transition-colors uppercase tracking-widest">
+                Re-Negotiate
+            </button>
+        </div>
+        
+        <!-- Mobile Touch Controls - Ergonomic Placement -->
+        <div id="mobile-controls" class="absolute bottom-0 left-0 w-full flex justify-between items-end z-30 pointer-events-none">
+            <div class="flex gap-3 md:gap-4 pointer-events-auto">
+                <div id="btn-left" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl border-2 border-white/10 flex items-center justify-center active:bg-white/20 backdrop-blur-md">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+                </div>
+                <div id="btn-right" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl border-2 border-white/10 flex items-center justify-center active:bg-white/20 backdrop-blur-md">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </div>
+            <div id="btn-fire" class="fire-btn w-20 h-20 md:w-24 md:h-24 bg-red-600/10 rounded-full border-4 border-red-600/30 flex items-center justify-center pointer-events-auto active:bg-red-600/40 backdrop-blur-md">
+                <div class="w-12 h-12 md:w-16 md:h-16 bg-red-600 rounded-full shadow-lg flex items-center justify-center">
+                    <div class="w-4 h-4 md:w-6 md:h-6 bg-white/20 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * ASSETS & DATA
+         */
+        const ASSETS = {
+            hero: `<svg width="80" height="80" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L50 50 L45 35 L15 35 Z" fill="#3B82F6"/><rect x="25" y="20" width="10" height="15" fill="#60A5FA"/><rect x="22" y="15" width="16" height="5" fill="#2563EB"/><circle cx="20" cy="50" r="5" fill="#1E40AF"/><circle cx="40" cy="50" r="5" fill="#1E40AF"/></svg>`,
+            alien: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 20 Q20 5 35 20 Q20 35 5 20" fill="#EF4444"/><circle cx="20" cy="20" r="8" fill="#B91C1C"/><rect x="18" y="5" width="4" height="10" fill="#FCA5A5"/></svg>`,
+            bomb: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><circle cx="20" cy="20" r="15" fill="#111" stroke="#444" stroke-width="2"/><rect x="18" y="2" width="4" height="6" fill="#444"/><rect x="18" y="32" width="4" height="6" fill="#444"/><rect x="2" y="18" width="6" height="4" fill="#444"/><rect x="32" y="18" width="6" height="4" fill="#444"/><circle cx="20" cy="20" r="3" fill="#DC2626"/></svg>`
+        };
+
+        const QUESTIONS = [
+            { q: "Which article of the Treaty was the 'War Guilt Clause'?", a: "Article 231", o: ["Article 231", "Article 105", "Article 042", "Article 015"] },
+            { q: "How much reparations was Germany forced to pay?", a: "£6,600 million", o: ["£6,600 million", "£3,300 million", "£1,100 million", "£9,900 million"] },
+            { q: "The German army was limited to how many men?", a: "100,000 men", o: ["100,000 men", "250,000 men", "500,000 men", "50,000 men"] },
+            { q: "Which territory was returned to France?", a: "Alsace-Lorraine", o: ["Alsace-Lorraine", "The Rhineland", "Danzig", "Saar"] },
+            { q: "What happened to the Rhineland?", a: "Demilitarized", o: ["Demilitarized", "Given to Italy", "Annexed by US", "Split in two"] },
+            { q: "Which union was forbidden for Germany?", a: "Anschluss", o: ["Anschluss", "The Triple Entente", "The League", "The Big Three"] },
+            { q: "Which body was created to keep peace?", a: "League of Nations", o: ["League of Nations", "United Nations", "NATO", "European Union"] },
+            { q: "Germany was forbidden from having an...", a: "Air Force", o: ["Air Force", "Navy", "Cavalry", "Medical Corps"] },
+            { q: "Who was 'The Tiger' (France)?", a: "Clemenceau", o: ["Clemenceau", "Lloyd George", "Wilson", "Orlando"] },
+            { q: "Who proposed the '14 Points'?", a: "Woodrow Wilson", o: ["Woodrow Wilson", "Lloyd George", "Clemenceau", "Kaiser Wilhelm"] }
+        ];
+
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        let state = {
+            screen: 'start',
+            score: 0,
+            lives: 5,
+            timeLeft: 90,
+            pausedForMCQ: false,
+            isCrisis: false,
+            crisisTimer: 10,
+            crisisNeeded: 0,
+            lastSpawn: 0,
+            lastFire: 0,
+            spawnRate: 1800,
+            qIndex: 0,
+            questionPool: [],
+            viewport: { w: window.innerWidth, h: window.innerHeight }
+        };
+
+        let player = { 
+            x: 0, 
+            y: 0, 
+            w: 0, 
+            h: 0, 
+            targetSpeed: 0,
+            movingLeft: false, 
+            movingRight: false 
+        };
+        
+        let bullets = [];
+        let enemies = []; 
+        let effects = []; 
+        let timerInterval = null;
+
+        const images = { hero: new Image(), alien: new Image(), bomb: new Image() };
+
+        function init() {
+            window.addEventListener('resize', resize);
+            resize();
+
+            images.hero.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.hero);
+            images.alien.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.alien);
+            images.bomb.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.bomb);
+
+            // Responsive Touch Listeners
+            const tLeft = document.getElementById('btn-left');
+            const tRight = document.getElementById('btn-right');
+            const tFire = document.getElementById('btn-fire');
+
+            tLeft.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingLeft = true; });
+            tLeft.addEventListener('touchend', (e) => { e.preventDefault(); player.movingLeft = false; });
+            tRight.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingRight = true; });
+            tRight.addEventListener('touchend', (e) => { e.preventDefault(); player.movingRight = false; });
+            tFire.addEventListener('touchstart', (e) => { e.preventDefault(); fire(); });
+
+            // Keyboard support
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowLeft') player.movingLeft = true;
+                if (e.key === 'ArrowRight') player.movingRight = true;
+                if (e.key === ' ') fire();
+            });
+            window.addEventListener('keyup', (e) => {
+                if (e.key === 'ArrowLeft') player.movingLeft = false;
+                if (e.key === 'ArrowRight') player.movingRight = false;
+            });
+
+            document.getElementById('start-btn').onclick = startMission;
+            document.getElementById('restart-btn').onclick = resetGame;
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            state.viewport.w = window.innerWidth;
+            state.viewport.h = window.innerHeight;
+            
+            canvas.width = state.viewport.w * dpr;
+            canvas.height = state.viewport.h * dpr;
+            canvas.style.width = state.viewport.w + 'px';
+            canvas.style.height = state.viewport.h + 'px';
+            ctx.scale(dpr, dpr);
+
+            // Responsive Entity Sizing (Percentage based)
+            const baseSize = Math.min(state.viewport.w * 0.15, 70);
+            player.w = baseSize;
+            player.h = baseSize;
+            
+            // Adjust player position (higher on mobile to avoid thumbs)
+            player.y = state.viewport.h - (state.viewport.w < 768 ? 180 : 140);
+            player.targetSpeed = state.viewport.w * 0.022;
+
+            if (state.screen === 'start') player.x = state.viewport.w / 2 - player.w / 2;
+        }
+
+        function startMission() {
+            state.screen = 'playing';
+            state.questionPool = shuffle([...QUESTIONS]);
+            document.getElementById('start-screen').classList.add('hidden');
+            updateHUD();
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (state.screen === 'playing' && !state.pausedForMCQ) {
+                    state.timeLeft--;
+                    updateHUD();
+                    if (state.timeLeft <= 0) endGame("STABILITY LOST");
+                }
+            }, 1000);
+        }
+
+        // Prevents 404 by resetting in-memory instead of reloading URL
+        function resetGame(e) {
+            if (e) e.preventDefault();
+            if (timerInterval) clearInterval(timerInterval);
+            
+            state.score = 0;
+            state.lives = 5;
+            state.timeLeft = 90;
+            state.pausedForMCQ = false;
+            state.isCrisis = false;
+            state.spawnRate = 1800;
+            state.qIndex = 0;
+            
+            bullets = [];
+            enemies = [];
+            effects = [];
+            
+            document.getElementById('end-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+            resize();
+            updateHUD();
+            state.screen = 'start';
+        }
+
+        function fire() {
+            if (state.screen !== 'playing' || state.pausedForMCQ) return;
+            const now = Date.now();
+            if (now - state.lastFire < 220) return;
+            
+            bullets.push({ 
+                x: player.x + player.w/2 - 2, 
+                y: player.y, 
+                w: 4, 
+                h: 20 
+            });
+            state.lastFire = now;
+        }
+
+        function update() {
+            if (state.screen !== 'playing' || state.pausedForMCQ) return;
+
+            if (player.movingLeft) player.x -= player.targetSpeed;
+            if (player.movingRight) player.x += player.targetSpeed;
+            player.x = Math.max(0, Math.min(state.viewport.w - player.w, player.x));
+
+            bullets.forEach((b, i) => {
+                b.y -= (state.viewport.h * 0.018);
+                if (b.y < -30) bullets.splice(i, 1);
+            });
+
+            const now = Date.now();
+            if (now - state.lastSpawn > state.spawnRate) {
+                spawnEnemy();
+                state.lastSpawn = now;
+                state.spawnRate = Math.max(900, state.spawnRate - 15);
+            }
+
+            enemies.forEach((en, i) => {
+                en.y += en.speed;
+                if (checkCollision(player, en)) {
+                    enemies.splice(i, 1);
+                    if (en.type === 'bomb') triggerCrisis();
+                    else takeDamage();
+                    return;
+                }
+                bullets.forEach((b, bi) => {
+                    if (checkCollision(b, en)) {
+                        bullets.splice(bi, 1);
+                        enemies.splice(i, 1);
+                        createExplosion(en.x + en.w/2, en.y + en.h/2, en.type === 'alien' ? '#EF4444' : '#FFF');
+                        if (en.type === 'alien') {
+                            state.score += 50; updateHUD();
+                            if (Math.random() < 0.25) triggerMCQ(false);
+                        }
+                    }
+                });
+                if (en.y > state.viewport.h) {
+                    enemies.splice(i, 1);
+                    if (en.type === 'alien') takeDamage();
+                }
+            });
+
+            effects.forEach((eff, i) => {
+                eff.x += eff.vx; eff.y += eff.vy;
+                eff.life -= 0.025;
+                if (eff.life <= 0) effects.splice(i, 1);
+            });
+        }
+
+        function spawnEnemy() {
+            const isBomb = Math.random() < 0.2;
+            const size = Math.min(state.viewport.w * 0.18, 85); 
+            enemies.push({
+                x: Math.random() * (state.viewport.w - size),
+                y: -size,
+                w: size,
+                h: size,
+                type: isBomb ? 'bomb' : 'alien',
+                speed: (isBomb ? 3.5 : 1.8 + Math.random() * 1.5) * (state.viewport.h / 800)
+            });
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, state.viewport.w, state.viewport.h);
+            if (state.screen === 'start') {
+                ctx.drawImage(images.hero, player.x, player.y, player.w, player.h);
+                return;
+            }
+            ctx.fillStyle = '#60A5FA';
+            bullets.forEach(b => {
+                ctx.shadowBlur = 10; ctx.shadowColor = '#60A5FA';
+                ctx.fillRect(b.x, b.y, b.w, b.h);
+                ctx.shadowBlur = 0;
+            });
+            enemies.forEach(en => {
+                ctx.drawImage(images[en.type], en.x, en.y, en.w, en.h);
+            });
+            ctx.drawImage(images.hero, player.x, player.y, player.w, player.h);
+            effects.forEach(eff => {
+                ctx.globalAlpha = eff.life;
+                ctx.fillStyle = eff.color;
+                ctx.beginPath(); ctx.arc(eff.x, eff.y, eff.size || 2.5, 0, Math.PI * 2); ctx.fill();
+            });
+            ctx.globalAlpha = 1.0;
+        }
+
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollision(a, b) {
+            const p = 8;
+            return a.x + p < b.x + b.w - p && a.x + a.w - p > b.x + p && 
+                   a.y + p < b.y + b.h - p && a.y + a.h - p > b.y + p;
+        }
+
+        function updateHUD() {
+            document.getElementById('score-val').innerText = state.score.toString().padStart(4, '0');
+            document.getElementById('timer-val').innerText = `${state.timeLeft}s`;
+            document.getElementById('lives-container').innerHTML = '🛡️'.repeat(state.lives);
+        }
+
+        function takeDamage() {
+            state.lives--; updateHUD();
+            document.getElementById('game-container').classList.add('shake');
+            setTimeout(() => document.getElementById('game-container').classList.remove('shake'), 400);
+            if (state.lives <= 0) endGame("TREATY COLLAPSED");
+        }
+
+        function triggerMCQ(crisis = false) {
+            state.pausedForMCQ = true;
+            state.isCrisis = crisis;
+            const modal = document.getElementById('mcq-modal');
+            const banner = document.getElementById('crisis-banner');
+            modal.classList.remove('hidden');
+            if (crisis) {
+                banner.classList.remove('hidden');
+                state.crisisTimer = 10;
+                document.getElementById('crisis-timer').innerText = state.crisisTimer;
+                const crisisInt = setInterval(() => {
+                    if (!state.pausedForMCQ || !state.isCrisis) { clearInterval(crisisInt); return; }
+                    state.crisisTimer--;
+                    document.getElementById('crisis-timer').innerText = state.crisisTimer;
+                    if (state.crisisTimer <= 0) { clearInterval(crisisInt); endGame("CRITICAL BREACH"); }
+                }, 1000);
+            } else banner.classList.add('hidden');
+            renderQuestion();
+        }
+
+        function triggerCrisis() { triggerMCQ(true); }
+
+        function renderQuestion() {
+            const q = state.questionPool[state.qIndex % state.questionPool.length];
+            document.getElementById('question-text').innerText = q.q;
+            const container = document.getElementById('options-container');
+            const feedback = document.getElementById('feedback-text');
+            feedback.innerText = ""; container.innerHTML = "";
+            shuffle([...q.o]).forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "option-btn w-full px-5 py-3 text-left text-white rounded-2xl bg-gray-800 font-bold text-sm border-gray-700 shadow-lg active:scale-95";
+                btn.innerText = opt;
+                btn.onclick = () => handleAnswer(opt, q.a, btn);
+                container.appendChild(btn);
+            });
+        }
+
+        function handleAnswer(selected, correct, btn) {
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+            if (selected === correct) {
+                btn.classList.add('correct');
+                state.score += 150; state.qIndex++; updateHUD();
+                setTimeout(resumeMission, 700);
+            } else {
+                btn.classList.add('wrong');
+                allBtns.forEach(b => { if (b.innerText === correct) b.classList.add('correct'); });
+                document.getElementById('feedback-text').innerText = "DATA BREACH DETECTED";
+                document.getElementById('feedback-text').style.color = "#ef4444";
+                state.lives--; updateHUD();
+                setTimeout(() => { if (state.lives <= 0) endGame("DATA CORRUPTION"); else { state.qIndex++; resumeMission(); } }, 1500);
+            }
+        }
+
+        function resumeMission() {
+            document.getElementById('mcq-modal').classList.add('hidden');
+            state.pausedForMCQ = false; state.isCrisis = false;
+        }
+
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                effects.push({ x, y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, life: 1.0, color });
+            }
+        }
+
+        function endGame(reason) {
+            state.screen = 'end';
+            if (timerInterval) clearInterval(timerInterval);
+            document.getElementById('mcq-modal').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('end-status').innerText = reason;
+            document.getElementById('final-score-display').innerText = state.score.toString().padStart(4, '0');
+        }
+
+        function shuffle(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
