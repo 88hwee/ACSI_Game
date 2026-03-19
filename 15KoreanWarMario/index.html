@@ -101,7 +101,6 @@
 </div>
 
 <div id="game-container">
-    <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
         <h1 class="text-5xl md:text-7xl font-black text-green-600 loud-font italic mb-4 tracking-tighter uppercase leading-tight">Korean War</h1>
         <p class="text-green-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Interception Unit</p>
@@ -110,7 +109,6 @@
         </button>
     </div>
 
-    <!-- HUD -->
     <div id="hud" class="absolute top-0 left-0 w-full grid grid-cols-3 gap-2 pointer-events-none z-20">
         <div class="bg-green-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-green-500/30 text-center">
             <p class="text-[8px] uppercase font-black text-red-500">Lives</p>
@@ -128,7 +126,6 @@
 
     <canvas id="gameCanvas"></canvas>
 
-    <!-- MCQ Modal -->
     <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-md">
         <div class="w-full max-w-lg bg-slate-900 border-t-[8px] border-green-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
             <div class="text-green-500 font-black uppercase tracking-[0.2em] text-[10px] mb-3">Intelligence Decryption</div>
@@ -138,7 +135,6 @@
         </div>
     </div>
 
-    <!-- End Screen -->
     <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
         <h1 class="text-6xl loud-font italic text-green-600 mb-8 uppercase" id="end-title">Finished</h1>
         <div class="mb-12">
@@ -150,7 +146,6 @@
         </button>
     </div>
 
-    <!-- Controls -->
     <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-0 w-full px-6 flex justify-between items-center z-30 pointer-events-none">
         <div class="flex gap-4">
             <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
@@ -167,14 +162,6 @@
 </div>
 
 <script>
-/**
- * PERFORMANCE OPTIMIZATION NOTES:
- * 1. Consolidated loops to avoid multiple array traversals.
- * 2. Optimized star background math (avoiding Date.now() modulo in loops).
- * 3. Unified DOM updates into a throttle to prevent layout thrashing.
- * 4. Fixed memory management in object disposal.
- */
-
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
@@ -192,10 +179,11 @@ let state = {
     enemies: [],
     lastSpawn: 0,
     lastTimeUpdate: 0,
+    lastShootTime: 0,
+    shootCooldown: 250, // Prevents bullet spam freeze
     stars: []
 };
 
-// ship size for portrait visibility
 const player = { x: 0, w: 120, h: 80, speed: 10 };
 
 const questionsDeck = [
@@ -300,7 +288,11 @@ function init() {
     setupTouch('ctrl-right', 'right');
     document.getElementById('ctrl-shoot').addEventListener('touchstart', (e) => {
         e.preventDefault();
-        if (state.gameActive && !state.paused) shoot();
+        const now = performance.now();
+        if (state.gameActive && !state.paused && now - state.lastShootTime > state.shootCooldown) {
+            shoot();
+            state.lastShootTime = now;
+        }
     }, { passive: false });
 
     requestAnimationFrame(gameLoop);
@@ -342,6 +334,7 @@ function updateHUD() {
 }
 
 function triggerQuiz() {
+    if (state.paused) return; // Prevention: Multiple simultaneous quiz calls freeze UI thread
     state.paused = true;
     const q = sessionDeck[0];
     const modal = document.getElementById('quiz-overlay');
@@ -397,7 +390,6 @@ function gameLoop(now) {
     if (!state.gameStarted) { requestAnimationFrame(gameLoop); return; }
 
     if (!state.paused && state.gameActive) {
-        // Handle Timer logic in main loop for consistency
         if (now - state.lastTimeUpdate >= 1000) {
             state.timer--;
             state.lastTimeUpdate = now;
@@ -405,29 +397,24 @@ function gameLoop(now) {
             if (state.timer <= 0) endGame(false);
         }
 
-        // Movement
         if (touchInput.left && player.x > 0) player.x -= player.speed;
         if (touchInput.right && player.x < state.viewportW - player.w) player.x += player.speed;
 
-        // Spawning
         if (now - state.lastSpawn > 2200) {
             spawnEnemy();
             state.lastSpawn = now;
         }
 
-        // Bullets
         for (let i = state.bullets.length - 1; i >= 0; i--) {
             const b = state.bullets[i];
             b.y -= b.speed;
             if (b.y < -50) state.bullets.splice(i, 1);
         }
 
-        // Enemies & Collisions
         for (let i = state.enemies.length - 1; i >= 0; i--) {
             const en = state.enemies[i];
             en.y += en.speed;
             
-            // Missed enemy
             if (en.y > state.viewportH + en.r) {
                 state.enemies.splice(i, 1);
                 state.lives--;
@@ -436,7 +423,6 @@ function gameLoop(now) {
                 continue;
             }
 
-            // Hit detection
             for (let j = state.bullets.length - 1; j >= 0; j--) {
                 const b = state.bullets[j];
                 const dx = b.x - en.x;
@@ -446,13 +432,12 @@ function gameLoop(now) {
                     state.bullets.splice(j, 1);
                     state.enemies.splice(i, 1);
                     triggerQuiz();
-                    break; 
+                    return requestAnimationFrame(gameLoop); // Stop processing after hit
                 }
             }
         }
     }
 
-    // Particles (update even if paused for visual polish)
     for (let i = state.particles.length - 1; i >= 0; i--) {
         const p = state.particles[i];
         p.x += p.vx; p.y += p.vy;
@@ -460,7 +445,6 @@ function gameLoop(now) {
         if (p.life <= 0) state.particles.splice(i, 1);
     }
 
-    // Stars
     state.stars.forEach(s => {
         s.y += s.speed;
         if (s.y > state.viewportH) {
@@ -476,19 +460,18 @@ function gameLoop(now) {
 function render() {
     ctx.clearRect(0, 0, state.viewportW, state.viewportH);
     
-    // Optimized Stars
     ctx.fillStyle = "rgba(255,255,255,0.4)";
     state.stars.forEach(s => {
         ctx.fillRect(s.x, s.y, s.size, s.size);
     });
 
-    // Player
     ctx.fillStyle = "#16a34a";
     ctx.fillRect(player.x, state.viewportH - 160, player.w, 45);
     ctx.fillStyle = "#15803d";
     ctx.fillRect(player.x + (player.w * 0.25), state.viewportH - 185, player.w * 0.5, 25);
 
-    // Enemies
+    ctx.font = "900 24px Inter";
+    ctx.textAlign = "center";
     state.enemies.forEach(en => {
         ctx.beginPath();
         ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
@@ -498,18 +481,14 @@ function render() {
         ctx.lineWidth = 3;
         ctx.stroke();
         ctx.fillStyle = "#ffffff";
-        ctx.font = "900 24px Inter";
-        ctx.textAlign = "center";
         ctx.fillText("?", en.x, en.y + 8);
     });
 
-    // Bullets
     ctx.fillStyle = "#fbbf24";
     state.bullets.forEach(b => {
         ctx.fillRect(b.x, b.y, 8, 22);
     });
 
-    // Particles
     state.particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
@@ -528,7 +507,6 @@ function endGame(victory) {
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-// Ensure game starts cleanly
 window.onload = init;
 </script>
 </body>
