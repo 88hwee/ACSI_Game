@@ -31,7 +31,7 @@
             touch-action: none; 
             height: 100dvh;
             width: 100vw;
-            position: fixed; /* Prevent bouncy scrolling on iOS */
+            position: fixed;
         }
         
         #game-container { 
@@ -49,11 +49,10 @@
             height: 100%;
         }
 
-        /* Scalable Controls */
         .control-btn {
-            background: rgba(255, 255, 255, 0.15);
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -62,31 +61,31 @@
         }
 
         .control-btn:active {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.3);
             transform: scale(0.9);
         }
 
         .option-btn {
             transition: all 0.2s;
-            min-height: 3rem;
+            min-height: 2.8rem;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 0.5rem 1rem;
+            padding: 0.4rem 1rem;
             width: 100%;
-            border-radius: 12px;
+            border-radius: 10px;
             font-weight: 600;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
+            line-height: 1.2;
         }
 
         #hud {
-            padding-top: calc(0.25rem + var(--sat));
+            padding-top: calc(0.2rem + var(--sat));
             padding-left: calc(0.5rem + var(--sal));
             padding-right: calc(0.5rem + var(--sar));
         }
 
-        /* Portrait Warning with JS Fallback */
         #portrait-warning {
             display: none;
         }
@@ -97,18 +96,18 @@
 </head>
 <body>
 
-<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-900 flex-col items-center justify-center p-10 text-center">
+<div id="portrait-warning" class="fixed inset-0 z-[1000] bg-slate-900 flex flex-col items-center justify-center p-10 text-center">
     <svg class="w-16 h-16 text-yellow-500 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H6a2 2 0 00-2 2zM9 20h6"/></svg>
-    <h2 class="text-xl font-bold mb-2">Rotate for Mission</h2>
-    <p class="text-slate-400 text-sm">Please use Landscape Mode.</p>
+    <h2 class="text-xl font-bold mb-2 text-white">Rotate for Mission</h2>
+    <p class="text-slate-400 text-sm">Please use Landscape Mode for the best historical experience.</p>
 </div>
 
 <div id="game-container">
     <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-3xl md:text-5xl font-black text-yellow-500 italic mb-2 tracking-tighter uppercase">Rise of Hitler</h1>
+        <h1 class="text-4xl md:text-5xl font-black text-yellow-500 italic mb-1 tracking-tighter uppercase">Rise of Hitler</h1>
         <p class="text-blue-400 font-bold text-[10px] tracking-widest mb-6 uppercase">Mastery Quest</p>
-        <button id="btn-start" class="px-10 py-4 bg-yellow-500 text-slate-950 font-black rounded-2xl shadow-xl uppercase tracking-widest text-sm active:scale-95 transition-transform">
+        <button id="btn-start" class="px-12 py-4 bg-yellow-500 text-slate-950 font-black rounded-2xl shadow-xl uppercase tracking-widest text-xs active:scale-95 transition-transform">
             Start Mission
         </button>
     </div>
@@ -117,15 +116,15 @@
     <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
         <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10">
             <p class="text-[8px] uppercase font-bold text-slate-400">Lives</p>
-            <p id="stats-lives" class="text-sm font-black text-red-500">3</p>
+            <p id="stats-lives" class="text-xs font-black text-red-500">3</p>
         </div>
         <div class="bg-black/60 backdrop-blur-md px-4 py-1 rounded-lg border border-white/10 text-center">
             <p class="text-[8px] uppercase font-bold text-slate-400">Stability</p>
-            <p id="stats-timer" class="text-sm font-black text-blue-400">180s</p>
+            <p id="stats-timer" class="text-xs font-black text-blue-400">180s</p>
         </div>
         <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-right">
             <p class="text-[8px] uppercase font-bold text-slate-400">Score</p>
-            <p id="stats-coins" class="text-sm font-black text-yellow-500">0</p>
+            <p id="stats-coins" class="text-xs font-black text-yellow-500">0</p>
         </div>
     </div>
 
@@ -133,11 +132,8 @@
 
     <!-- MCQ Modal -->
     <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-sm">
-        <div class="w-full max-w-xl bg-slate-900 border-2 border-yellow-500/30 rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-3">
-                <span class="text-[9px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold uppercase">Revision Log</span>
-            </div>
-            <h3 id="question-text" class="text-sm md:text-base font-bold mb-4 text-white"></h3>
+        <div class="w-full max-w-xl bg-slate-900 border-2 border-yellow-500/30 rounded-2xl p-5 shadow-2xl max-h-[95vh] overflow-y-auto">
+            <h3 id="question-text" class="text-sm md:text-base font-bold mb-4 text-white leading-tight"></h3>
             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
             
             <div id="feedback-area" class="hidden mt-4 p-4 rounded-xl border-l-4">
@@ -152,7 +148,7 @@
 
     <!-- End Screen -->
     <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/95 p-8 text-center">
-        <h2 id="end-status" class="text-3xl font-black mb-1 italic uppercase italic"></h2>
+        <h2 id="end-status" class="text-3xl font-black mb-1 italic uppercase tracking-tighter"></h2>
         <div class="mb-6">
             <p class="text-slate-500 text-[10px] uppercase font-bold">Mastery Score</p>
             <div class="text-6xl font-black text-white" id="final-score">0</div>
@@ -164,19 +160,17 @@
 
     <!-- UI Controls Area -->
     <div class="absolute inset-0 pointer-events-none z-30">
-        <!-- Left Side: Movement -->
-        <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-3">
-            <div id="ctrl-left" class="control-btn w-16 h-16 md:w-20 md:h-20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+        <div class="absolute bottom-[calc(1rem+var(--sab))] left-[calc(1rem+var(--sal))] flex gap-3">
+            <div id="ctrl-left" class="control-btn w-14 h-14 md:w-16 md:h-16">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
             </div>
-            <div id="ctrl-right" class="control-btn w-16 h-16 md:w-20 md:h-20">
-                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+            <div id="ctrl-right" class="control-btn w-14 h-14 md:w-16 md:h-16">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
-        <!-- Right Side: Action -->
-        <div class="absolute bottom-[calc(1.5rem+var(--sab))] right-[calc(1.5rem+var(--sar))]">
-            <div id="ctrl-jump" class="control-btn w-20 h-20 md:w-24 md:h-24 bg-yellow-500/20 border-yellow-500/40">
-                <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7 7 7M5 21l7-7 7 7"/></svg>
+        <div class="absolute bottom-[calc(1rem+var(--sab))] right-[calc(1rem+var(--sar))]">
+            <div id="ctrl-jump" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-yellow-500/20 border-yellow-500/40">
+                <svg class="w-9 h-9 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7 7 7M5 21l7-7 7 7"/></svg>
             </div>
         </div>
     </div>
@@ -197,12 +191,13 @@ let state = {
     isFalling: false,
     viewportW: window.innerWidth,
     viewportH: window.innerHeight,
+    groundY: 0
 };
 
 const player = { 
-    x: 100, y: 0, w: 36, h: 54, 
+    x: 100, y: 0, w: 30, h: 46, // Reduced character size for better landscape feel
     vx: 0, vy: 0, 
-    speed: 7, jumpPower: -12, 
+    speed: 7, jumpPower: -11, 
     grounded: false, facingRight: true,
     jumpsAvailable: 2
 };
@@ -227,7 +222,6 @@ const QUEST_BANK = {
         { q: "How did proportional representation weaken the Weimar Republic?", a: "It led to many small parties and unstable coalitions.", o: ["It allowed the President to ignore the Reichstag.", "It led to many small parties and unstable coalitions.", "It prevented large parties from contesting elections.", "It guaranteed extremist parties an automatic majority."] },
         { q: "What did Article 48 allow the President to do?", a: "rule by decree during emergencies", o: ["suspend elections permanently", "rule by decree during emergencies", "appoint army commanders without approval", "dissolve all political parties"] },
         { q: "Why did Nazi support increase during the Depression?", a: "Many voters lost faith in moderate parties and wanted radical solutions.", o: ["Many voters lost faith in moderate parties and wanted radical solutions.", "Most Germans believed the Weimar economy was improving quickly.", "The Nazis promised to strengthen the Treaty of Versailles.", "Hitler persuaded trade unions to campaign for the Nazis."] },
-        { q: "What did the Reichstag Fire Decree do in practice?", a: "suspended civil liberties and allowed arrests without trial", o: ["protected freedom of speech and assembly", "suspended civil liberties and allowed arrests without trial", "gave trade unions greater legal protection", "restored full powers to the Reichstag"] },
         { q: "What majority was needed to pass the Enabling Act?", a: "a two-thirds majority", o: ["a simple majority", "a two-thirds majority", "a three-quarters majority", "a unanimous vote"] },
         { q: "Who was the main target of the Night of the Long Knives?", a: "Röhm and the SA leadership", o: ["communist deputies in the Reichstag", "Catholic Centre politicians", "Röhm and the SA leadership", "senior army commanders"] },
         { q: "What was the German Labour Front?", a: "a Nazi body that replaced trade unions", o: ["an independent workers’ union", "a Nazi body that replaced trade unions", "a government office for unemployment benefits", "a military unit made up of workers"] },
@@ -243,7 +237,7 @@ const QUEST_BANK = {
         { q: "Who directed the Four-Year Plan?", a: "Göring", o: ["Goebbels", "Himmler", "Göring", "Schacht"] },
         { q: "What did Hitler mean by pursuing power through the lawful process?", a: "He would win office legally, then use legal powers to destroy democracy.", o: ["He would abandon politics and work through the courts.", "He would win office legally, then use legal powers to destroy democracy.", "He would cooperate fully with communist parties.", "He would give up using propaganda and elections."] },
         { q: "What was the contradiction in the Gestapo’s power?", a: "It was feared as all-powerful, yet it was relatively small and depended heavily on denunciations.", o: ["It was legally weak but militarily dominant.", "It was feared as all-powerful, yet it was relatively small and depended heavily on denunciations.", "It was large in number but unknown to the public.", "It could arrest people only with judicial approval."] },
-        { q: "Why did the Centre Party vote for the Enabling Act?", a: "It was pressured by intimidation and reassured by Hitler’s promises.", o: ["It fully shared Nazi racial ideology.", "It was pressured by intimidation and reassured by Hitler’s promises.", "It hoped to replace Hitler as soon as the law passed.", "It had already merged with the Nazi Party."] },
+        { q: "Why did the Centre Party vote for the Enabling Act?", a: "It was pressured by intimidation and reassured by Hitler’s promises.", o: ["It fully shared Nazi racial ideology.", "It was pressured by intimidation and reassured by Hitler’s promises.", "It hoped to replace Hitler as soon as the law passed.", "It already merged with the Nazi Party."] },
         { q: "Why was the Army Oath a major turning point?", a: "It bound soldiers personally to Hitler, strengthening his control over the military.", o: ["It tied the army to the Weimar Constitution rather than to Hitler.", "It made the army answerable to the Reichstag.", "It bound soldiers personally to Hitler, strengthening his control over the military.", "It gave the SA command over the regular army."] }
     ]
 };
@@ -266,8 +260,8 @@ sessionDeck = buildSessionDeck();
 
 const blocks = Array.from({length: 40}, (_, i) => ({ 
     x: 600 + (i * 350), 
-    y: 0, // Calculated in resize
-    w: 64, h: 64, active: true 
+    y: 0, 
+    w: 60, h: 60, active: true 
 }));
 
 function resize() {
@@ -275,14 +269,17 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
+    state.groundY = state.viewportH - 40; // Thinner ground for more play space
     
-    // Position blocks relative to height: Always above player head but reachable
+    // Position blocks high enough that a jump is required
+    // Player head is at groundY - player.h. Jump is ~100px.
+    // So blocks should be between groundY - 140 and groundY - 180
     blocks.forEach(b => {
-        b.y = state.viewportH * 0.4 + (Math.random() * 60);
+        b.y = state.groundY - 130 - (Math.random() * 40);
     });
 
     if (!state.gameStarted) {
-        player.y = state.viewportH - 120;
+        player.y = state.groundY - player.h;
         player.x = 100;
     }
 }
@@ -293,7 +290,6 @@ function init() {
     window.addEventListener('orientationchange', resize);
     resize();
     
-    // Force prevent magnifier and zoom
     document.addEventListener('contextmenu', e => e.preventDefault());
     document.addEventListener('touchstart', (e) => {
         if (e.touches.length > 1) e.preventDefault();
@@ -365,20 +361,20 @@ function triggerQuiz() {
                 feedback.className = "mt-4 p-4 rounded-xl border-l-4 border-green-500 bg-green-500/10";
                 document.getElementById('feedback-title').innerText = "DATA VERIFIED";
                 document.getElementById('feedback-title').className = "font-black uppercase text-[10px] mb-1 text-green-400";
-                document.getElementById('feedback-detail').innerText = "Historical accuracy confirmed. Continue mission.";
+                document.getElementById('feedback-detail').innerText = "Historical accuracy confirmed.";
                 state.score += 100;
                 document.getElementById('stats-coins').innerText = state.score;
                 document.getElementById('mcq-continue-btn').onclick = () => {
                     modal.classList.add('hidden');
                     sessionDeck.shift(); 
-                    if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "You have achieved historical mastery.");
+                    if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "History Mastered.");
                     else { state.paused = false; state.gameActive = true; }
                 };
             } else {
                 feedback.className = "mt-4 p-4 rounded-xl border-l-4 border-red-500 bg-red-500/10";
                 document.getElementById('feedback-title').innerText = "DATA CORRUPTED";
                 document.getElementById('feedback-title').className = "font-black uppercase text-[10px] mb-1 text-red-400";
-                document.getElementById('feedback-detail').innerText = `ERROR. The fact: ${q.a}. Reinforcement required.`;
+                document.getElementById('feedback-detail').innerText = `ERROR. Fact: ${q.a}. Reinforcement required.`;
                 document.getElementById('mcq-continue-btn').onclick = () => {
                     modal.classList.add('hidden');
                     state.isFalling = true;
@@ -393,7 +389,7 @@ function triggerQuiz() {
 
 function update() {
     if (!state.gameStarted) { requestAnimationFrame(update); return; }
-    if (state.timer <= 0) endGame("TIME EXPIRED", "The timeline has collapsed. Start over.");
+    if (state.timer <= 0) endGame("TIME EXPIRED", "Mission failed.");
 
     if (state.isFalling) {
         player.vy += 0.5; 
@@ -401,10 +397,10 @@ function update() {
         if (player.y > state.viewportH + 50) {
             state.lives--; 
             document.getElementById('stats-lives').innerText = state.lives;
-            if (state.lives <= 0) endGame("INTEGRITY LOST", "Revision failed. Too many errors.");
+            if (state.lives <= 0) endGame("STABILITY LOST", "Revision failed.");
             else { 
                 player.x = Math.max(100, player.x - 300); 
-                player.y = 0; player.vy = 0; 
+                player.y = -50; player.vy = 0; 
                 state.isFalling = false; state.gameActive = true; 
             }
         }
@@ -415,9 +411,8 @@ function update() {
 
         player.vy += 0.6; player.x += player.vx; player.y += player.vy;
         
-        const groundY = state.viewportH - 60;
-        if (player.y + player.h > groundY) { 
-            player.y = groundY - player.h; player.vy = 0; 
+        if (player.y + player.h > state.groundY) { 
+            player.y = state.groundY - player.h; player.vy = 0; 
             player.grounded = true; player.jumpsAvailable = 2;
         }
         
@@ -445,20 +440,20 @@ function render() {
     grd.addColorStop(0, "#0f172a"); grd.addColorStop(1, "#1e293b");
     ctx.fillStyle = grd; ctx.fillRect(0,0,canvas.width,canvas.height);
     
-    let camX = -player.x + (state.viewportW * 0.25); 
+    let camX = -player.x + (state.viewportW * 0.2); 
     if (camX > 0) camX = 0;
     ctx.translate(camX, 0);
     
-    const groundY = state.viewportH - 60;
+    // Ground
     ctx.fillStyle = state.isFalling ? '#ef4444' : '#fbbf24'; 
-    ctx.fillRect(-1000, groundY, 20000, 60);
+    ctx.fillRect(-1000, state.groundY, 20000, 40);
     
-    // Draw platforms
+    // Blocks
     blocks.forEach(b => { 
         if (b.active) { 
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(b.x, b.y, b.w, b.h); 
-            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.font = 'bold 24px sans-serif'; 
-            ctx.textAlign = 'center'; ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10); 
+            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.font = 'bold 20px sans-serif'; 
+            ctx.textAlign = 'center'; ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 7); 
         } 
     });
     
@@ -466,9 +461,9 @@ function render() {
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
-    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-12, -24, 24, 22); 
-    ctx.fillStyle = "#fbbf24"; ctx.fillRect(-15, -2, 30, 22); 
-    ctx.fillStyle = "#0f172a"; ctx.fillRect(-15, 20, 13, 10); ctx.fillRect(2, 20, 13, 10); 
+    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-10, -20, 20, 18); 
+    ctx.fillStyle = "#fbbf24"; ctx.fillRect(-12, -2, 24, 18); 
+    ctx.fillStyle = "#0f172a"; ctx.fillRect(-12, 16, 11, 8); ctx.fillRect(1, 16, 11, 8); 
     ctx.restore();
 }
 
