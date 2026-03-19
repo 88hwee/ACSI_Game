@@ -186,7 +186,8 @@ let state = {
     lastSpawn: 0
 };
 
-const player = { x: 0, w: 60, h: 40, speed: 9 };
+// Player 2x bigger, speed adjusted slightly for size
+const player = { x: 0, w: 120, h: 80, speed: 10 };
 
 const QUEST_BANK = {
     easy: [
@@ -301,7 +302,8 @@ function init() {
 }
 
 function shoot() {
-    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 80, r: 8, speed: 12 });
+    // Bullet spawns from the higher ship position
+    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 180, r: 8, speed: 12 });
 }
 
 function spawnEnemy() {
@@ -437,10 +439,13 @@ function render() {
         ctx.fillRect((Date.now()/60 + i*141) % state.viewportW, (i*179) % state.viewportH, 2, 2);
     }
 
+    // Player rendered 2x larger and higher to avoid control overlap
     ctx.fillStyle = "#3b82f6";
-    ctx.fillRect(player.x, state.viewportH - 60, player.w, 35);
+    // Base: state.viewportH - 150 (Height of control zone is ~120px)
+    ctx.fillRect(player.x, state.viewportH - 160, player.w, 45);
     ctx.fillStyle = "#60a5fa";
-    ctx.fillRect(player.x + 15, state.viewportH - 75, player.w - 30, 15);
+    // Cockpit scaled to 2x larger ship
+    ctx.fillRect(player.x + (player.w * 0.25), state.viewportH - 185, player.w * 0.5, 25);
 
     state.enemies.forEach(en => {
         ctx.beginPath();
