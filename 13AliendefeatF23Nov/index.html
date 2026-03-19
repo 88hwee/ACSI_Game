@@ -61,7 +61,7 @@
 
         .option-btn {
             transition: all 0.2s;
-            min-height: 3rem;
+            min-height: 3.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -70,7 +70,7 @@
             width: 100%;
             border-radius: 12px;
             font-weight: 800;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             background: #1e293b;
             border: 2px solid #334155;
             color: #fff;
@@ -78,13 +78,14 @@
         }
 
         #hud {
-            padding-top: calc(0.5rem + var(--sat));
-            padding-left: calc(1rem + var(--sal));
-            padding-right: calc(1rem + var(--sar));
+            padding-top: calc(0.75rem + var(--sat));
+            padding-left: 1rem;
+            padding-right: 1rem;
         }
 
-        @media (orientation: portrait) {
-            #portrait-warning { display: flex !important; }
+        /* Portrait-first: Warning only if extremely wide (landscape) */
+        @media (orientation: landscape) {
+            #landscape-warning { display: flex !important; }
         }
 
         .correct { background: #16a34a !important; border-color: #22c55e !important; }
@@ -93,69 +94,74 @@
 </head>
 <body>
 
-<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+<div id="landscape-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
     <div class="animate-bounce mb-4 text-blue-500">
         <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
     </div>
-    <h2 class="text-2xl loud-font text-blue-400 mb-2 uppercase">Rotate for Mission</h2>
-    <p class="text-slate-500 text-sm">Target interception requires Landscape Mode.</p>
+    <h2 class="text-2xl loud-font text-blue-400 mb-2 uppercase">Switch to Portrait</h2>
+    <p class="text-slate-500 text-sm">Target interception optimized for Portrait Mode.</p>
 </div>
 
 <div id="game-container">
+    <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-5xl md:text-7xl font-black text-blue-600 loud-font italic mb-2 tracking-tighter uppercase">Alien Defeat</h1>
+        <h1 class="text-5xl md:text-7xl font-black text-blue-600 loud-font italic mb-4 tracking-tighter uppercase">Alien Defeat</h1>
         <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">WWII End: Intelligence Unit</p>
-        <button id="btn-start" class="px-16 py-5 bg-blue-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-blue-800">
-            Initialize Mission
+        <button id="btn-start" class="px-12 py-5 bg-blue-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-blue-800">
+            Start Unit
         </button>
     </div>
 
-    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
-        <div class="bg-blue-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-500/30">
-            <p class="text-[10px] uppercase font-black text-blue-400">Score</p>
-            <p id="stats-coins" class="text-xl font-black text-white">0</p>
+    <!-- HUD -->
+    <div id="hud" class="absolute top-0 left-0 w-full grid grid-cols-3 gap-2 pointer-events-none z-20">
+        <div class="bg-blue-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[8px] uppercase font-black text-blue-400">Score</p>
+            <p id="stats-coins" class="text-lg font-black text-white">0</p>
         </div>
-        <div class="bg-blue-900/40 backdrop-blur-md px-6 py-2 rounded-xl border border-blue-500/30 text-center">
-            <p class="text-[10px] uppercase font-black text-blue-400">Clock</p>
-            <p id="stats-timer" class="text-xl font-black text-white">180s</p>
+        <div class="bg-blue-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[8px] uppercase font-black text-blue-400">Time</p>
+            <p id="stats-timer" class="text-lg font-black text-white">180s</p>
         </div>
-        <div class="bg-blue-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-500/30 text-right">
-            <p class="text-[10px] uppercase font-black text-blue-400">Intel Left</p>
-            <p id="stats-q" class="text-xl font-black text-white">0</p>
+        <div class="bg-blue-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[8px] uppercase font-black text-blue-400">Intel</p>
+            <p id="stats-q" class="text-lg font-black text-white">0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-6 backdrop-blur-md">
-        <div class="w-full max-w-2xl bg-slate-900 border-t-[8px] border-blue-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
-            <div class="text-blue-500 font-black uppercase tracking-[0.2em] text-[10px] mb-3">Intelligence Decryption Required</div>
-            <h3 id="question-text" class="text-xl md:text-2xl font-black italic uppercase mb-8 text-white leading-tight"></h3>
-            <div id="options-container" class="grid grid-cols-1 gap-2"></div>
+    <!-- MCQ Modal -->
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-md">
+        <div class="w-full max-w-lg bg-slate-900 border-t-[8px] border-blue-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
+            <div class="text-blue-500 font-black uppercase tracking-[0.2em] text-[10px] mb-3">Decryption Required</div>
+            <h3 id="question-text" class="text-lg md:text-xl font-black italic uppercase mb-6 text-white leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-1 gap-2.5"></div>
             <div id="feedback" class="mt-6 text-center font-black h-10 uppercase italic text-xl"></div>
         </div>
     </div>
 
+    <!-- End Screen -->
     <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
-        <h1 class="text-6xl md:text-8xl loud-font italic text-blue-600 mb-8 uppercase">Mission End</h1>
+        <h1 class="text-6xl loud-font italic text-blue-600 mb-8 uppercase">Finished</h1>
         <div class="mb-12">
-            <p class="text-slate-500 text-sm uppercase font-black tracking-widest mb-2">Final Mastery Score</p>
+            <p class="text-slate-500 text-xs uppercase font-black tracking-widest mb-2">Final Mastery</p>
             <div class="text-7xl font-black text-white" id="final-score">0</div>
         </div>
-        <button id="btn-restart" class="px-16 py-6 bg-white text-black loud-font rounded-full active:bg-blue-600 active:text-white transition-all uppercase tracking-widest text-xl shadow-2xl">
-            Restart Unit
+        <button id="btn-restart" class="px-12 py-5 bg-white text-black loud-font rounded-full active:bg-blue-600 active:text-white transition-all uppercase tracking-widest text-lg shadow-2xl">
+            Restart
         </button>
     </div>
 
-    <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-6 z-30 pointer-events-none">
-        <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
-            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+    <!-- Mobile Controls Optimized for Portrait -->
+    <div class="absolute bottom-[calc(1rem+var(--sab))] left-0 w-full px-6 flex justify-between items-center z-30 pointer-events-none">
+        <div class="flex gap-4">
+            <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
+                <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+            </div>
+            <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
+                <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
+            </div>
         </div>
-        <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
-            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
-        </div>
-    </div>
-    <div class="absolute bottom-[calc(1.5rem+var(--sab))] right-[calc(1.5rem+var(--sar))] z-30 pointer-events-none">
         <div id="ctrl-shoot" class="control-btn w-24 h-24 bg-red-600/20 border-red-600/40 pointer-events-auto">
             <div class="w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
         </div>
@@ -180,7 +186,7 @@ let state = {
     lastSpawn: 0
 };
 
-const player = { x: 0, w: 70, h: 40, speed: 10 };
+const player = { x: 0, w: 60, h: 40, speed: 9 };
 
 const QUEST_BANK = {
     easy: [
@@ -271,7 +277,6 @@ function resize() {
 const touch = { left: false, right: false };
 function init() {
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
     resize();
     
     document.getElementById('btn-start').onclick = () => {
@@ -296,16 +301,16 @@ function init() {
 }
 
 function shoot() {
-    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 60, r: 8, speed: 12 });
+    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 80, r: 8, speed: 12 });
 }
 
 function spawnEnemy() {
-    const r = 40;
+    const r = 35;
     state.enemies.push({
         x: Math.random() * (state.viewportW - r*2) + r,
         y: -r,
         r: r,
-        speed: 2 + Math.random() * 2,
+        speed: 2.5 + Math.random() * 2,
         type: 'mcq'
     });
 }
@@ -344,7 +349,6 @@ function triggerQuiz() {
         btn.onclick = () => {
             Array.from(container.children).forEach(b => b.disabled = true);
             if (opt === q.a) {
-                // Correct: Fireworks and immediate resume
                 state.score += 50;
                 document.getElementById('stats-coins').innerText = state.score;
                 createFireworks(state.viewportW / 2, state.viewportH / 2);
@@ -352,9 +356,8 @@ function triggerQuiz() {
                 if (sessionDeck.length === 0) endGame();
                 else resume();
             } else {
-                // Wrong: Show answer, repeat 2 positions later
                 btn.classList.add('wrong');
-                feedback.innerText = `Incorrect. Data: ${q.a}`;
+                feedback.innerText = `Incorrect. Intel: ${q.a}`;
                 feedback.className = "mt-6 text-center font-black uppercase italic text-red-500 text-xl";
                 
                 const missed = sessionDeck.shift();
@@ -382,7 +385,7 @@ function update() {
         if (touch.left && player.x > 0) player.x -= player.speed;
         if (touch.right && player.x < state.viewportW - player.w) player.x += player.speed;
 
-        if (Date.now() - state.lastSpawn > 2000) {
+        if (Date.now() - state.lastSpawn > 2200) {
             spawnEnemy();
             state.lastSpawn = Date.now();
         }
@@ -404,7 +407,7 @@ function update() {
             for (let j = state.bullets.length - 1; j >= 0; j--) {
                 const b = state.bullets[j];
                 const dist = Math.hypot(b.x - en.x, b.y - en.y);
-                if (dist < en.r + 20) {
+                if (dist < en.r + 15) {
                     state.bullets.splice(j, 1);
                     state.enemies.splice(i, 1);
                     triggerQuiz();
@@ -435,9 +438,9 @@ function render() {
     }
 
     ctx.fillStyle = "#3b82f6";
-    ctx.fillRect(player.x, state.viewportH - 50, player.w, 35);
+    ctx.fillRect(player.x, state.viewportH - 60, player.w, 35);
     ctx.fillStyle = "#60a5fa";
-    ctx.fillRect(player.x + 20, state.viewportH - 62, player.w - 40, 12);
+    ctx.fillRect(player.x + 15, state.viewportH - 75, player.w - 30, 15);
 
     state.enemies.forEach(en => {
         ctx.beginPath();
@@ -470,7 +473,6 @@ function render() {
 
 function endGame() {
     state.gameActive = false;
-    document.getElementById('end-status').innerText = "Mission Accomplished";
     document.getElementById('final-score').innerText = state.score;
     document.getElementById('end-screen').classList.remove('hidden');
 }
