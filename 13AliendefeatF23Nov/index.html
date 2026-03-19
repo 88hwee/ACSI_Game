@@ -2,405 +2,488 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Alien Defeat Germany – Tactical Intelligence Shooter</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Alien Intelligence: WWII End Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
         
-        body {
-            margin: 0;
-            font-family: 'Inter', sans-serif;
-            background: #020617;
-            color: #e5e7eb;
-            overflow: hidden;
-            height: 100vh;
-            /* Improved base font size for general readability */
-            font-size: 18px; 
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
         }
 
-        .loud-font {
-            font-family: 'Black Ops One', cursive;
-            letter-spacing: 0.05em;
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
-        canvas {
+        body { 
+            margin: 0; 
+            background: #020617; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            color: white; 
+            touch-action: none; 
+            height: 100dvh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        .loud-font { font-family: 'Black Ops One', cursive; }
+        
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
             background: radial-gradient(circle at 50% 100%, #1e1b4b 0%, #020617 70%);
-            display: block;
-            margin: 0 auto;
-            border-bottom: 4px solid #3b82f6;
-            cursor: crosshair;
+            overflow: hidden;
         }
 
-        #questionOverlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(2, 6, 23, 0.98);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 100;
-        }
+        canvas { display: block; width: 100%; height: 100%; }
 
-        /* Increased Option Button Size & Readability */
-        .option-btn {
-            width: 100%;
-            padding: 1.5rem;
-            margin: 0.75rem 0;
-            background: #1e293b;
-            border: 3px solid #334155;
-            font-weight: 900;
-            text-transform: uppercase;
-            transition: all 0.2s;
-            text-align: left;
-            color: #fff;
-            font-size: 1.25rem; /* Larger font */
-            line-height: 1.2;
-        }
-
-        .option-btn:hover {
-            background: #3b82f6;
-            color: white;
-            transform: translateX(10px);
-            border-color: #60a5fa;
-        }
-
-        .correct { background: #16a34a !important; border-color: #22c55e !important; color: white; }
-        .wrong { background: #dc2626 !important; border-color: #ef4444 !important; color: white; }
-
-        .hud {
-            position: absolute;
-            top: 25px;
-            left: 25px;
-            right: 25px;
+        .control-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
             display: flex;
-            justify-content: space-between;
-            pointer-events: none;
-            z-index: 50;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
         }
 
-        /* Larger HUD Stats */
-        .stat-box {
-            background: rgba(0,0,0,0.9);
-            border: 3px solid #3b82f6;
-            padding: 15px 25px;
-            font-size: 1.5rem; /* Increased size */
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-        }
+        .control-btn:active { background: rgba(59, 130, 246, 0.5); transform: scale(0.9); }
 
-        /* High-Visibility Fact Bar */
-        #fact-bar {
-            position: fixed;
-            bottom: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1e40af; /* Solid high-contrast blue */
-            border: 4px solid #60a5fa;
-            padding: 25px 40px;
-            border-radius: 8px;
-            font-weight: 900;
+        .option-btn {
+            transition: all 0.2s;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+            padding: 0.8rem 1.2rem;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: #1e293b;
+            border: 2px solid #334155;
+            color: #fff;
             text-transform: uppercase;
-            font-style: italic;
-            display: none;
-            z-index: 60;
-            width: 90%;
-            max-width: 1000px;
-            text-align: center;
-            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8);
-            font-size: 1.8rem; /* Dramatically larger font */
-            color: #ffffff;
-            line-height: 1.3;
         }
 
-        #focus-notice {
-            position: fixed;
-            bottom: 25px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(59, 130, 246, 0.3);
-            padding: 8px 20px;
-            border-radius: 30px;
-            font-size: 1rem;
-            font-weight: bold;
-            border: 2px solid #3b82f6;
-            pointer-events: none;
-            color: #93c5fd;
+        #hud {
+            padding-top: calc(0.5rem + var(--sat));
+            padding-left: calc(1rem + var(--sal));
+            padding-right: calc(1rem + var(--sar));
         }
+
+        @media (orientation: portrait) {
+            #portrait-warning { display: flex !important; }
+        }
+
+        .correct { background: #16a34a !important; border-color: #22c55e !important; }
+        .wrong { background: #dc2626 !important; border-color: #ef4444 !important; }
     </style>
 </head>
 <body>
 
-<div class="hud loud-font">
-    <div class="stat-box text-blue-400">DECK: <span id="q-count">0</span></div>
-    <div class="stat-box text-green-400">SCORE: <span id="score">0</span></div>
-    <div class="stat-box text-red-400">TIME: <span id="time">180</span></div>
+<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+    <div class="animate-bounce mb-4 text-blue-500">
+        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    </div>
+    <h2 class="text-2xl loud-font text-blue-400 mb-2 uppercase">Rotate for Mission</h2>
+    <p class="text-slate-500 text-sm">Target interception requires Landscape Mode.</p>
 </div>
 
-<canvas id="game"></canvas>
+<div id="game-container">
+    <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-5xl md:text-7xl font-black text-blue-600 loud-font italic mb-2 tracking-tighter uppercase">Alien Defeat</h1>
+        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">WWII End: Intelligence Unit</p>
+        <button id="btn-start" class="px-16 py-5 bg-blue-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-blue-800">
+            Initialize Mission
+        </button>
+    </div>
 
-<div id="fact-bar" class="loud-font"></div>
-<div id="focus-notice" class="loud-font">CLICK TO FOCUS (ARROWS TO MOVE | SPACE TO SHOOT)</div>
+    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
+        <div class="bg-blue-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-500/30">
+            <p class="text-[10px] uppercase font-black text-blue-400">Score</p>
+            <p id="stats-coins" class="text-xl font-black text-white">0</p>
+        </div>
+        <div class="bg-blue-900/40 backdrop-blur-md px-6 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[10px] uppercase font-black text-blue-400">Clock</p>
+            <p id="stats-timer" class="text-xl font-black text-white">180s</p>
+        </div>
+        <div class="bg-blue-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-500/30 text-right">
+            <p class="text-[10px] uppercase font-black text-blue-400">Intel Left</p>
+            <p id="stats-q" class="text-xl font-black text-white">0</p>
+        </div>
+    </div>
 
-<div id="questionOverlay">
-    <div class="bg-slate-900 border-t-[12px] border-blue-600 p-10 w-full max-w-3xl shadow-2xl">
-        <div class="text-blue-400 font-black uppercase tracking-[0.2em] text-sm mb-4">CRITICAL DECRYPTION</div>
-        <!-- Very large question text -->
-        <h2 id="questionText" class="text-4xl font-black italic uppercase mb-10 leading-tight text-white"></h2>
-        <div id="options"></div>
-        <div id="feedback" class="mt-8 text-center font-black h-12 uppercase italic text-2xl"></div>
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-6 backdrop-blur-md">
+        <div class="w-full max-w-2xl bg-slate-900 border-t-[8px] border-blue-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
+            <div class="text-blue-500 font-black uppercase tracking-[0.2em] text-[10px] mb-3">Intelligence Decryption Required</div>
+            <h3 id="question-text" class="text-xl md:text-2xl font-black italic uppercase mb-8 text-white leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-1 gap-2"></div>
+            <div id="feedback" class="mt-6 text-center font-black h-10 uppercase italic text-xl"></div>
+        </div>
+    </div>
+
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
+        <h1 class="text-6xl md:text-8xl loud-font italic text-blue-600 mb-8 uppercase">Mission End</h1>
+        <div class="mb-12">
+            <p class="text-slate-500 text-sm uppercase font-black tracking-widest mb-2">Final Mastery Score</p>
+            <div class="text-7xl font-black text-white" id="final-score">0</div>
+        </div>
+        <button id="btn-restart" class="px-16 py-6 bg-white text-black loud-font rounded-full active:bg-blue-600 active:text-white transition-all uppercase tracking-widest text-xl shadow-2xl">
+            Restart Unit
+        </button>
+    </div>
+
+    <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-6 z-30 pointer-events-none">
+        <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
+            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+        </div>
+        <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
+            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
+        </div>
+    </div>
+    <div class="absolute bottom-[calc(1.5rem+var(--sab))] right-[calc(1.5rem+var(--sar))] z-30 pointer-events-none">
+        <div id="ctrl-shoot" class="control-btn w-24 h-24 bg-red-600/20 border-red-600/40 pointer-events-auto">
+            <div class="w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
+        </div>
     </div>
 </div>
 
-<div id="endOverlay" class="fixed inset-0 bg-black z-[200] hidden flex flex-col items-center justify-center p-12 text-center">
-    <h1 class="text-9xl loud-font italic text-blue-600 mb-8">MISSION END</h1>
-    <div class="text-6xl loud-font mb-12 text-white">FINAL SCORE: <span id="finalScore">0</span></div>
-    <button onclick="location.reload()" class="bg-white text-black px-16 py-6 loud-font text-3xl hover:bg-blue-600 hover:text-white transition transform hover:scale-105">RESTART MISSION</button>
-</div>
-
 <script>
-    const questions = [
-        { q: "Which nation first defied the League by invading Manchuria?", options: ["Italy", "Germany", "Japan", "USSR"], answer: "Japan" },
-        { q: "What was the core aim of Hitler's 'Lebensraum' policy?", options: ["Peace treaty", "Living space", "Economic trade", "Naval power"], answer: "Living space" },
-        { q: "What territory did Hitler remilitarize in 1936?", options: ["Sudetenland", "Poland", "Rhineland", "Austria"], answer: "Rhineland" },
-        { q: "The union of Germany and Austria in 1938 was called...", options: ["Anschluss", "Autarky", "Munich Pact", "Détente"], answer: "Anschluss" },
-        { q: "Which British PM is associated with Appeasement?", options: ["Churchill", "Eden", "Attlee", "Chamberlain"], answer: "Chamberlain" },
-        { q: "The Munich Agreement gave Hitler control of which region?", options: ["Bohemia", "Sudetenland", "Danzig", "The Corridor"], answer: "Sudetenland" },
-        { q: "Which event officially triggered WWII in Europe?", options: ["Munich Pact", "Rhineland entry", "Invasion of Poland", "Spanish Civil War"], answer: "Invasion of Poland" },
-        { q: "The 1939 Pact between Germany and USSR was the...", options: ["Steel Pact", "Anti-Comintern", "Molotov-Ribbentrop", "Berlin Pact"], answer: "Molotov-Ribbentrop" },
-        { q: "Why did Hitler sign the Pact with Stalin?", options: ["Friendship", "To avoid a two-front war", "To share tanks", "To stop Japan"], answer: "To avoid a two-front war" },
-        { q: "Which country was NOT invited to the Munich Conference?", options: ["Britain", "France", "Germany", "Czechoslovakia"], answer: "Czechoslovakia" }
-    ];
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
+let state = {
+    gameStarted: false,
+    gameActive: false,
+    paused: false,
+    timer: 180,
+    score: 0,
+    viewportW: window.innerWidth,
+    viewportH: window.innerHeight,
+    particles: [],
+    bullets: [],
+    enemies: [],
+    lastSpawn: 0
+};
 
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
+const player = { x: 0, w: 70, h: 40, speed: 10 };
+
+const QUEST_BANK = {
+    easy: [
+        { q: "What was the name of the German strategy known as 'lightning war'?", a: "Blitzkrieg", o: ["Operation Barbarossa", "Blitzkrieg", "Operation Overlord", "The Blitz"] },
+        { q: "In what month and year did Germany surrender, ending the war in Europe?", a: "May 1945", o: ["June 1944", "December 1941", "May 1945", "September 1945"] },
+        { q: "Which event brought the United States formally into World War II?", a: "The attack on Pearl Harbor", o: ["The invasion of Poland", "The Battle of Britain", "The attack on Pearl Harbor", "Operation Barbarossa"] },
+        { q: "What was the code name for the Allied invasion of Normandy on June 6, 1944?", a: "Operation Overlord", o: ["Operation Barbarossa", "Operation Overlord", "Operation Sea Lion", "Operation Bagration"] },
+        { q: "Which city was the site of the first atomic bomb dropped by the United States?", a: "Hiroshima", o: ["Nagasaki", "Tokyo", "Hiroshima", "Kyoto"] },
+        { q: "Who was the Prime Minister of Britain during the majority of World War II?", a: "Winston Churchill", o: ["Neville Chamberlain", "Winston Churchill", "Franklin D. Roosevelt", "Clement Attlee"] },
+        { q: "The German invasion of the Soviet Union in 1941 was known as:", a: "Operation Barbarossa", o: ["The Battle of Stalingrad", "Operation Barbarossa", "The Battle of Kursk", "Operation Fortitude"] },
+        { q: "Which battle is regarded as a major turning point in the Pacific War in June 1942?", a: "Battle of Midway", o: ["Battle of the Coral Sea", "Battle of Leyte Gulf", "Battle of Midway", "Battle of Iwo Jima"] },
+        { q: "The United States became known by what nickname due to its massive industrial output?", a: "The Arsenal of Democracy", o: ["The Iron Giant", "The Arsenal of Democracy", "The Factory of Freedom", "The Shield of Europe"] },
+        { q: "Which Soviet city was the site of a deadly siege that ended in January 1944?", a: "Leningrad", o: ["Moscow", "Stalingrad", "Leningrad", "Kiev"] },
+        { q: "What was the primary Allied strategy for capturing Japanese-controlled areas in the Pacific?", a: "Island-hopping", o: ["Trench warfare", "Blitzkrieg", "Island-hopping", "Total blockade"] },
+        { q: "What technology did the British use to detect incoming enemy aircraft?", a: "Radar", o: ["Sonar", "Jet engines", "Radar", "Guided missiles"] },
+        { q: "Which country suffered the highest percentage of German military casualties?", a: "USSR", o: ["Britain", "USA", "USSR", "France"] },
+        { q: "Where did the formal surrender of Japan take place on September 2, 1945?", a: "Aboard the USS Missouri", o: ["Hiroshima", "The White House", "Aboard the USS Missouri", "Buckingham Palace"] },
+        { q: "Adolf Hitler committed suicide in his underground bunker in:", a: "April 1945", o: ["April 1945", "May 1945", "June 1944", "January 1945"] }
+    ],
+    medium: [
+        { q: "Why did Germany choose to use Blitzkrieg tactics at the start of the war?", a: "Their economy could not support long campaigns.", o: ["They had a surplus of copper.", "Their economy could not support long campaigns.", "They preferred trench warfare.", "They lacked modern aircraft."] },
+        { q: "What was a primary reason for the failure of Operation Barbarossa?", a: "The harsh Russian winter", o: ["Lack of Soviet manpower", "The harsh Russian winter", "US intervention in 1941", "Superior German logistics"] },
+        { q: "The Lend-Lease scheme was introduced by the US to:", a: "Provide military aid and resources to the Allies.", o: ["Declare war on Germany.", "Provide military aid and resources to the Allies.", "Tax British imports.", "Fund Japan."] },
+        { q: "Significant outcome of the Battle of Midway for the Japanese Navy?", a: "They lost four aircraft carriers and many pilots.", o: ["They captured the Midway Islands.", "They lost four aircraft carriers and many pilots.", "They destroyed the US Pacific fleet.", "They invaded Australia."] },
+        { q: "Why was control of the Atlantic shipping routes essential?", a: "To transport US industrial production and troops to Europe.", o: ["To prevent Japan from invading.", "To transport US industrial production and troops to Europe.", "To find oil.", "To protect U-boats."] },
+        { q: "How did Soviet industrial response contribute to Germany's defeat?", a: "They moved their industrial complexes east to the Urals.", o: ["They stopped producing tanks.", "They moved their industrial complexes east to the Urals.", "They relied solely on US.", "They used wooden weapons."] },
+        { q: "What did Stalin's 'Order 227' require of Soviet soldiers?", a: "To 'not a step back' and fight for every bit of soil.", o: ["To retreat immediately.", "To 'not a step back' and fight for every bit of soil.", "To join the German army.", "To prioritize farming."] },
+        { q: "Major military weakness of the Japanese Empire by 1943?", a: "It was overstretched, making resource delivery difficult.", o: ["It was too small.", "It was overstretched, making resource delivery difficult.", "It had no air force.", "It had too much local support."] },
+        { q: "How did inter-service rivalry affect Japan's war effort?", a: "Army and Navy failed to share resources and intelligence.", o: ["Perfect harmony.", "Army and Navy failed to share resources and intelligence.", "Army took over Navy.", "Immediate surrender in 1942."] },
+        { q: "What was the 'production miracle' of the United States?", a: "Rapidly converting civilian factories to produce war materiel.", o: ["Producing more food than weapons.", "Rapidly converting civilian factories to produce war materiel.", "Inventing the atomic bomb in one week.", "Building a wall."] },
+        { q: "Which factor made D-Day a 'high-risk undertaking'?", a: "Germany had strong fortifications along the Normandy coast.", o: ["Allies had no aircraft.", "Germany had strong fortifications along the Normandy coast.", "US had not entered war.", "Italy was a threat."] },
+        { q: "Why was German military command structure inefficient?", a: "Commanders had to report everything to Hitler, who micromanaged.", o: ["Generals had too much independence.", "Commanders had to report everything to Hitler, who micromanaged.", "No central leader.", "Army was too small."] },
+        { q: "British Spitfire and Hurricane were vital in:", a: "The Battle of Britain.", o: ["The invasion of Russia.", "The Battle of Britain.", "Pearl Harbor.", "Midway."] },
+        { q: "Main purpose of Allied 'island-hopping' strategy?", a: "To isolate Japanese areas and strike closer to Japan.", o: ["To conquer every stronghold.", "To isolate Japanese areas and strike closer to Japan.", "To find vacation spots.", "To avoid air power."] },
+        { q: "Type of warfare resistance movements like Viet Minh used against Japan?", a: "Guerrilla warfare", o: ["Nuclear warfare", "Trench warfare", "Guerrilla warfare", "Blitzkrieg"] }
+    ],
+    difficult: [
+        { q: "Antony Beevor: Why did Truman use the atomic bomb?", a: "Faced Japanese refusal to surrender and huge Allied casualties.", o: ["Wanted to kill civilians.", "Faced Japanese refusal to surrender and huge Allied casualties.", "Wanted to test technology.", "No other bombs left."] },
+        { q: "Richard Overy: Atomic bomb necessity interpretation?", a: "Japan was already finished militarily and would surrender soon.", o: ["Only way to win.", "Japan was already finished militarily and would surrender soon.", "Used to start Cold War.", "Less effective than conventional."] },
+        { q: "Victor Davis Hanson argues Axis powers:", a: "Were military and economic underdogs compared to Big Three.", o: ["Stronger industrial powers.", "Were military and economic underdogs compared to Big Three.", "Superior rearmament strategies.", "Never had a head start."] },
+        { q: "James Holland: Real reason for 1940 Dunkirk 'halt order'?", a: "Hitler's ineptitude and suspicion of his army commanders.", o: ["Hitler wanted British to escape.", "Hitler's ineptitude and suspicion of his army commanders.", "Lack of fuel.", "Sudden storm."] },
+        { q: "Strategic error Japanese naval commanders made regarding merchant ships?", a: "They fixated on battleships and ignored merchant vessels.", o: ["Focused too much on merchant.", "They fixated on battleships and ignored merchant vessels.", "Used merchant as battleships.", "Had no merchant ships."] },
+        { q: "1944: US factories portion of world's weapons?", a: "Nearly half", o: ["Nearly 10%", "Nearly 25%", "Nearly half", "90%"] },
+        { q: "Soviet Red Army Lend-Lease benefit in terms of mobility?", a: "Received over 500,000 motor vehicles and 1,900 locomotives.", o: ["500,000 aircraft.", "Received over 500,000 motor vehicles and 1,900 locomotives.", "Processed food only.", "Horses from Britain."] },
+        { q: "Significance of Battle of Britain as 'fundamental' defeat?", a: "Prevented German invasion and secured Britain as Allied base.", o: ["German army surrendered.", "Prevented German invasion and secured Britain as Allied base.", "Destroyed German Navy.", "Led to invasion of Germany."] },
+        { q: "Significance of Soviet victory at Battle of Kursk 1943?", a: "Largest tank battle; allowed Soviets to halt and counter attacks.", o: ["Largest tank battle; allowed Soviets to halt and counter attacks.", "First Soviet atomic bomb.", "Surrender of Italy.", "Ended war immediately."] },
+        { q: "Hiroshima casualties according to Source 11?", a: "135,000", o: ["64,000", "135,000", "255,000", "39,000"] },
+        { q: "Why was lack of heavy bombers a weakness for Luftwaffe?", a: "Could not carry enough bombs to do severe damage to cities.", o: ["Could not fly high.", "Could not carry enough bombs to do severe damage to cities.", "Too expensive.", "Too slow."] },
+        { q: "Role of Indian troops in British Empire's war effort?", a: "Provided 2.5 million men and wealth to Allied war effort.", o: ["100,000 men.", "Provided 2.5 million men and wealth to Allied war effort.", "Fought only in India.", "Refused to fight."] },
+        { q: "How did Red Army reorganize to become more effective after 1941?", a: "Gave officers more independence and used specialist units.", o: ["Gave officers more independence and used specialist units.", "Banned all radios.", "Increased Party power.", "Stopped using tanks."] },
+        { q: "Churchill's 'full horror' in December 1941?", a: "The sinking of the Prince of Wales and the Repulse.", o: ["The fall of Berlin.", "The sinking of the Prince of Wales and the Repulse.", "The invasion of Russia.", "The London Blitz."] },
+        { q: "Percentage of German radio messages Soviets disrupted by 1943?", a: "Two-thirds", o: ["One-tenth", "One-third", "Two-thirds", "All of them"] },
+        { q: "Disadvantage of Japan's 'outdated attitudes' in naval warfare?", a: "Equated power with battleship tonnage rather than carriers.", o: ["Submarines.", "Equated power with battleship tonnage rather than carriers.", "No battleships.", "Only used aircraft."] },
+        { q: "Why was Japanese merchant marine so vulnerable by end of war?", a: "US unrestricted submarine warfare.", o: ["US unrestricted submarine warfare.", "Lack of sailors.", "Too fast to hit.", "Too many battleships."] },
+        { q: "How Japanese treatment of conquered Chinese affected war effort?", a: "Caused locals to join guerrilla bands and resist.", o: ["Loyal allies.", "Caused locals to join guerrilla bands and resist.", "Improved economy.", "No impact."] },
+        { q: "What was the 'two-front war' problem Germany failed to avoid?", a: "Fighting Britain/France in West while fighting USSR in East.", o: ["US and Japan.", "Fighting Britain/France in West while fighting USSR in East.", "Land and sea only.", "Africa and Asia."] },
+        { q: "Churchill: Allied power responsible for 'heart of German machine'?", a: "The USSR", o: ["Britain", "The USA", "The USSR", "France"] }
+    ]
+};
+
+let sessionDeck = [];
+function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+
+function buildSessionDeck() {
+    let easy = shuffle([...QUEST_BANK.easy]);
+    let mid = shuffle([...QUEST_BANK.medium]);
+    let diff = shuffle([...QUEST_BANK.difficult]);
+    let combinedHard = shuffle([...mid, ...diff]);
+    
+    let deck = [];
+    while(easy.length > 0 || combinedHard.length > 0) {
+        if(easy.length > 0) deck.push(easy.pop());
+        if(easy.length > 0) deck.push(easy.pop());
+        if(combinedHard.length > 0) deck.push(combinedHard.pop());
     }
+    return deck;
+}
+sessionDeck = buildSessionDeck();
+
+function resize() {
+    state.viewportW = window.innerWidth;
+    state.viewportH = window.innerHeight;
+    canvas.width = state.viewportW;
+    canvas.height = state.viewportH;
+    player.x = state.viewportW / 2 - player.w / 2;
+}
+
+const touch = { left: false, right: false };
+function init() {
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
     resize();
+    
+    document.getElementById('btn-start').onclick = () => {
+        document.getElementById('start-screen').classList.add('hidden');
+        state.gameStarted = true; state.gameActive = true;
+    };
+    document.getElementById('btn-restart').onclick = () => location.reload();
 
-    let quizPool = [];
-    let score = 0;
-    let timeLeft = 180;
-    let gameActive = false;
-    let paused = false;
-    let player = { x: 0, w: 70, h: 45, speed: 12 };
-    let bullets = [];
-    let enemies = [];
-    let keys = {};
-    let factTimeout = null;
+    const setupTouch = (id, key) => {
+        const el = document.getElementById(id);
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); touch[key] = true; });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); touch[key] = false; });
+    };
+    setupTouch('ctrl-left', 'left');
+    setupTouch('ctrl-right', 'right');
+    document.getElementById('ctrl-shoot').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (state.gameActive && !state.paused) shoot();
+    });
 
-    function shuffle(arr) {
-        let newArr = [...arr];
-        for (let i = newArr.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
-        }
-        return newArr;
+    requestAnimationFrame(update);
+}
+
+function shoot() {
+    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 60, r: 8, speed: 12 });
+}
+
+function spawnEnemy() {
+    const r = 40;
+    state.enemies.push({
+        x: Math.random() * (state.viewportW - r*2) + r,
+        y: -r,
+        r: r,
+        speed: 2 + Math.random() * 2,
+        type: 'mcq'
+    });
+}
+
+function createFireworks(x, y) {
+    const colors = ['#3b82f6', '#fbbf24', '#ef4444', '#22c55e', '#ffffff'];
+    for (let i = 0; i < 60; i++) {
+        state.particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 15,
+            vy: (Math.random() - 0.5) * 15,
+            life: 1.0,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 5 + 2
+        });
     }
+}
 
-    function init() {
-        quizPool = shuffle([...questions]);
-        document.getElementById('q-count').innerText = quizPool.length;
-        player.x = canvas.width / 2 - player.w / 2;
-        gameActive = true;
-        
-        const spawnLoop = () => {
-            if (gameActive) {
-                if (!paused) spawnEnemy();
-                setTimeout(spawnLoop, 1500);
+function triggerQuiz() {
+    state.paused = true;
+    const q = sessionDeck[0];
+    const modal = document.getElementById('quiz-overlay');
+    const container = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback');
+    
+    document.getElementById('question-text').innerText = q.q;
+    document.getElementById('stats-q').innerText = sessionDeck.length;
+    container.innerHTML = '';
+    feedback.innerText = '';
+    
+    shuffle([...q.o]).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => {
+            Array.from(container.children).forEach(b => b.disabled = true);
+            if (opt === q.a) {
+                // Correct: Fireworks and immediate resume
+                state.score += 50;
+                document.getElementById('stats-coins').innerText = state.score;
+                createFireworks(state.viewportW / 2, state.viewportH / 2);
+                sessionDeck.shift();
+                if (sessionDeck.length === 0) endGame();
+                else resume();
+            } else {
+                // Wrong: Show answer, repeat 2 positions later
+                btn.classList.add('wrong');
+                feedback.innerText = `Incorrect. Data: ${q.a}`;
+                feedback.className = "mt-6 text-center font-black uppercase italic text-red-500 text-xl";
+                
+                const missed = sessionDeck.shift();
+                sessionDeck.splice(2, 0, missed);
+                
+                setTimeout(() => {
+                    resume();
+                }, 1800);
             }
         };
-        spawnLoop();
+        container.appendChild(btn);
+    });
+    modal.classList.remove('hidden');
+}
 
-        requestAnimationFrame(gameLoop);
-        
-        setInterval(() => {
-            if (!paused && gameActive) {
-                timeLeft--;
-                document.getElementById('time').innerText = timeLeft;
-                if (timeLeft <= 0) endGame();
-            }
-        }, 1000);
-    }
+function resume() {
+    document.getElementById('quiz-overlay').classList.add('hidden');
+    state.paused = false;
+}
 
-    function spawnEnemy() {
-        const radius = 45; // LARGE HITBOXES
-        enemies.push({
-            x: Math.random() * (canvas.width - radius * 2) + radius,
-            y: -radius,
-            r: radius,
-            speed: 1.8 + Math.random() * 2,
-            type: Math.random() > 0.3 ? 'mcq' : 'bonus'
-        });
-    }
+function update() {
+    if (!state.gameStarted) { requestAnimationFrame(update); return; }
 
-    function showFact() {
-        const qObj = questions[Math.floor(Math.random() * questions.length)];
-        const factBar = document.getElementById('fact-bar');
-        
-        factBar.innerHTML = `<span class="text-blue-200">INTEL:</span> ${qObj.q} <span class="text-yellow-300">➜ ${qObj.answer}</span>`;
-        factBar.style.display = 'block';
-        
-        if (factTimeout) clearTimeout(factTimeout);
-        factTimeout = setTimeout(() => {
-            factBar.style.display = 'none';
-        }, 5000); // Displayed slightly longer for reading
-    }
+    if (!state.paused) {
+        if (touch.left && player.x > 0) player.x -= player.speed;
+        if (touch.right && player.x < state.viewportW - player.w) player.x += player.speed;
 
-    function showQuestion() {
-        if (quizPool.length === 0) {
-            quizPool = shuffle([...questions]);
+        if (Date.now() - state.lastSpawn > 2000) {
+            spawnEnemy();
+            state.lastSpawn = Date.now();
         }
-        
-        paused = true;
-        keys = {}; 
-        
-        const qObj = quizPool[0];
-        const overlay = document.getElementById('questionOverlay');
-        const text = document.getElementById('questionText');
-        const optsDiv = document.getElementById('options');
-        const feedback = document.getElementById('feedback');
 
-        text.innerText = qObj.q;
-        optsDiv.innerHTML = '';
-        feedback.innerText = '';
-        overlay.style.display = 'flex';
+        for (let i = state.bullets.length - 1; i >= 0; i--) {
+            const b = state.bullets[i];
+            b.y -= b.speed;
+            if (b.y < -20) state.bullets.splice(i, 1);
+        }
 
-        const shuffledOpts = shuffle([...qObj.options]);
-
-        shuffledOpts.forEach(opt => {
-            const btn = document.createElement('button');
-            btn.className = 'option-btn';
-            btn.innerText = opt;
-            btn.onclick = () => {
-                const btns = optsDiv.querySelectorAll('button');
-                btns.forEach(b => b.disabled = true);
-                
-                if (opt === qObj.answer) {
-                    btn.classList.add('correct');
-                    feedback.innerText = "Target Destroyed! +50 Points";
-                    feedback.className = "mt-8 text-center font-black uppercase italic text-green-500 text-2xl";
-                    score += 50;
-                    quizPool.shift(); 
-                } else {
-                    btn.classList.add('wrong');
-                    feedback.innerText = "Miss! Correct: " + qObj.answer;
-                    feedback.className = "mt-8 text-center font-black uppercase italic text-red-500 text-2xl";
-                    const missed = quizPool.shift();
-                    quizPool.push(missed);
-                }
-                
-                document.getElementById('score').innerText = score;
-                document.getElementById('q-count').innerText = quizPool.length;
-
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                    paused = false;
-                }, 1800);
-            };
-            optsDiv.appendChild(btn);
-        });
-    }
-
-    function shoot() {
-        bullets.push({ x: player.x + player.w / 2 - 3, y: canvas.height - 50, speed: 14 });
-    }
-
-    window.addEventListener('keydown', e => {
-        const code = e.code || e.key;
-        keys[code] = true;
-        if (["Space", " ", "ArrowLeft", "ArrowRight"].includes(code)) e.preventDefault();
-        if ((code === 'Space' || code === ' ') && !paused && gameActive) shoot();
-    });
-
-    window.addEventListener('keyup', e => {
-        const code = e.code || e.key;
-        keys[code] = false;
-    });
-
-    function gameLoop() {
-        if (!gameActive) return;
-
-        if (!paused) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            if ((keys['ArrowLeft'] || keys['left']) && player.x > 0) player.x -= player.speed;
-            if ((keys['ArrowRight'] || keys['right']) && player.x < canvas.width - player.w) player.x += player.speed;
-
-            // Stars
-            ctx.fillStyle = "#fff";
-            for(let i=0; i<30; i++) {
-                ctx.fillRect((Date.now()/50 + i*130) % canvas.width, (i*160) % canvas.height, 2, 2);
+        for (let i = state.enemies.length - 1; i >= 0; i--) {
+            const en = state.enemies[i];
+            en.y += en.speed;
+            if (en.y > state.viewportH + en.r) {
+                state.enemies.splice(i, 1);
+                continue;
             }
 
-            // Ship
-            ctx.fillStyle = "#3b82f6";
-            ctx.fillRect(player.x, canvas.height - 50, player.w, player.h);
-            ctx.fillStyle = "#60a5fa";
-            ctx.fillRect(player.x + 10, canvas.height - 70, player.w - 20, 20);
-
-            // Bullets
-            ctx.fillStyle = "#fbbf24";
-            for (let i = bullets.length - 1; i >= 0; i--) {
-                const b = bullets[i];
-                b.y -= b.speed;
-                ctx.fillRect(b.x, b.y, 6, 22);
-                if (b.y < 0) bullets.splice(i, 1);
-            }
-
-            // Aliens
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                const en = enemies[i];
-                en.y += en.speed;
-                
-                ctx.beginPath();
-                ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
-                ctx.fillStyle = en.type === 'mcq' ? "#dc2626" : "#2563eb";
-                ctx.fill();
-                ctx.strokeStyle = "#fff";
-                ctx.lineWidth = 5;
-                ctx.stroke();
-                
-                ctx.fillStyle = "#fff";
-                ctx.font = "900 30px Inter";
-                ctx.textAlign = "center";
-                ctx.fillText(en.type === 'mcq' ? "?" : "!", en.x, en.y + 10);
-
-                if (en.y > canvas.height + en.r) {
-                    enemies.splice(i, 1);
-                    continue;
-                }
-
-                for (let j = bullets.length - 1; j >= 0; j--) {
-                    const b = bullets[j];
-                    const dist = Math.hypot(b.x - en.x, b.y - en.y);
-                    if (dist < en.r) {
-                        bullets.splice(j, 1);
-                        enemies.splice(i, 1);
-                        if (en.type === 'mcq') showQuestion();
-                        else {
-                            score += 20;
-                            document.getElementById('score').innerText = score;
-                            showFact(); 
-                        }
-                        break;
-                    }
+            for (let j = state.bullets.length - 1; j >= 0; j--) {
+                const b = state.bullets[j];
+                const dist = Math.hypot(b.x - en.x, b.y - en.y);
+                if (dist < en.r + 20) {
+                    state.bullets.splice(j, 1);
+                    state.enemies.splice(i, 1);
+                    triggerQuiz();
+                    break;
                 }
             }
         }
-        requestAnimationFrame(gameLoop);
     }
 
-    function endGame() {
-        gameActive = false;
-        document.getElementById('endOverlay').style.display = 'flex';
-        document.getElementById('finalScore').innerText = score;
+    for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        if (p.life <= 0) state.particles.splice(i, 1);
     }
 
-    init();
+    render();
+    requestAnimationFrame(update);
+}
+
+function render() {
+    ctx.clearRect(0, 0, state.viewportW, state.viewportH);
+    
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    for(let i=0; i<30; i++) {
+        ctx.fillRect((Date.now()/60 + i*141) % state.viewportW, (i*179) % state.viewportH, 2, 2);
+    }
+
+    ctx.fillStyle = "#3b82f6";
+    ctx.fillRect(player.x, state.viewportH - 50, player.w, 35);
+    ctx.fillStyle = "#60a5fa";
+    ctx.fillRect(player.x + 20, state.viewportH - 62, player.w - 40, 12);
+
+    state.enemies.forEach(en => {
+        ctx.beginPath();
+        ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#dc2626";
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 24px Inter";
+        ctx.textAlign = "center";
+        ctx.fillText("?", en.x, en.y + 8);
+    });
+
+    ctx.fillStyle = "#fbbf24";
+    state.bullets.forEach(b => {
+        ctx.fillRect(b.x, b.y, 8, 22);
+    });
+
+    state.particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+}
+
+function endGame() {
+    state.gameActive = false;
+    document.getElementById('end-status').innerText = "Mission Accomplished";
+    document.getElementById('final-score').innerText = state.score;
+    document.getElementById('end-screen').classList.remove('hidden');
+}
+
+setInterval(() => {
+    if (state.gameActive && !state.paused && state.timer > 0) {
+        state.timer--;
+        document.getElementById('stats-timer').innerText = state.timer + "s";
+        if (state.timer <= 0) endGame();
+    }
+}, 1000);
+
+init();
 </script>
 </body>
 </html>
