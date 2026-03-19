@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Alien Intelligence: Korean War Mastery</title>
+    <title>Korean War: Mastery Quest Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
@@ -24,7 +24,7 @@
 
         body { 
             margin: 0; 
-            background: #020617; 
+            background: #0b0f0b; 
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             color: white; 
@@ -40,15 +40,15 @@
             position: relative; 
             width: 100%; 
             height: 100%; 
-            background: radial-gradient(circle at 50% 100%, #064e3b 0%, #020617 70%);
+            background: linear-gradient(to bottom, #1e293b, #334155);
             overflow: hidden;
         }
 
         canvas { display: block; width: 100%; height: 100%; }
 
         .control-btn {
-            background: rgba(34, 197, 94, 0.15);
-            border: 2px solid rgba(34, 197, 94, 0.3);
+            background: rgba(34, 197, 94, 0.2);
+            border: 2px solid rgba(34, 197, 94, 0.4);
             backdrop-filter: blur(8px);
             border-radius: 50%;
             display: flex;
@@ -57,7 +57,7 @@
             pointer-events: auto;
         }
 
-        .control-btn:active { background: rgba(34, 197, 94, 0.4); transform: scale(0.92); }
+        .control-btn:active { background: rgba(34, 197, 94, 0.5); transform: scale(0.9); }
 
         .option-btn {
             transition: all 0.2s;
@@ -98,32 +98,33 @@
         <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H6a2 2 0 00-2 2zM9 20h6"/></svg>
     </div>
     <h2 class="text-2xl loud-font text-green-400 mb-2 uppercase">Rotate for Landscape</h2>
-    <p class="text-slate-500 text-sm">Deployment optimized for Wide Combat Mode.</p>
+    <p class="text-slate-500 text-sm">Deployment optimized for Wide Screen Combat.</p>
 </div>
 
 <div id="game-container">
     <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
         <h1 class="text-5xl md:text-8xl font-black text-green-600 loud-font italic mb-2 tracking-tighter uppercase leading-tight">Korean War</h1>
-        <p class="text-green-400 font-bold text-xs tracking-widest mb-10 uppercase">Mastery Quest: Tactical Shooter</p>
+        <p class="text-green-400 font-bold text-xs tracking-widest mb-4 uppercase">Mastery Quest: Tactical Platformer</p>
+        <div class="text-slate-400 text-[10px] uppercase mb-10 tracking-widest">Move and Jump to strike Supply Intel Crates</div>
         <button id="btn-start" class="px-16 py-5 bg-green-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-green-800">
-            Begin Deployment
+            BEGIN DEPLOYMENT
         </button>
     </div>
 
     <!-- HUD -->
     <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
-        <div class="bg-green-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-green-500/30 text-center">
+        <div class="bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-xl border border-green-500/30 text-center">
+            <p class="text-[9px] uppercase font-black text-red-500">Lives</p>
+            <p id="stats-lives" class="text-lg font-black text-white">3</p>
+        </div>
+        <div class="bg-slate-900/60 backdrop-blur-md px-6 py-2 rounded-xl border border-green-500/30 text-center">
             <p class="text-[9px] uppercase font-black text-green-400">Score</p>
             <p id="stats-coins" class="text-lg font-black text-white">0</p>
         </div>
-        <div class="bg-green-900/40 backdrop-blur-md px-6 py-2 rounded-xl border border-green-500/30 text-center">
-            <p class="text-[9px] uppercase font-black text-green-400">Time</p>
+        <div class="bg-slate-900/60 backdrop-blur-md px-4 py-2 rounded-xl border border-green-500/30 text-center">
+            <p class="text-[9px] uppercase font-black text-blue-400">Timer</p>
             <p id="stats-timer" class="text-lg font-black text-white">300s</p>
-        </div>
-        <div class="bg-green-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-green-500/30 text-center">
-            <p class="text-[9px] uppercase font-black text-green-400">Intel Left</p>
-            <p id="stats-q" class="text-lg font-black text-white">0</p>
         </div>
     </div>
 
@@ -141,18 +142,18 @@
 
     <!-- End Screen -->
     <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
-        <h1 class="text-6xl loud-font italic text-green-600 mb-6 uppercase">Mission End</h1>
+        <h1 class="text-6xl loud-font italic text-green-600 mb-6 uppercase" id="end-title">Mission End</h1>
         <div class="mb-10">
-            <p class="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Intelligence Scored</p>
+            <p class="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Final Intelligence Scored</p>
             <div class="text-7xl font-black text-white" id="final-score">0</div>
         </div>
         <button id="btn-restart" class="px-16 py-6 bg-white text-black loud-font rounded-full active:bg-green-600 active:text-white transition-all uppercase tracking-widest text-xl shadow-2xl">
-            Restart Unit
+            Restart Deployment
         </button>
     </div>
 
-    <!-- Controls -->
-    <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-4 z-30 pointer-events-none">
+    <!-- Mobile Platformer Controls -->
+    <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-6 z-30 pointer-events-none">
         <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
             <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
         </div>
@@ -161,8 +162,8 @@
         </div>
     </div>
     <div class="absolute bottom-[calc(1.5rem+var(--sab))] right-[calc(1.5rem+var(--sar))] z-30 pointer-events-none">
-        <div id="ctrl-shoot" class="control-btn w-24 h-24 bg-red-600/20 border-red-600/40 pointer-events-auto">
-            <div class="w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
+        <div id="ctrl-jump" class="control-btn w-24 h-24 bg-blue-600/20 border-blue-600/40 pointer-events-auto">
+            <svg class="w-12 h-12 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 10l7-7 7 7M5 21l7-7 7 7"/></svg>
         </div>
     </div>
 </div>
@@ -175,18 +176,30 @@ let state = {
     gameStarted: false,
     gameActive: false,
     paused: false,
+    isFalling: false,
     timer: 300,
+    lives: 3,
     score: 0,
     viewportW: window.innerWidth,
     viewportH: window.innerHeight,
     particles: [],
-    bullets: [],
-    enemies: [],
-    lastSpawn: 0
+    blocks: [],
+    camX: 0
 };
 
-// 2x size for mobile landscape visibility
-const player = { x: 0, w: 120, h: 80, speed: 12 };
+const gravity = 0.5;
+const player = { 
+    x: 100, 
+    y: 0, 
+    w: 40, 
+    h: 60, 
+    vx: 0, 
+    vy: 0, 
+    speed: 7, 
+    jumpPower: -12, 
+    grounded: false, 
+    facingRight: true 
+};
 
 const questionsDeck = [
     { q: "On what date did the conventional phase of the Korean War begin?", a: "June 25, 1950", o: ["August 15, 1945", "June 25, 1950", "July 27, 1953", "October 1, 1949"] },
@@ -212,57 +225,68 @@ const questionsDeck = [
     { q: "What was Syngman Rhee’s stance on a peaceful armistice?", a: "He strongly opposed it, wishing to reunite the peninsula by force.", o: ["He was the lead negotiator.", "He strongly opposed it, wishing to reunite the peninsula by force.", "He suggested it first.", "He didn't care about the outcome."] },
     { q: "What was the 'Bodo League' in South Korea?", a: "A re-education movement for suspected sympathizers who were later executed.", o: ["A professional baseball organization.", "A re-education movement for suspected sympathizers who were later executed.", "A group of military advisors.", "Rhee's cabinet members."] },
     { q: "Kim Il Sung based his confidence for a quick victory on which assumption?", a: "A popular uprising against Rhee would occur in the South.", o: ["The South had no soldiers.", "A popular uprising against Rhee would occur in the South.", "Stalin would send nuclear bombs.", "He had 10 million tanks."] },
-    { q: "Which state ideology did Kim Il Sung establish emphasizing self-reliance?", a: "Juche", o: ["Marxism-Leninism", "Juche", "Maoism", "Capitalism"] },
+    { q: "Which ideology did Kim Il Sung establish emphasizing self-reliance?", a: "Juche", o: ["Marxism-Leninism", "Juche", "Maoism", "Capitalism"] },
     { q: "Before the war, why was the ROK Army poorly equipped compared to the KPA?", a: "The U.S. withheld heavy weaponry to prevent Rhee from attacking the North.", o: ["They had no money.", "The U.S. withheld heavy weaponry to prevent Rhee from attacking the North.", "Rhee preferred a light infantry approach.", "They had sold all their equipment to China."] },
-    { q: "What was the daring amphibious assault planned by MacArthur to break the Pusan stalemate?", a: "Operation Chromite (The Inchon Landing)", o: ["The Yalu River Crossing", "Operation Chromite (The Inchon Landing)", "Operation Thunderbolt", "The Chosin Reservoir breakout"] },
-    { q: "What did MacArthur’s 'rollback' policy represent as a shift from original goals?", a: "Moving beyond containment to destroy the DPRK and reunite Korea.", o: ["Returning all troops home immediately.", "Moving beyond containment to destroy the DPRK and reunite Korea.", "Rolling tanks backward into defensive positions.", "Ending the war through economic trade."] },
-    { q: "In which location did MacArthur famously meet President Truman to assure him China would not intervene?", a: "Wake Island", o: ["The White House", "Wake Island", "Tokyo", "Panmunjom"] },
-    { q: "What was MacArthur’s suggested strategy to deal with the massive Chinese intervention?", a: "Extending the war into China, naval blockade and nuclear weapons.", o: ["Total withdrawal.", "Extending the war into China, naval blockade and nuclear weapons.", "Asking for UN mediation.", "Surrendering immediately."] },
-    { q: "What was the official reason President Truman gave for firing General MacArthur?", a: "Insubordination and violation of civilian control over the military.", o: ["Losing too many battles.", "Insubordination and violation of civilian control over the military.", "Old age.", "Taking too many vacations in Japan."] },
-    { q: "What was the 'Pusan Perimeter'?", a: "The last line of defense in the southeastern tip of Korea.", o: ["A new type of tank.", "The last line of defense in the southeastern tip of Korea.", "A strategy to drop billions of leaflets.", "The border with Manchuria."] },
+    { q: "What was the daring amphibious assault planned by MacArthur?", a: "Operation Chromite (The Inchon Landing)", o: ["The Yalu River Crossing", "Operation Chromite (The Inchon Landing)", "Operation Thunderbolt", "The Chosin Reservoir breakout"] },
+    { q: "MacArthur’s 'rollback' policy represent as a shift from original goals?", a: "Moving beyond containment to destroy the DPRK and reunite Korea.", o: ["Returning all troops home immediately.", "Moving beyond containment to destroy the DPRK and reunite Korea.", "Rolling tanks backward.", "Ending the war through trade."] },
+    { q: "Where did MacArthur meet President Truman to assure him China would not intervene?", a: "Wake Island", o: ["The White House", "Wake Island", "Tokyo", "Panmunjom"] },
+    { q: "MacArthur’s strategy to deal with Chinese intervention:", a: "Extending the war into China, naval blockade and nuclear weapons.", o: ["Total withdrawal.", "Extending the war into China, naval blockade and nuclear weapons.", "Asking for UN mediation.", "Surrendering immediately."] },
+    { q: "Reason President Truman gave for firing General MacArthur?", a: "Insubordination and violation of civilian control over the military.", o: ["Losing too many battles.", "Insubordination and violation of civilian control over the military.", "Old age.", "Taking too many vacations."] },
+    { q: "What was the 'Pusan Perimeter'?", a: "The last line of defense in the southeastern tip of Korea.", o: ["A new type of tank.", "The last line of defense in the southeastern tip of Korea.", "A strategy to drop leaflets.", "The border with Manchuria."] },
     { q: "The 'Chosin Few' refers to soldiers from which battle?", a: "Chosin Reservoir", o: ["Inchon", "Chosin Reservoir", "Triangle Hill", "Heartbreak Ridge"] },
-    { q: "What became the biggest 'sticking point' in peace negotiations after July 1951?", a: "The repatriation of prisoners of war (POWs).", o: ["The location of the capital.", "The repatriation of prisoners of war (POWs).", "The use of the Korean language.", "Food supplies for civilians."] },
-    { q: "Why did many Chinese and North Korean POWs refuse to return home?", a: "Fear of punishment for being captured or for political views.", o: ["Better jobs in the U.S.", "Fear of punishment for being captured or for political views.", "They had forgotten where they lived.", "They were 'brainwashed' by American movies."] },
-    { q: "The term 'MiG Alley' refers to what aspect of the war?", a: "Northwestern North Korea where jet air combat frequently occurred.", o: ["A bowling alley in Pusan.", "Northwestern North Korea where jet air combat frequently occurred.", "A street in Seoul.", "A supply route for North Korean tanks."] },
-    { q: "Approximately how many propaganda leaflets were dropped by UN forces during the war?", a: "2.5 billion", o: ["1 million", "100 million", "2.5 billion", "50 billion"] },
-    { q: "What was the primary goal of 'Operation Strike'?", a: "To warn civilians of imminent bombing raids to flee and clog roads.", o: ["To encourage strikes in factories.", "To warn civilians of imminent bombing raids to flee and clog roads.", "To strike down the enemy flag.", "To find a new way to land in Inchon."] },
-    { q: "What was the 'Pseudo-Kim Il Sung' theory spread by U.S. propaganda?", a: "That the current Kim was a fake 'Kim Sung Ju' masquerading as a hero.", o: ["That Kim was a robot.", "That the current Kim was a fake 'Kim Sung Ju' masquerading as a hero.", "That Kim was actually a capitalist.", "That Kim was an American spy."] },
-    { q: "What was the 'War Song of the Chinese People’s Volunteer Army' used for?", a: "To mobilize the masses, boost morale, and normalize hardships.", o: ["To mock the soldiers.", "To mobilize the masses, boost morale, and normalize hardships.", "To coordinate secret attacks through lyrics.", "To beg for food."] },
-    { q: "How did the U.S. try to overcome the high illiteracy rate among enemy troops?", a: "Using cartoon-based leaflets like 'Sad Sack'.", o: ["By sending teachers to the front lines.", "Using cartoon-based leaflets like 'Sad Sack'.", "Dropping books from planes.", "Only broadcasting through loudspeakers."] },
-    { q: "Who succeeded Truman and was elected in 1952 with a promise to end the war?", a: "Dwight D. Eisenhower", o: ["Richard Nixon", "Dwight D. Eisenhower", "John F. Kennedy", "Lyndon B. Johnson"] },
-    { q: "What major event in March 1953 shifted the Soviet position toward ending the war?", a: "The death of Joseph Stalin.", o: ["The invention of the hydrogen bomb.", "The death of Joseph Stalin.", "The capture of Moscow by the U.S.", "A massive drought in Russia."] },
+    { q: "What became the biggest 'sticking point' in peace negotiations after July 1951?", a: "The repatriation of prisoners of war (POWs).", o: ["The location of the capital.", "The repatriation of prisoners of war (POWs).", "The use of the Korean language.", "Food supplies."] },
+    { q: "Why did many Chinese and North Korean POWs refuse to return home?", a: "Fear of punishment for being captured or for political views.", o: ["Better jobs in the U.S.", "Fear of punishment for being captured or for political views.", "Forgotten where they lived.", "Brainwashed."] },
+    { q: "The term 'MiG Alley' refers to:", a: "Northwestern North Korea where jet air combat occurred.", o: ["A bowling alley.", "Northwestern North Korea where jet air combat occurred.", "A street in Seoul.", "A supply route."] },
+    { q: "Propaganda leaflets dropped by UN forces during the war?", a: "2.5 billion", o: ["1 million", "100 million", "2.5 billion", "50 billion"] },
+    { q: "What was the primary goal of 'Operation Strike'?", a: "To warn civilians of imminent bombing raids to flee and clog roads.", o: ["To encourage strikes.", "To warn civilians of imminent bombing raids to flee and clog roads.", "To strike down the enemy flag.", "Inchon landing."] },
+    { q: "The 'Pseudo-Kim Il Sung' theory spread by U.S. propaganda:", a: "That the current Kim was a fake masquerading as a hero.", o: ["That Kim was a robot.", "That the current Kim was a fake masquerading as a hero.", "That Kim was actually a capitalist.", "American spy."] },
+    { q: "How did the U.S. overcome the illiteracy rate among enemy troops?", a: "Using cartoon-based leaflets like 'Sad Sack'.", o: ["Teachers.", "Using cartoon-based leaflets like 'Sad Sack'.", "Dropping books.", "Loudspeakers."] },
+    { q: "Who succeeded Truman and was elected in 1952?", a: "Dwight D. Eisenhower", o: ["Richard Nixon", "Dwight D. Eisenhower", "John F. Kennedy", "Lyndon B. Johnson"] },
+    { q: "What major event in March 1953 shifted the Soviet position?", a: "The death of Joseph Stalin.", o: ["Hydrogen bomb.", "The death of Joseph Stalin.", "Capture of Moscow.", "Massive drought."] },
     { q: "Where was the Korean Armistice Agreement signed?", a: "Panmunjom", o: ["Seoul", "Pyongyang", "Panmunjom", "Tokyo"] },
-    { q: "What is the name of the buffer zone created by the armistice?", a: "The Demilitarized Zone (DMZ)", o: ["The No-Man's Land", "The Demilitarized Zone (DMZ)", "The Iron Curtain", "The Bamboo Curtain"] },
-    { q: "Was a formal peace treaty signed to officially end the war?", a: "No, technically North and South Korea remain in a state of war.", o: ["Yes, in 1953.", "No, technically North and South Korea remain in a state of war.", "Yes, but only by the U.S. and China.", "No, the UN vetoed it."] },
-    { q: "What was one of the first results of the armistice regarding deceased soldiers?", a: "Operation Glory, an exchange of dead bodies.", o: ["They were left in the fields.", "Operation Glory, an exchange of dead bodies.", "A mass burial in the DMZ.", "Building a giant shared monument."] },
-    { q: "How did the war affect the U.S. defense budget in the long term?", a: "Tripling of armed forces and doubling of the Pentagon budget.", o: ["It led to permanent budget cuts.", "Tripling of armed forces and doubling of the Pentagon budget.", "It had no effect.", "The budget was moved entirely to the State Department."] },
-    { q: "What was the 'Lips and Teeth' theory’s eventual consequence for the PRC?", a: "North Korea became a permanent security buffer for China.", o: ["They lost all their heavy industry.", "North Korea became a permanent security buffer for China.", "China became a part of North Korea.", "The theory was proven wrong by an invasion."] },
-    { q: "How did the war impact Japan’s economy?", a: "U.S. wartime spending 'jump-started' the economy.", o: ["It destroyed Japanese factories.", "U.S. wartime spending 'jump-started' the economy.", "Japan was forced to pay for the war.", "Japan became an agricultural society."] },
-    { q: "Why is the Korean War often called 'The Forgotten War'?", a: "It was overshadowed by World War II and the Vietnam War.", o: ["Everyone actually forgot it happened.", "It was overshadowed by World War II and the Vietnam War.", "It was too short to be remembered.", "The U.S. government burned all records of it."] }
+    { q: "What is the name of the buffer zone created by the armistice?", a: "The Demilitarized Zone (DMZ)", o: ["No-Man's Land", "The Demilitarized Zone (DMZ)", "Iron Curtain", "Bamboo Curtain"] },
+    { q: "Was a formal peace treaty signed to officially end the war?", a: "No, technically North and South Korea remain in a state of war.", o: ["Yes, in 1953.", "No, technically North and South Korea remain in a state of war.", "China and US only.", "UN vetoed it."] },
+    { q: "Exchange of deceased soldiers result of armistice:", a: "Operation Glory, an exchange of dead bodies.", o: ["Left in fields.", "Operation Glory, an exchange of dead bodies.", "Mass burial.", "Giant monument."] },
+    { q: "Long term affect on U.S. defense budget?", a: "Tripling of armed forces and doubling of the Pentagon budget.", o: ["Budget cuts.", "Tripling of armed forces and doubling of the Pentagon budget.", "No effect.", "State Department moved."] },
+    { q: "How did the war impact Japan’s economy?", a: "U.S. wartime spending 'jump-started' the economy.", o: ["Destroyed factories.", "U.S. wartime spending 'jump-started' the economy.", "War payments.", "Agricultural society."] },
+    { q: "Why is the Korean War often called 'The Forgotten War'?", a: "It was overshadowed by World War II and the Vietnam War.", o: ["Everyone forgot.", "It was overshadowed by World War II and the Vietnam War.", "Too short.", "Burned records."] }
 ];
 
 let sessionDeck = [];
 function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
 
 function buildSessionDeck() {
-    let deck = shuffle([...questionsDeck]);
-    return deck;
+    return shuffle([...questionsDeck]);
 }
 sessionDeck = buildSessionDeck();
+
+// Create supply crates along the path
+function initBlocks() {
+    state.blocks = [];
+    for (let i = 0; i < sessionDeck.length; i++) {
+        state.blocks.push({
+            x: 600 + (i * 450),
+            y: state.viewportH - 220,
+            w: 60,
+            h: 60,
+            active: true
+        });
+    }
+}
 
 function resize() {
     state.viewportW = window.innerWidth;
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    player.x = state.viewportW / 2 - player.w / 2;
+    player.y = state.viewportH - 200;
 }
 
-const touch = { left: false, right: false };
+const touchInput = { left: false, right: false, jump: false };
 function init() {
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
     resize();
+    initBlocks();
     
     document.getElementById('btn-start').onclick = () => {
         document.getElementById('start-screen').classList.add('hidden');
@@ -272,42 +296,22 @@ function init() {
 
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
-        el.addEventListener('touchstart', (e) => { e.preventDefault(); touch[key] = true; });
-        el.addEventListener('touchend', (e) => { e.preventDefault(); touch[key] = false; });
-        el.addEventListener('touchcancel', (e) => { e.preventDefault(); touch[key] = false; });
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); touchInput[key] = true; });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); touchInput[key] = false; });
+        el.addEventListener('touchcancel', (e) => { e.preventDefault(); touchInput[key] = false; });
     };
     setupTouch('ctrl-left', 'left');
     setupTouch('ctrl-right', 'right');
-    document.getElementById('ctrl-shoot').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        if (state.gameActive && !state.paused) shoot();
-    });
+    setupTouch('ctrl-jump', 'jump');
 
     requestAnimationFrame(update);
-}
-
-function shoot() {
-    // Spawns from front of ship (elevated for visibility)
-    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 120, r: 10, speed: 14 });
-}
-
-function spawnEnemy() {
-    const r = 32;
-    state.enemies.push({
-        x: Math.random() * (state.viewportW - r*2) + r,
-        y: -r,
-        r: r,
-        speed: 2 + Math.random() * 2,
-        type: 'mcq'
-    });
 }
 
 function createFireworks(x, y) {
     const colors = ['#22c55e', '#fbbf24', '#3b82f6', '#ef4444', '#ffffff'];
     for (let i = 0; i < 60; i++) {
         state.particles.push({
-            x: x,
-            y: y,
+            x: x, y: y,
             vx: (Math.random() - 0.5) * 16,
             vy: (Math.random() - 0.5) * 16,
             life: 1.0,
@@ -317,7 +321,7 @@ function createFireworks(x, y) {
     }
 }
 
-function triggerQuiz() {
+function triggerQuiz(blockIndex) {
     state.paused = true;
     const q = sessionDeck[0];
     const modal = document.getElementById('quiz-overlay');
@@ -336,25 +340,32 @@ function triggerQuiz() {
         btn.onclick = () => {
             Array.from(container.children).forEach(b => b.disabled = true);
             if (opt === q.a) {
-                // Correct: Celebration + Instant Resume
                 state.score += 50;
-                document.getElementById('stats-coins').innerText = `Score: ${state.score}`;
+                document.getElementById('stats-coins').innerText = state.score;
                 createFireworks(state.viewportW / 2, state.viewportH / 2);
                 sessionDeck.shift();
-                if (sessionDeck.length === 0) endGame();
+                if (sessionDeck.length === 0) endGame(true);
                 else resume();
             } else {
-                // Wrong: Show answer, re-queue 3 positions later
                 btn.classList.add('wrong');
-                feedback.innerText = `Incorrect. Intel Point: ${q.a}`;
+                feedback.innerText = `Incorrect. Intel: ${q.a}`;
                 feedback.className = "mt-4 text-center font-black uppercase italic text-red-500 text-lg";
                 
+                // Reinforcement: Re-queue 3 questions later
                 const missed = sessionDeck.shift();
-                // Reinforcement: Repeat 3 questions later
                 const targetPos = Math.min(3, sessionDeck.length);
                 sessionDeck.splice(targetPos, 0, missed);
                 
+                // Re-activate block later on the map
+                state.blocks.push({
+                    x: player.x + 800,
+                    y: state.viewportH - 220,
+                    w: 60, h: 60,
+                    active: true
+                });
+
                 setTimeout(() => {
+                    state.isFalling = true; // Drop player off screen
                     resume();
                 }, 2200);
             }
@@ -372,52 +383,68 @@ function resume() {
 function update() {
     if (!state.gameStarted) { requestAnimationFrame(update); return; }
 
-    if (!state.paused) {
-        if (touch.left && player.x > 0) player.x -= player.speed;
-        if (touch.right && player.x < state.viewportW - player.w) player.x += player.speed;
-
-        if (Date.now() - state.lastSpawn > 2200) {
-            spawnEnemy();
-            state.lastSpawn = Date.now();
-        }
-
-        for (let i = state.bullets.length - 1; i >= 0; i--) {
-            const b = state.bullets[i];
-            b.y -= b.speed;
-            if (b.y < -20) state.bullets.splice(i, 1);
-        }
-
-        for (let i = state.enemies.length - 1; i >= 0; i--) {
-            const en = state.enemies[i];
-            en.y += en.speed;
-            if (en.y > state.viewportH + en.r) {
-                state.enemies.splice(i, 1);
-                continue;
+    if (state.isFalling) {
+        player.vy += gravity;
+        player.y += player.vy;
+        if (player.y > state.viewportH + 100) {
+            state.lives--;
+            document.getElementById('stats-lives').innerText = state.lives;
+            if (state.lives <= 0) endGame(false);
+            else {
+                player.x = Math.max(0, player.x - 300);
+                player.y = 100; player.vy = 0;
+                state.isFalling = false;
             }
+        }
+    } else if (state.gameActive && !state.paused) {
+        // Handle Movement
+        if (touchInput.left) { player.vx = -player.speed; player.facingRight = false; }
+        else if (touchInput.right) { player.vx = player.speed; player.facingRight = true; }
+        else player.vx *= 0.8;
 
-            for (let j = state.bullets.length - 1; j >= 0; j--) {
-                const b = state.bullets[j];
-                const dist = Math.hypot(b.x - en.x, b.y - en.y);
-                if (dist < en.r + 20) {
-                    state.bullets.splice(j, 1);
-                    state.enemies.splice(i, 1);
-                    triggerQuiz();
-                    break;
+        if (touchInput.jump && player.grounded) {
+            player.vy = player.jumpPower;
+            player.grounded = false;
+        }
+
+        player.vy += gravity;
+        player.x += player.vx;
+        player.y += player.vy;
+
+        // Ground Collision
+        const floorY = state.viewportH - 120;
+        if (player.y + player.h > floorY) {
+            player.y = floorY - player.h;
+            player.vy = 0;
+            player.grounded = true;
+        }
+
+        // Block Collision (Hit from below)
+        state.blocks.forEach((b, i) => {
+            if (b.active && 
+                player.x < b.x + b.w && player.x + player.w > b.x &&
+                player.y < b.y + b.h && player.y + player.h > b.y) {
+                
+                // Strike from bottom or jump into side
+                if (player.vy < 0) {
+                    b.active = false;
+                    player.vy = 2; // Bounce down
+                    triggerQuiz(i);
                 }
             }
-        }
+        });
     }
 
+    // Camera follow
+    state.camX = -player.x + state.viewportW / 3;
+    if (state.camX > 0) state.camX = 0;
+
+    // Particle system
     for (let i = state.particles.length - 1; i >= 0; i--) {
         const p = state.particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx; p.y += p.vy;
         p.life -= 0.025;
         if (p.life <= 0) state.particles.splice(i, 1);
-    }
-
-    if (state.gameActive && !state.paused) {
-        // Simple timer logic handled in interval
     }
 
     render();
@@ -425,54 +452,66 @@ function update() {
 }
 
 function render() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, state.viewportW, state.viewportH);
     
-    // Distant stars/snow
-    ctx.fillStyle = "rgba(255,255,255,0.2)";
-    for(let i=0; i<30; i++) {
-        ctx.fillRect((Date.now()/70 + i*167) % state.viewportW, (i*193) % state.viewportH, 2, 2);
-    }
-
-    // Mountains (Atmosphere)
+    // Background Scrolling
+    ctx.translate(state.camX * 0.2, 0);
     ctx.fillStyle = "#1e293b";
-    for(let i=0; i<5; i++) {
+    for(let i=0; i<20; i++) {
         ctx.beginPath();
-        ctx.moveTo(i * state.viewportW/4 - 100, state.viewportH);
-        ctx.lineTo(i * state.viewportW/4 + state.viewportW/8, state.viewportH - 100);
-        ctx.lineTo(i * state.viewportW/4 + state.viewportW/4 + 100, state.viewportH);
+        ctx.moveTo(i * 600, state.viewportH);
+        ctx.lineTo(i * 600 + 300, state.viewportH - 200);
+        ctx.lineTo(i * 600 + 600, state.viewportH);
         ctx.fill();
     }
 
-    // Player Ship (Landscape Optimized)
-    ctx.fillStyle = "#16a34a"; // Military Green
-    // Base: Positioned high to clear controls
-    ctx.fillRect(player.x, state.viewportH - 100, player.w, 35);
-    ctx.fillStyle = "#15803d";
-    // Turret
-    ctx.fillRect(player.x + (player.w * 0.3), state.viewportH - 120, player.w * 0.4, 20);
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.translate(state.camX, 0);
 
-    // Intelligence Crates (Enemies)
-    state.enemies.forEach(en => {
-        ctx.beginPath();
-        ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
-        ctx.fillStyle = "#475569"; // Slate gray crate
-        ctx.fill();
-        ctx.strokeStyle = "#22c55e"; // Green Intel Glow
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.fillStyle = "#ffffff";
-        ctx.font = "900 24px Inter";
-        ctx.textAlign = "center";
-        ctx.fillText("?", en.x, en.y + 8);
+    // Floor
+    const floorY = state.viewportH - 120;
+    ctx.fillStyle = "#020617";
+    ctx.fillRect(-2000, floorY, 100000, 200);
+    ctx.fillStyle = "#16a34a";
+    ctx.fillRect(-2000, floorY, 100000, 8);
+
+    // Draw Blocks (Supply Crates)
+    state.blocks.forEach(b => {
+        if (b.active) {
+            ctx.fillStyle = "#cd853f"; // Wood color
+            ctx.fillRect(b.x, b.y, b.w, b.h);
+            ctx.strokeStyle = "#8b4513";
+            ctx.lineWidth = 4;
+            ctx.strokeRect(b.x + 5, b.y + 5, b.w - 10, b.h - 10);
+            ctx.fillStyle = "white";
+            ctx.font = "900 24px Inter";
+            ctx.textAlign = "center";
+            ctx.fillText("?", b.x + b.w/2, b.y + b.h/2 + 10);
+        }
     });
 
-    // Bullets (Energy Bolts)
-    ctx.fillStyle = "#fbbf24";
-    state.bullets.forEach(b => {
-        ctx.fillRect(b.x, b.y, 10, 26);
-    });
+    // Draw Player (Soldier)
+    ctx.save();
+    ctx.translate(player.x + player.w/2, player.y + player.h/2);
+    if (!player.facingRight) ctx.scale(-1, 1);
+    
+    // Helmet
+    ctx.fillStyle = "#3f4c2e";
+    ctx.beginPath(); ctx.arc(0, -18, 16, Math.PI, 0); ctx.fill();
+    // Face
+    ctx.fillStyle = "#ffdbac";
+    ctx.fillRect(-10, -18, 20, 15);
+    // Body
+    ctx.fillStyle = "#556b2f";
+    ctx.fillRect(-14, -3, 28, 30);
+    // Legs
+    ctx.fillStyle = "#3f4c2e";
+    ctx.fillRect(-12, 27, 10, 18);
+    ctx.fillRect(2, 27, 10, 18);
+    ctx.restore();
 
-    // Celebration Fireworks
+    // Draw Particles
     state.particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
@@ -483,8 +522,10 @@ function render() {
     ctx.globalAlpha = 1.0;
 }
 
-function endGame() {
+function endGame(victory) {
     state.gameActive = false;
+    document.getElementById('end-title').innerText = victory ? "KOREA MASTERED" : "MISSION FAILED";
+    document.getElementById('end-title').className = victory ? "text-6xl loud-font italic text-green-600 mb-6 uppercase" : "text-6xl loud-font italic text-red-600 mb-6 uppercase";
     document.getElementById('final-score').innerText = state.score;
     document.getElementById('end-screen').classList.remove('hidden');
 }
@@ -493,7 +534,7 @@ setInterval(() => {
     if (state.gameActive && !state.paused && state.timer > 0) {
         state.timer--;
         document.getElementById('stats-timer').innerText = state.timer + "s";
-        if (state.timer <= 0) endGame();
+        if (state.timer <= 0) endGame(false);
     }
 }, 1000);
 
