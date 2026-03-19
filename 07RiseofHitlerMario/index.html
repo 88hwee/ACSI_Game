@@ -11,12 +11,15 @@
         :root {
             --sat: env(safe-area-inset-top);
             --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
         }
 
         * {
             -webkit-touch-callout: none;
             -webkit-user-select: none;
             user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body { 
@@ -28,6 +31,7 @@
             touch-action: none; 
             height: 100dvh;
             width: 100vw;
+            position: fixed; /* Prevent bouncy scrolling on iOS */
         }
         
         #game-container { 
@@ -45,6 +49,7 @@
             height: 100%;
         }
 
+        /* Scalable Controls */
         .control-btn {
             background: rgba(255, 255, 255, 0.15);
             border: 2px solid rgba(255, 255, 255, 0.3);
@@ -53,18 +58,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
+            pointer-events: auto;
         }
 
         .control-btn:active {
             background: rgba(255, 255, 255, 0.4);
-            transform: scale(0.92);
+            transform: scale(0.9);
         }
 
         .option-btn {
             transition: all 0.2s;
-            min-height: 3.5rem;
+            min-height: 3rem;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -73,14 +77,19 @@
             width: 100%;
             border-radius: 12px;
             font-weight: 600;
+            font-size: 0.8rem;
         }
 
         #hud {
-            padding-top: calc(0.5rem + var(--sat));
-            padding-left: calc(1rem + env(safe-area-inset-left));
-            padding-right: calc(1rem + env(safe-area-inset-right));
+            padding-top: calc(0.25rem + var(--sat));
+            padding-left: calc(0.5rem + var(--sal));
+            padding-right: calc(0.5rem + var(--sar));
         }
 
+        /* Portrait Warning with JS Fallback */
+        #portrait-warning {
+            display: none;
+        }
         @media (orientation: portrait) {
             #portrait-warning { display: flex !important; }
         }
@@ -89,86 +98,86 @@
 <body>
 
 <div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-900 flex-col items-center justify-center p-10 text-center">
-    <svg class="w-20 h-20 text-yellow-500 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H6a2 2 0 00-2 2zM9 20h6"/></svg>
-    <h2 class="text-2xl font-bold mb-2">Please Rotate Device</h2>
-    <p class="text-slate-400">Mission optimized for Landscape Mode.</p>
+    <svg class="w-16 h-16 text-yellow-500 mb-4 animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H6a2 2 0 00-2 2zM9 20h6"/></svg>
+    <h2 class="text-xl font-bold mb-2">Rotate for Mission</h2>
+    <p class="text-slate-400 text-sm">Please use Landscape Mode.</p>
 </div>
 
 <div id="game-container">
+    <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-4xl md:text-6xl font-black text-yellow-500 italic mb-2 tracking-tighter uppercase">Rise of Hitler</h1>
-        <p class="text-blue-400 font-bold text-sm tracking-widest mb-8">QUEST FOR MASTERY</p>
-        <div class="max-w-md text-slate-400 text-sm mb-10 space-y-2">
-            <p>Hit <span class="text-yellow-500 font-bold">?</span> blocks to unlock historical logs.</p>
-            <p>Correct answers build Mastery. Errors force reinforcement.</p>
-        </div>
-        <button id="btn-start" class="w-full max-w-xs py-4 bg-yellow-500 text-slate-950 font-black rounded-2xl shadow-xl uppercase tracking-widest text-lg active:scale-95 transition-transform">
-            Enter History
+        <h1 class="text-3xl md:text-5xl font-black text-yellow-500 italic mb-2 tracking-tighter uppercase">Rise of Hitler</h1>
+        <p class="text-blue-400 font-bold text-[10px] tracking-widest mb-6 uppercase">Mastery Quest</p>
+        <button id="btn-start" class="px-10 py-4 bg-yellow-500 text-slate-950 font-black rounded-2xl shadow-xl uppercase tracking-widest text-sm active:scale-95 transition-transform">
+            Start Mission
         </button>
     </div>
 
-    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-center pointer-events-none z-20">
-        <div class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-            <p class="text-[10px] uppercase font-bold text-slate-500">Lives</p>
-            <p id="stats-lives" class="text-lg font-black text-red-500">3</p>
+    <!-- HUD -->
+    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
+        <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10">
+            <p class="text-[8px] uppercase font-bold text-slate-400">Lives</p>
+            <p id="stats-lives" class="text-sm font-black text-red-500">3</p>
         </div>
-        <div class="bg-black/40 backdrop-blur-md px-6 py-2 rounded-xl border border-white/10 text-center">
-            <p class="text-[10px] uppercase font-bold text-slate-500">Stability</p>
-            <p id="stats-timer" class="text-xl font-black text-blue-400">180s</p>
+        <div class="bg-black/60 backdrop-blur-md px-4 py-1 rounded-lg border border-white/10 text-center">
+            <p class="text-[8px] uppercase font-bold text-slate-400">Stability</p>
+            <p id="stats-timer" class="text-sm font-black text-blue-400">180s</p>
         </div>
-        <div class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-right">
-            <p class="text-[10px] uppercase font-bold text-slate-500">Score</p>
-            <p id="stats-coins" class="text-lg font-black text-yellow-500">0</p>
+        <div class="bg-black/60 backdrop-blur-md px-3 py-1 rounded-lg border border-white/10 text-right">
+            <p class="text-[8px] uppercase font-bold text-slate-400">Score</p>
+            <p id="stats-coins" class="text-sm font-black text-yellow-500">0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
+    <!-- MCQ Modal -->
     <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-sm">
-        <div class="w-full max-w-2xl bg-slate-900 border-2 border-yellow-500/30 rounded-3xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <span id="difficulty-tag" class="text-[10px] px-2 py-1 rounded bg-blue-500/20 text-blue-400 font-bold uppercase tracking-widest">EASY</span>
-                <span class="text-slate-600 text-[10px] font-bold">REVISION LOG</span>
+        <div class="w-full max-w-xl bg-slate-900 border-2 border-yellow-500/30 rounded-2xl p-5 shadow-2xl max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-[9px] px-2 py-0.5 rounded bg-blue-500/20 text-blue-400 font-bold uppercase">Revision Log</span>
             </div>
-            <h3 id="question-text" class="text-lg md:text-xl font-bold mb-6 text-white leading-tight"></h3>
-            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <h3 id="question-text" class="text-sm md:text-base font-bold mb-4 text-white"></h3>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-2"></div>
             
-            <div id="feedback-area" class="hidden mt-6 p-5 rounded-2xl border-l-4">
-                <p id="feedback-title" class="font-black uppercase text-sm mb-1"></p>
-                <div class="text-xs text-slate-300 leading-relaxed mb-4">
-                    <p id="feedback-detail"></p>
-                </div>
-                <button id="mcq-continue-btn" class="w-full py-4 bg-yellow-500 text-slate-950 font-black rounded-xl uppercase text-xs tracking-widest active:scale-95 transition-transform">
+            <div id="feedback-area" class="hidden mt-4 p-4 rounded-xl border-l-4">
+                <p id="feedback-title" class="font-black uppercase text-[10px] mb-1"></p>
+                <p id="feedback-detail" class="text-[10px] text-slate-300 mb-4"></p>
+                <button id="mcq-continue-btn" class="w-full py-3 bg-yellow-500 text-slate-950 font-black rounded-lg uppercase text-[10px] tracking-widest active:scale-95">
                     Continue
                 </button>
             </div>
         </div>
     </div>
 
+    <!-- End Screen -->
     <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/95 p-8 text-center">
-        <h2 id="end-status" class="text-4xl md:text-7xl font-black mb-2 italic uppercase tracking-tighter"></h2>
-        <div class="w-24 h-2 bg-yellow-500 mx-auto mb-8"></div>
-        <div class="mb-10">
-            <p class="text-slate-500 text-xs uppercase tracking-widest mb-1 font-bold">Historical Mastery Score</p>
-            <div class="text-7xl md:text-9xl font-black text-white" id="final-score">0</div>
+        <h2 id="end-status" class="text-3xl font-black mb-1 italic uppercase italic"></h2>
+        <div class="mb-6">
+            <p class="text-slate-500 text-[10px] uppercase font-bold">Mastery Score</p>
+            <div class="text-6xl font-black text-white" id="final-score">0</div>
         </div>
-        <p id="end-message" class="text-slate-400 text-sm mb-12 max-w-sm leading-relaxed"></p>
-        <button id="btn-restart" class="w-full max-w-xs py-5 bg-white text-slate-950 font-black rounded-2xl active:bg-slate-200 transition-all uppercase tracking-widest text-lg shadow-2xl">
-            Restart Game
+        <button id="btn-restart" class="px-10 py-4 bg-white text-slate-950 font-black rounded-xl uppercase tracking-widest text-sm shadow-2xl">
+            Restart
         </button>
     </div>
 
-    <div class="absolute bottom-6 left-6 flex gap-4 z-30 pointer-events-none">
-        <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+    <!-- UI Controls Area -->
+    <div class="absolute inset-0 pointer-events-none z-30">
+        <!-- Left Side: Movement -->
+        <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-3">
+            <div id="ctrl-left" class="control-btn w-16 h-16 md:w-20 md:h-20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+            </div>
+            <div id="ctrl-right" class="control-btn w-16 h-16 md:w-20 md:h-20">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+            </div>
         </div>
-        <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
-            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
-        </div>
-    </div>
-    <div class="absolute bottom-6 right-6 z-30 pointer-events-none">
-        <div id="ctrl-jump" class="control-btn w-24 h-24 bg-yellow-500/20 border-yellow-500/40 pointer-events-auto">
-            <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7 7 7M5 21l7-7 7 7"/></svg>
+        <!-- Right Side: Action -->
+        <div class="absolute bottom-[calc(1.5rem+var(--sab))] right-[calc(1.5rem+var(--sar))]">
+            <div id="ctrl-jump" class="control-btn w-20 h-20 md:w-24 md:h-24 bg-yellow-500/20 border-yellow-500/40">
+                <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7 7 7M5 21l7-7 7 7"/></svg>
+            </div>
         </div>
     </div>
 </div>
@@ -188,11 +197,10 @@ let state = {
     isFalling: false,
     viewportW: window.innerWidth,
     viewportH: window.innerHeight,
-    rhythmCounter: 0 
 };
 
 const player = { 
-    x: 100, y: 300, w: 40, h: 60, 
+    x: 100, y: 0, w: 36, h: 54, 
     vx: 0, vy: 0, 
     speed: 7, jumpPower: -12, 
     grounded: false, facingRight: true,
@@ -215,7 +223,7 @@ const QUEST_BANK = {
         { q: "Which group did Hitler blame most for Germany’s defeat in WWI?", a: "the Jewish people", o: ["industrialists", "the army generals", "the Jewish people", "the communists alone"] },
         { q: "What was the symbol of the Nazi Party?", a: "the Swastika", o: ["the Iron Cross", "the Swastika", "the eagle standard", "the black triangle"] }
     ],
-    medium: [
+    hard: [
         { q: "How did proportional representation weaken the Weimar Republic?", a: "It led to many small parties and unstable coalitions.", o: ["It allowed the President to ignore the Reichstag.", "It led to many small parties and unstable coalitions.", "It prevented large parties from contesting elections.", "It guaranteed extremist parties an automatic majority."] },
         { q: "What did Article 48 allow the President to do?", a: "rule by decree during emergencies", o: ["suspend elections permanently", "rule by decree during emergencies", "appoint army commanders without approval", "dissolve all political parties"] },
         { q: "Why did Nazi support increase during the Depression?", a: "Many voters lost faith in moderate parties and wanted radical solutions.", o: ["Many voters lost faith in moderate parties and wanted radical solutions.", "Most Germans believed the Weimar economy was improving quickly.", "The Nazis promised to strengthen the Treaty of Versailles.", "Hitler persuaded trade unions to campaign for the Nazis."] },
@@ -225,9 +233,7 @@ const QUEST_BANK = {
         { q: "What was the German Labour Front?", a: "a Nazi body that replaced trade unions", o: ["an independent workers’ union", "a Nazi body that replaced trade unions", "a government office for unemployment benefits", "a military unit made up of workers"] },
         { q: "What was the goal of autarky?", a: "to make Germany economically self-sufficient", o: ["to increase dependence on world trade", "to make Germany economically self-sufficient", "to restore free-market capitalism fully", "to abolish all state control of industry"] },
         { q: "What did the Nuremberg Laws mainly do?", a: "define citizenship by race and restrict Jews’ rights", o: ["restore full legal equality to all Germans", "define citizenship by race and restrict Jews’ rights", "nationalise all Jewish businesses immediately", "give the SS control over the courts"] },
-        { q: "Why did the Nazi regime value the Berlin Olympics?", a: "It let Hitler display a positive image of Nazi Germany abroad.", o: ["It gave opponents a safe chance to criticise the regime.", "It let Hitler display a positive image of Nazi Germany abroad.", "It helped Germany negotiate the return of colonies.", "It was used to recruit soldiers into the army."] }
-    ],
-    difficult: [
+        { q: "Why did the Nazi regime value the Berlin Olympics?", a: "It let Hitler display a positive image of Nazi Germany abroad.", o: ["It gave opponents a safe chance to criticise the regime.", "It let Hitler display a positive image of Nazi Germany abroad.", "It helped Germany negotiate the return of colonies.", "It was used to recruit soldiers into the army."] },
         { q: "Which party was the only one to vote against the Enabling Act?", a: "the SPD", o: ["the KPD", "the SPD", "the Centre Party", "the DNVP"] },
         { q: "Who played a key role in Nazi economic recovery policy?", a: "Hjalmar Schacht", o: ["Joseph Goebbels", "Hjalmar Schacht", "Ernst Röhm", "Wilhelm Frick"] },
         { q: "What did the Reich Entailed Farm Law do?", a: "It protected many family farms from being seized for debt.", o: ["It broke up large estates and redistributed them.", "It protected many family farms from being seized for debt.", "It forced farmers to sell only to the state.", "It removed all inheritance rights from farming families."] },
@@ -247,13 +253,12 @@ function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
 
 function buildSessionDeck() {
     let easy = shuffle([...QUEST_BANK.easy]);
-    let combinedHard = shuffle([...QUEST_BANK.medium, ...QUEST_BANK.difficult]);
-    
+    let hard = shuffle([...QUEST_BANK.hard]);
     let deck = [];
-    while(easy.length > 0 || combinedHard.length > 0) {
+    while(easy.length > 0 || hard.length > 0) {
         if(easy.length > 0) deck.push(easy.pop());
         if(easy.length > 0) deck.push(easy.pop());
-        if(combinedHard.length > 0) deck.push(combinedHard.pop());
+        if(hard.length > 0) deck.push(hard.pop());
     }
     return deck;
 }
@@ -261,9 +266,8 @@ sessionDeck = buildSessionDeck();
 
 const blocks = Array.from({length: 40}, (_, i) => ({ 
     x: 600 + (i * 350), 
-    // Adjusted y to be much higher (above ground)
-    y: 80 + Math.floor(Math.random() * 100),
-    w: 70, h: 70, active: true 
+    y: 0, // Calculated in resize
+    w: 64, h: 64, active: true 
 }));
 
 function resize() {
@@ -271,14 +275,30 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    if (!state.gameStarted) player.y = state.viewportH - 120; 
+    
+    // Position blocks relative to height: Always above player head but reachable
+    blocks.forEach(b => {
+        b.y = state.viewportH * 0.4 + (Math.random() * 60);
+    });
+
+    if (!state.gameStarted) {
+        player.y = state.viewportH - 120;
+        player.x = 100;
+    }
 }
 
 const touch = { left: false, right: false };
 function init() {
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
     resize();
+    
+    // Force prevent magnifier and zoom
     document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('touchstart', (e) => {
+        if (e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    
     let lastTouchEnd = 0;
     document.addEventListener('touchend', e => {
         let now = Date.now();
@@ -286,19 +306,23 @@ function init() {
         lastTouchEnd = now;
     }, false);
 
-    document.getElementById('btn-start').onclick = () => {
+    document.getElementById('btn-start').onclick = (e) => {
+        e.preventDefault();
         document.getElementById('start-screen').classList.add('hidden');
         state.gameStarted = true; state.gameActive = true;
     };
+    
     document.getElementById('btn-restart').onclick = () => location.reload();
 
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
         el.addEventListener('touchstart', (e) => { e.preventDefault(); touch[key] = true; });
         el.addEventListener('touchend', (e) => { e.preventDefault(); touch[key] = false; });
+        el.addEventListener('touchcancel', (e) => { e.preventDefault(); touch[key] = false; });
     };
     setupTouch('ctrl-left', 'left');
     setupTouch('ctrl-right', 'right');
+    
     document.getElementById('ctrl-jump').addEventListener('touchstart', (e) => {
         e.preventDefault();
         if (state.gameActive && !state.paused) handleJump();
@@ -324,38 +348,37 @@ function triggerQuiz() {
     const feedback = document.getElementById('feedback-area');
     
     document.getElementById('question-text').innerText = q.q;
-    document.getElementById('difficulty-tag').innerText = "HISTORICAL ANALYSIS";
     feedback.classList.add('hidden');
     container.classList.remove('hidden');
     container.innerHTML = '';
     
     shuffle([...q.o]).forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn bg-slate-800 text-white border-2 border-slate-700 active:scale-95'; 
+        btn.className = 'option-btn bg-slate-800 text-white border-2 border-slate-700 active:bg-slate-700'; 
         btn.innerText = opt;
-        btn.onclick = () => {
+        btn.onclick = (e) => {
+            e.preventDefault();
             Array.from(container.children).forEach(b => b.disabled = true);
             feedback.classList.remove('hidden');
             container.classList.add('hidden');
             if (opt === q.a) {
-                feedback.className = "mt-6 p-5 rounded-2xl border-l-4 border-green-500 bg-green-500/10";
-                document.getElementById('feedback-title').innerText = "SUCCESS";
-                document.getElementById('feedback-title').className = "font-black uppercase text-sm mb-1 text-green-400";
-                document.getElementById('feedback-detail').innerText = "Data point verified. Accuracy confirmed.";
+                feedback.className = "mt-4 p-4 rounded-xl border-l-4 border-green-500 bg-green-500/10";
+                document.getElementById('feedback-title').innerText = "DATA VERIFIED";
+                document.getElementById('feedback-title').className = "font-black uppercase text-[10px] mb-1 text-green-400";
+                document.getElementById('feedback-detail').innerText = "Historical accuracy confirmed. Continue mission.";
                 state.score += 100;
                 document.getElementById('stats-coins').innerText = state.score;
                 document.getElementById('mcq-continue-btn').onclick = () => {
                     modal.classList.add('hidden');
                     sessionDeck.shift(); 
-                    state.qIndex++;
-                    if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "You have achieved historical mastery over the rise of the Third Reich.");
+                    if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "You have achieved historical mastery.");
                     else { state.paused = false; state.gameActive = true; }
                 };
             } else {
-                feedback.className = "mt-6 p-5 rounded-2xl border-l-4 border-red-500 bg-red-500/10";
-                document.getElementById('feedback-title').innerText = "ERROR";
-                document.getElementById('feedback-title').className = "font-black uppercase text-sm mb-1 text-red-400";
-                document.getElementById('feedback-detail').innerText = `INCORRECT. The fact is: ${q.a}. Reinforcement required.`;
+                feedback.className = "mt-4 p-4 rounded-xl border-l-4 border-red-500 bg-red-500/10";
+                document.getElementById('feedback-title').innerText = "DATA CORRUPTED";
+                document.getElementById('feedback-title').className = "font-black uppercase text-[10px] mb-1 text-red-400";
+                document.getElementById('feedback-detail').innerText = `ERROR. The fact: ${q.a}. Reinforcement required.`;
                 document.getElementById('mcq-continue-btn').onclick = () => {
                     modal.classList.add('hidden');
                     state.isFalling = true;
@@ -370,18 +393,18 @@ function triggerQuiz() {
 
 function update() {
     if (!state.gameStarted) { requestAnimationFrame(update); return; }
-    if (state.timer <= 0) endGame("TIME DEPLETED", "The historical window closed. Mission failed.");
+    if (state.timer <= 0) endGame("TIME EXPIRED", "The timeline has collapsed. Start over.");
 
     if (state.isFalling) {
         player.vy += 0.5; 
         player.y += player.vy;
-        if (player.y > canvas.height + 50) {
+        if (player.y > state.viewportH + 50) {
             state.lives--; 
             document.getElementById('stats-lives').innerText = state.lives;
-            if (state.lives <= 0) endGame("STABILITY LOST", "Historical integrity failed. Timeline collapsed.");
+            if (state.lives <= 0) endGame("INTEGRITY LOST", "Revision failed. Too many errors.");
             else { 
                 player.x = Math.max(100, player.x - 300); 
-                player.y = 100; player.vy = 0; 
+                player.y = 0; player.vy = 0; 
                 state.isFalling = false; state.gameActive = true; 
             }
         }
@@ -390,20 +413,20 @@ function update() {
         else if (touch.left) { player.vx = -player.speed; player.facingRight = false; }
         else player.vx *= 0.8;
 
-        player.vy += 0.5; player.x += player.vx; player.y += player.vy;
+        player.vy += 0.6; player.x += player.vx; player.y += player.vy;
+        
         const groundY = state.viewportH - 60;
         if (player.y + player.h > groundY) { 
             player.y = groundY - player.h; player.vy = 0; 
             player.grounded = true; player.jumpsAvailable = 2;
         }
+        
         blocks.forEach(b => {
             if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
-                // Hitting from below
                 if (player.vy < 0 && player.y > b.y + b.h - 20) { 
                     b.active = false; player.vy = 2; 
                     if(sessionDeck.length > 0) triggerQuiz(); 
                 } 
-                // Landing on top
                 else if (player.vy > 0 && player.y + player.h < b.y + 20) {
                     player.y = b.y - player.h; player.vy = 0;
                     player.grounded = true; player.jumpsAvailable = 2;
@@ -422,42 +445,38 @@ function render() {
     grd.addColorStop(0, "#0f172a"); grd.addColorStop(1, "#1e293b");
     ctx.fillStyle = grd; ctx.fillRect(0,0,canvas.width,canvas.height);
     
-    // Camera follow logic
-    let camX = -player.x + (state.viewportW / 3); 
+    let camX = -player.x + (state.viewportW * 0.25); 
     if (camX > 0) camX = 0;
     ctx.translate(camX, 0);
     
-    // Ground rendering
     const groundY = state.viewportH - 60;
     ctx.fillStyle = state.isFalling ? '#ef4444' : '#fbbf24'; 
     ctx.fillRect(-1000, groundY, 20000, 60);
     
-    // Blocks rendering
+    // Draw platforms
     blocks.forEach(b => { 
         if (b.active) { 
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(b.x, b.y, b.w, b.h); 
-            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.font = 'bold 30px sans-serif'; 
+            ctx.fillStyle = 'rgba(0,0,0,0.3)'; ctx.font = 'bold 24px sans-serif'; 
             ctx.textAlign = 'center'; ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10); 
         } 
     });
     
-    // Player rendering
+    // Player
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
-    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-15, -28, 30, 25); 
-    ctx.fillStyle = "#fbbf24"; ctx.fillRect(-18, -3, 36, 25); 
-    ctx.fillStyle = "#0f172a"; ctx.fillRect(-18, 22, 16, 12); ctx.fillRect(2, 22, 16, 12); 
-    ctx.fillStyle = "white"; ctx.fillRect(2, -20, 8, 8);
+    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-12, -24, 24, 22); 
+    ctx.fillStyle = "#fbbf24"; ctx.fillRect(-15, -2, 30, 22); 
+    ctx.fillStyle = "#0f172a"; ctx.fillRect(-15, 20, 13, 10); ctx.fillRect(2, 20, 13, 10); 
     ctx.restore();
 }
 
 function endGame(status, msg) {
     state.gameActive = false;
     document.getElementById('end-status').innerText = status;
-    document.getElementById('end-status').className = `text-4xl md:text-7xl font-black mb-2 italic uppercase tracking-tighter ${status.includes('COMPLETE') ? 'text-green-500' : 'text-red-600'}`;
+    document.getElementById('end-status').className = `text-2xl font-black mb-1 italic uppercase tracking-tighter ${status.includes('COMPLETE') ? 'text-green-500' : 'text-red-600'}`;
     document.getElementById('final-score').innerText = state.score;
-    document.getElementById('end-message').innerText = msg;
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
