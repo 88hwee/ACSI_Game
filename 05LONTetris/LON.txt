@@ -15,7 +15,7 @@
 
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #0f172a;
+            background-color: #050810;
             color: #f8fafc;
             overflow: hidden;
             touch-action: none;
@@ -35,16 +35,24 @@
             margin: auto;
         }
 
+        /* Improved Button Visibility for Mobile */
         .control-btn {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
             -webkit-tap-highlight-color: transparent;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
 
         .control-btn:active {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(0.95);
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(0.92);
+            border-color: #60a5fa;
         }
 
         .option-btn {
@@ -60,11 +68,14 @@
         #hud {
             padding-top: calc(0.5rem + var(--sat));
             flex-shrink: 0;
+            z-index: 20;
         }
 
         #controls-area {
-            padding-bottom: calc(1rem + var(--sab));
+            padding-bottom: calc(0.75rem + var(--sab));
             flex-shrink: 0;
+            z-index: 20;
+            background: #0f172a;
         }
         
         #game-container {
@@ -76,12 +87,20 @@
             overflow: hidden;
             padding: 10px;
         }
+
+        .btn-label {
+            font-size: 9px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            opacity: 0.8;
+        }
     </style>
 </head>
 <body class="flex flex-col">
 
     <!-- HUD -->
-    <div id="hud" class="w-full flex justify-between items-center px-6 py-2 bg-slate-900/50 border-b border-slate-800">
+    <div id="hud" class="w-full flex justify-between items-center px-6 py-3 bg-slate-900 border-b border-slate-800">
         <div class="text-center">
             <p class="text-[10px] uppercase font-bold text-slate-500">Score</p>
             <p id="score" class="text-xl font-black text-yellow-400">0000</p>
@@ -151,19 +170,23 @@
         </div>
     </div>
 
-    <!-- Mobile Controls -->
-    <div id="controls-area" class="grid grid-cols-4 gap-2 p-4 bg-slate-900/80 border-t border-slate-800">
-        <button id="ctrl-left" class="control-btn h-16 rounded-xl flex items-center justify-center">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+    <!-- Mobile Controls: Enhanced Visibility and Layout -->
+    <div id="controls-area" class="grid grid-cols-4 gap-3 p-4 border-t border-slate-800 shadow-2xl">
+        <button id="ctrl-left" class="control-btn h-20 rounded-2xl">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+            <span class="btn-label">Left</span>
         </button>
-        <button id="ctrl-rotate" class="control-btn h-16 rounded-xl flex items-center justify-center">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        <button id="ctrl-rotate" class="control-btn h-20 rounded-2xl">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span class="btn-label">Rotate</span>
         </button>
-        <button id="ctrl-right" class="control-btn h-16 rounded-xl flex items-center justify-center">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+        <button id="ctrl-right" class="control-btn h-20 rounded-2xl">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+            <span class="btn-label">Right</span>
         </button>
-        <button id="ctrl-drop" class="control-btn h-16 rounded-xl flex items-center justify-center bg-blue-600/20 border-blue-500/30">
-            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/></svg>
+        <button id="ctrl-drop" class="control-btn h-20 rounded-2xl bg-blue-600/40 border-blue-400/50">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 13l-7 7-7-7m14-8l-7 7-7-7"/></svg>
+            <span class="btn-label">Drop</span>
         </button>
     </div>
 
@@ -243,7 +266,7 @@
             paused: false,
             piece: null,
             moveCount: 0,
-            qRhythm: 0, // 0, 1 = Easy, 2 = Hard
+            qRhythm: 0, 
             easyPool: [],
             hardPool: [],
             dropInterval: 1000,
@@ -367,7 +390,6 @@
             state.moveCount = 0;
             const modal = document.getElementById('mcq-modal');
             
-            // Rhythm: Easy, Easy, Hard
             let q;
             if (state.qRhythm < 2) {
                 if (state.easyPool.length === 0) state.easyPool = shuffle([...EASY_MCQS]);
@@ -424,7 +446,7 @@
                 fTitle.className = "font-black uppercase text-sm mb-1 text-red-500";
                 fText.innerText = `Selected: ${choice}\nCorrect: ${q.a}\n\nReinforcement Required: You must try this question again.`;
                 nextBtn.innerText = "Retry Question";
-                nextBtn.onclick = () => renderMCQ(q); // Learn from mistake
+                nextBtn.onclick = () => renderMCQ(q); 
                 updateHUD();
                 if (state.lives <= 0) endGame("INTEGRITY FAILED", "Repeated errors led to the League's total failure.");
             }
