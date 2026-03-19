@@ -138,10 +138,8 @@
             
             <div id="feedback-area" class="hidden mt-4 p-4 rounded-xl border-l-4">
                 <p id="feedback-title" class="font-black uppercase text-[10px] mb-1"></p>
-                <p id="feedback-detail" class="text-[10px] text-slate-300 mb-4"></p>
-                <button id="mcq-continue-btn" class="w-full py-3 bg-yellow-500 text-slate-950 font-black rounded-lg uppercase text-[10px] tracking-widest active:scale-95">
-                    Continue
-                </button>
+                <p id="feedback-detail" class="text-[10px] text-slate-300 mb-2"></p>
+                <div id="auto-resume-timer" class="text-[8px] text-slate-500 italic">Resuming mission in 2s...</div>
             </div>
         </div>
     </div>
@@ -195,7 +193,7 @@ let state = {
 };
 
 const player = { 
-    x: 100, y: 0, w: 30, h: 46, // Reduced character size for better landscape feel
+    x: 100, y: 0, w: 30, h: 46,
     vx: 0, vy: 0, 
     speed: 7, jumpPower: -11, 
     grounded: false, facingRight: true,
@@ -269,11 +267,8 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    state.groundY = state.viewportH - 40; // Thinner ground for more play space
+    state.groundY = state.viewportH - 40; 
     
-    // Position blocks high enough that a jump is required
-    // Player head is at groundY - player.h. Jump is ~100px.
-    // So blocks should be between groundY - 140 and groundY - 180
     blocks.forEach(b => {
         b.y = state.groundY - 130 - (Math.random() * 40);
     });
@@ -355,36 +350,45 @@ function triggerQuiz() {
         btn.onclick = (e) => {
             e.preventDefault();
             Array.from(container.children).forEach(b => b.disabled = true);
-            feedback.classList.remove('hidden');
-            container.classList.add('hidden');
+            
             if (opt === q.a) {
-                feedback.className = "mt-4 p-4 rounded-xl border-l-4 border-green-500 bg-green-500/10";
-                document.getElementById('feedback-title').innerText = "DATA VERIFIED";
-                document.getElementById('feedback-title').className = "font-black uppercase text-[10px] mb-1 text-green-400";
-                document.getElementById('feedback-detail').innerText = "Historical accuracy confirmed.";
+                // CORRECT: Just move on
                 state.score += 100;
                 document.getElementById('stats-coins').innerText = state.score;
-                document.getElementById('mcq-continue-btn').onclick = () => {
-                    modal.classList.add('hidden');
-                    sessionDeck.shift(); 
-                    if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "History Mastered.");
-                    else { state.paused = false; state.gameActive = true; }
-                };
+                sessionDeck.shift(); 
+                if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "History Mastered.");
+                else resume();
             } else {
+                // WRONG: Show correction briefly, then continue
+                feedback.classList.remove('hidden');
+                container.classList.add('hidden');
                 feedback.className = "mt-4 p-4 rounded-xl border-l-4 border-red-500 bg-red-500/10";
                 document.getElementById('feedback-title').innerText = "DATA CORRUPTED";
                 document.getElementById('feedback-title').className = "font-black uppercase text-[10px] mb-1 text-red-400";
-                document.getElementById('feedback-detail').innerText = `ERROR. Fact: ${q.a}. Reinforcement required.`;
-                document.getElementById('mcq-continue-btn').onclick = () => {
-                    modal.classList.add('hidden');
-                    state.isFalling = true;
-                    state.paused = false;
-                };
+                document.getElementById('feedback-detail').innerText = `ERROR. Fact: ${q.a}. Re-queueing...`;
+                
+                // Reinforcement: Repeat the question roughly 10 seconds later
+                // We move it 3 positions back in the deck (approx 10s of gameplay)
+                const missedQ = sessionDeck.shift();
+                sessionDeck.splice(3, 0, missedQ);
+
+                setTimeout(() => {
+                    if (state.lives > 0) {
+                        state.isFalling = true; // Still apply penalty if falling was part of the design
+                        resume();
+                    }
+                }, 2000);
             }
         };
         container.appendChild(btn);
     });
     modal.classList.remove('hidden');
+}
+
+function resume() {
+    document.getElementById('quiz-overlay').classList.add('hidden');
+    state.paused = false;
+    state.gameActive = true;
 }
 
 function update() {
@@ -444,11 +448,9 @@ function render() {
     if (camX > 0) camX = 0;
     ctx.translate(camX, 0);
     
-    // Ground
     ctx.fillStyle = state.isFalling ? '#ef4444' : '#fbbf24'; 
     ctx.fillRect(-1000, state.groundY, 20000, 40);
     
-    // Blocks
     blocks.forEach(b => { 
         if (b.active) { 
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(b.x, b.y, b.w, b.h); 
@@ -457,7 +459,6 @@ function render() {
         } 
     });
     
-    // Player
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
