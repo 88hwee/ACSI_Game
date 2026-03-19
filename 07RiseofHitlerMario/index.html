@@ -247,9 +247,7 @@ function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
 
 function buildSessionDeck() {
     let easy = shuffle([...QUEST_BANK.easy]);
-    let mid = shuffle([...QUEST_BANK.medium]);
-    let diff = shuffle([...QUEST_BANK.difficult]);
-    let combinedHard = shuffle([...mid, ...diff]);
+    let combinedHard = shuffle([...QUEST_BANK.medium, ...QUEST_BANK.difficult]);
     
     let deck = [];
     while(easy.length > 0 || combinedHard.length > 0) {
@@ -263,7 +261,8 @@ sessionDeck = buildSessionDeck();
 
 const blocks = Array.from({length: 40}, (_, i) => ({ 
     x: 600 + (i * 350), 
-    y: 150 + Math.floor(Math.random() * 150),
+    // Adjusted y to be much higher (above ground)
+    y: 80 + Math.floor(Math.random() * 100),
     w: 70, h: 70, active: true 
 }));
 
@@ -399,10 +398,12 @@ function update() {
         }
         blocks.forEach(b => {
             if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
+                // Hitting from below
                 if (player.vy < 0 && player.y > b.y + b.h - 20) { 
                     b.active = false; player.vy = 2; 
                     if(sessionDeck.length > 0) triggerQuiz(); 
                 } 
+                // Landing on top
                 else if (player.vy > 0 && player.y + player.h < b.y + 20) {
                     player.y = b.y - player.h; player.vy = 0;
                     player.grounded = true; player.jumpsAvailable = 2;
@@ -420,11 +421,18 @@ function render() {
     const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
     grd.addColorStop(0, "#0f172a"); grd.addColorStop(1, "#1e293b");
     ctx.fillStyle = grd; ctx.fillRect(0,0,canvas.width,canvas.height);
+    
+    // Camera follow logic
     let camX = -player.x + (state.viewportW / 3); 
     if (camX > 0) camX = 0;
     ctx.translate(camX, 0);
+    
+    // Ground rendering
+    const groundY = state.viewportH - 60;
     ctx.fillStyle = state.isFalling ? '#ef4444' : '#fbbf24'; 
-    ctx.fillRect(-1000, state.viewportH - 60, 20000, 60);
+    ctx.fillRect(-1000, groundY, 20000, 60);
+    
+    // Blocks rendering
     blocks.forEach(b => { 
         if (b.active) { 
             ctx.fillStyle = '#fbbf24'; ctx.fillRect(b.x, b.y, b.w, b.h); 
@@ -432,6 +440,8 @@ function render() {
             ctx.textAlign = 'center'; ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10); 
         } 
     });
+    
+    // Player rendering
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
