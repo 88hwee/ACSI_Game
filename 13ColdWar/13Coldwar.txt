@@ -2,325 +2,520 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cold War Origins: Mastery Quest</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Alien Intelligence: Cold War Mastery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body { margin: 0; background: #111; font-family: 'Segoe UI', sans-serif; overflow: hidden; color: white; }
-        #game-container {
-            position: relative; width: 800px; height: 400px; margin: 20px auto;
-            background: linear-gradient(to bottom, #87CEEB, #b0e2ff);
-            border: 4px solid #333; overflow: hidden;
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
         }
-        canvas { display: block; }
-        #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.9); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 200;
+
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
         }
-        #btn-start {
-            padding: 15px 35px; font-size: 22px; font-weight: bold; color: #111;
-            background: #ffd700; border: none; border-radius: 8px; cursor: pointer; transition: 0.2s;
+
+        body { 
+            margin: 0; 
+            background: #020617; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            color: white; 
+            touch-action: none; 
+            height: 100dvh;
+            width: 100vw;
+            position: fixed;
         }
-        #btn-start:hover { transform: scale(1.1); background: #fff; }
-        #ui-layer { position: absolute; top: 15px; left: 20px; right: 20px; pointer-events: none; display: flex; justify-content: space-between; font-weight: bold; text-shadow: 2px 2px #000; font-size: 18px; z-index: 10; }
-        #stats-coins { color: #ffd700; }
-        #quiz-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center; padding: 20px; z-index: 100;
+
+        .loud-font { font-family: 'Black Ops One', cursive; }
+        
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
+            background: radial-gradient(circle at 50% 100%, #1e1b4b 0%, #020617 70%);
+            overflow: hidden;
         }
-        .option-btn { background: #fff; color: #111; border: none; padding: 12px; margin: 5px; cursor: pointer; width: 85%; border-radius: 8px; font-size: 16px; font-weight: bold; }
-        .option-btn:hover { background: #FFD700; }
-        #message { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 60px; display: none; text-align: center; text-shadow: 4px 4px 0px #000; z-index: 110; font-weight: 900; color: #ff4d4d; width: 100%; }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .control-btn {
+            background: rgba(59, 130, 246, 0.2);
+            border: 2px solid rgba(59, 130, 246, 0.4);
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        .control-btn:active { background: rgba(59, 130, 246, 0.5); transform: scale(0.9); }
+
+        .option-btn {
+            transition: all 0.2s;
+            min-height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+            padding: 0.8rem 1.2rem;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.95rem;
+            background: #1e293b;
+            border: 2px solid #334155;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        #hud {
+            padding-top: calc(0.75rem + var(--sat));
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        @media (orientation: landscape) {
+            #landscape-warning { display: flex !important; }
+        }
+
+        .correct { background: #16a34a !important; border-color: #22c55e !important; }
+        .wrong { background: #dc2626 !important; border-color: #ef4444 !important; }
     </style>
 </head>
 <body>
 
+<div id="landscape-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+    <div class="animate-bounce mb-4 text-blue-500">
+        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    </div>
+    <h2 class="text-2xl loud-font text-blue-400 mb-2 uppercase">Switch to Portrait</h2>
+    <p class="text-slate-500 text-sm">Target interception optimized for Portrait Mode.</p>
+</div>
+
 <div id="game-container">
-    <div id="start-screen">
-        <h1 style="color: gold;">Cold War Mastery Quest</h1>
-        <p>Correct = Question Removed | Wrong = Falling & Retry Later</p>
-        <button id="btn-start">START GAME</button>
+    <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-4xl md:text-7xl font-black text-blue-600 loud-font italic mb-4 tracking-tighter uppercase leading-tight">Cold War Mastery</h1>
+        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Revision Unit</p>
+        <button id="btn-start" class="px-12 py-5 bg-blue-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-blue-800">
+            Start Unit
+        </button>
     </div>
-    <div id="ui-layer">
-        <div id="stats-lives" style="color:#ff4d4d">Lives: 3</div>
-        <div id="stats-coins">Coins: 0</div>
-        <div id="stats-timer">120s</div>
+
+    <div id="hud" class="absolute top-0 left-0 w-full grid grid-cols-3 gap-2 pointer-events-none z-20">
+        <div class="bg-blue-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[8px] uppercase font-black text-blue-400">Score</p>
+            <p id="stats-coins" class="text-lg font-black text-white">0</p>
+        </div>
+        <div class="bg-blue-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[8px] uppercase font-black text-blue-400">Time</p>
+            <p id="stats-timer" class="text-lg font-black text-white">180s</p>
+        </div>
+        <div class="bg-blue-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[8px] uppercase font-black text-blue-400">Intel</p>
+            <p id="stats-q" class="text-lg font-black text-white">0</p>
+        </div>
     </div>
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
-    <div id="quiz-overlay">
-        <div id="question-text" style="color: gold; font-size: 19px; margin-bottom: 15px;"></div>
-        <div id="options-container" style="width:100%"></div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-md">
+        <div class="w-full max-w-lg bg-slate-900 border-t-[8px] border-blue-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
+            <div class="text-blue-500 font-black uppercase tracking-[0.2em] text-[10px] mb-3">Decryption Required</div>
+            <h3 id="question-text" class="text-lg md:text-xl font-black italic uppercase mb-6 text-white leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-1 gap-2.5"></div>
+            <div id="feedback" class="mt-6 text-center font-black h-10 uppercase italic text-xl"></div>
+        </div>
     </div>
-    <div id="message"></div>
+
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
+        <h1 class="text-6xl loud-font italic text-blue-600 mb-8 uppercase">Finished</h1>
+        <div class="mb-12">
+            <p class="text-slate-500 text-xs uppercase font-black tracking-widest mb-2">Final Mastery</p>
+            <div class="text-7xl font-black text-white" id="final-score">0</div>
+        </div>
+        <button id="btn-restart" class="px-12 py-5 bg-white text-black loud-font rounded-full active:bg-blue-600 active:text-white transition-all uppercase tracking-widest text-lg shadow-2xl">
+            Restart
+        </button>
+    </div>
+
+    <div class="absolute bottom-[calc(1rem+var(--sab))] left-0 w-full px-6 flex justify-between items-center z-30 pointer-events-none">
+        <div class="flex gap-4">
+            <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
+                <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+            </div>
+            <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
+                <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </div>
+        <div id="ctrl-shoot" class="control-btn w-24 h-24 bg-red-600/20 border-red-600/40 pointer-events-auto">
+            <div class="w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
+        </div>
+    </div>
 </div>
 
 <script>
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const failSound = new Audio('mixkit-player-losing-or-failing-2042.wav');
 
-let gameStarted = false, gameActive = false, isFalling = false;
-let timer = 120, lives = 3, coins = 0, streak = 0;
-const gravity = 0.45;
-
-const player = { x: 100, y: 200, w: 40, h: 65, vx: 0, vy: 0, speed: 5, jumpPower: -11, grounded: false, facingRight: true };
-
-/* ===== UPDATED MCQ DECK (Cold War / WWII Endgame) ===== */
-let questionsDeck = [
-  // I. Atomic Bomb
-  { q: "What were the code names for the two atomic bombs used against Japan?", a: ["Trinity and S-1", "Little Boy and Fat Man", "Olympic and Coronet", "Silverplate and Centerboard"], correct: "Little Boy and Fat Man" },
-  { q: "Which city was the primary target of the first atomic mission on 6 August 1945?", a: ["Nagasaki", "Kokura", "Hiroshima", "Kyoto"], correct: "Hiroshima" },
-  { q: "What was the name of the first nuclear test explosion in New Mexico (July 1945)?", a: ["Operation Centerboard", "Trinity", "Manhattan Project", "Operation Meetinghouse"], correct: "Trinity" },
-  { q: "Why did Henry Stimson insist on removing Kyoto from the target list?", a: ["It had no military significance.", "Due to its historical, religious, and cultural significance.", "It had already been destroyed by firebombing.", "He wanted it to be post-war occupation HQ."], correct: "Due to its historical, religious, and cultural significance." },
-  { q: "According to Stimson, the main psychological purpose of using the atomic bomb was to:", a: ["Test the weapon for scientific data.", "Shock the Japanese ruling oligarchy into surrender.", "Intimidate the Soviet Union at the start of the Cold War.", "Destroy Japanese race and culture."], correct: "Shock the Japanese ruling oligarchy into surrender." },
-
-  // II. Delay (Second Front)
-  { q: "In which year did Stalin first request the Allies open a Second Front in Western Europe?", a: ["1941", "1942", "1943", "1944"], correct: "1941" },
-  { q: "Why was Stalin angry about the delay in opening the Second Front?", a: ["He wanted to invade Britain.", "It let Hitler concentrate forces against the USSR.", "He wanted American nuclear technology.", "He wanted to avoid the Nazi–Soviet Pact."], correct: "It let Hitler concentrate forces against the USSR." },
-  { q: "What did Stalin suspect was the motive behind the delay in invading Western Europe?", a: ["The Allies lacked a navy.", "They wanted Germany and USSR to weaken each other.", "They were secretly helping Hitler.", "They prioritised the war in China."], correct: "They wanted Germany and USSR to weaken each other." },
-  { q: "Which operation finally opened the Second Front in June 1944?", a: ["African Campaign", "Invasion of Italy", "D-Day landings in Normandy", "Operation Barbarossa"], correct: "D-Day landings in Normandy" },
-  { q: "Which leader was most vocal that a landing in Western Europe would cause prohibitive casualties?", a: ["Joseph Stalin", "Winston Churchill", "Harry Truman", "Charles de Gaulle"], correct: "Winston Churchill" },
-
-  // III. Potsdam Conference
-  { q: "Who replaced Franklin D. Roosevelt at the Potsdam Conference?", a: ["George Marshall", "Harry S. Truman", "Clement Attlee", "Averell Harriman"], correct: "Harry S. Truman" },
-  { q: "What extraordinary information did Truman privately reveal to Stalin at Potsdam?", a: ["US leaving the war", "US tested a new weapon of mass destruction", "Germany had surrendered", "No free elections in Poland"], correct: "US tested a new weapon of mass destruction" },
-  { q: "At Potsdam, what did the Big Three decide about Germany?", a: ["Make it agricultural", "Divide into four occupation zones", "Keep it unified and unarmed", "Annex it into the USSR"], correct: "Divide into four occupation zones" },
-  { q: "The Potsdam Declaration (26 July 1945) mainly:", a: ["Defined Poland’s borders", "Outlined terms for Japan’s surrender", "Created the UN", "Split the Balkans into spheres"], correct: "Outlined terms for Japan’s surrender" },
-  { q: "Which leader attended Tehran, Yalta, AND Potsdam?", a: ["Winston Churchill", "Franklin Roosevelt", "Joseph Stalin", "Harry Truman"], correct: "Joseph Stalin" },
-
-  // IV. Yalta Conference
-  { q: "Where and when was the Yalta Conference held?", a: ["Germany, July 1945", "Crimea, February 1945", "Iran, November 1943", "Missouri, March 1946"], correct: "Crimea, February 1945" },
-  { q: "What was the major concrete Pacific War accomplishment at Yalta?", a: ["Immediate Japanese surrender", "Stalin pledged to enter war vs Japan 3 months after Germany’s defeat", "Bombing of Hiroshima", "Division of Korea at 38th parallel"], correct: "Stalin pledged to enter war vs Japan 3 months after Germany’s defeat" },
-  { q: "What did the Allies agree about UN voting procedures?", a: ["All nations equal power", "Permanent Security Council members have veto", "Only US and USSR vote", "UN located in Moscow"], correct: "Permanent Security Council members have veto" },
-  { q: "The Declaration of Liberated Europe promised:", a: ["Permanent Soviet occupation of Germany", "Free elections for democratic institutions in liberated states", "Return of all monarchs", "Marshall Plan economic aid"], correct: "Free elections for democratic institutions in liberated states" },
-  { q: "Which nation received a fourth occupation zone in Germany carved from US/UK zones?", a: ["Poland", "France", "Italy", "Canada"], correct: "France" },
-
-  // V. Kennan (Long Telegram)
-  { q: "About how many words was George Kennan’s Long Telegram (1946)?", a: ["800", "1,500", "8,000", "20,000"], correct: "8,000" },
-  { q: "What core foreign policy concept did Kennan propose?", a: ["Appeasement", "Containment", "Isolationism", "Rollback"], correct: "Containment" },
-  { q: "Kennan said Soviet power was impervious to the logic of reason but sensitive to:", a: ["Economic aid", "The logic of force", "Democratic elections", "International law"], correct: "The logic of force" },
-  { q: "Kennan argued the Kremlin’s neurotic worldview came from:", a: ["Desire for global trade", "An instinctive Russian sense of insecurity", "Belief in UN Charter", "Desire to cooperate with the West"], correct: "An instinctive Russian sense of insecurity" },
-  { q: "Kennan compared world communism to:", a: ["Beneficial bacteria", "A malignant parasite feeding on diseased tissue", "A slow-moving tortoise", "A protective shield"], correct: "A malignant parasite feeding on diseased tissue" },
-
-  // VI. Truman Doctrine
-  { q: "When was the Truman Doctrine announced?", a: ["February 1945", "March 1947", "June 1948", "April 1949"], correct: "March 1947" },
-  { q: "The Truman Doctrine marked a sharp break from traditional US:", a: ["Isolationism", "Interventionism", "Imperialism", "Globalism"], correct: "Isolationism" },
-  { q: "Truman said the US should support:", a: ["Only capitalist nations", "Free peoples resisting subjugation by armed minorities or outside pressures", "USSR’s right to a buffer zone", "All UN nations"], correct: "Free peoples resisting subjugation by armed minorities or outside pressures" },
-  { q: "How much initial aid did Truman request for Greece and Turkey?", a: ["$100 million", "$400 million", "$1 billion", "$13 billion"], correct: "$400 million" },
-  { q: "The Truman Doctrine responded to a power vacuum left by the decline of:", a: ["Germany", "Great Britain", "France", "Japan"], correct: "Great Britain" },
-
-  // VII. Greece Crisis
-  { q: "Why did Britain tell the US in 1947 it could no longer support Greece?", a: ["Greece became communist", "Britain lacked financial/military resources", "Britain wanted to join USSR", "Britain focused on war with Japan"], correct: "Britain lacked financial/military resources" },
-  { q: "Which group tried to take over the Greek government in 1946?", a: ["Nazi Party", "Greek Communist Party (EAM/ELAS)", "Ottoman Empire", "Red Guards"], correct: "Greek Communist Party (EAM/ELAS)" },
-  { q: "Truman feared if Greece fell, which neighbour would be endangered next?", a: ["Italy", "Turkey", "Poland", "Iran"], correct: "Turkey" },
-  { q: "By 1949, the communists in Greece were:", a: ["Victorious", "Defeated", "In coalition with monarchists", "Annexed by USSR"], correct: "Defeated" },
-  { q: "Dean Acheson used which theory to explain the danger?", a: ["Salami Tactics", "Domino Theory", "Iron Curtain Theory", "New Look Policy"], correct: "Domino Theory" },
-
-  // VIII. Marshall Plan
-  { q: "The Marshall Plan was named after:", a: ["Harry Truman", "George C. Marshall", "William Tunner", "Winston Churchill"], correct: "George C. Marshall" },
-  { q: "The main objective of the Marshall Plan was to:", a: ["Launch war on USSR", "Provide economic aid to rebuild Europe and resist communism", "Build the Berlin Wall", "Arrest all communist leaders"], correct: "Provide economic aid to rebuild Europe and resist communism" },
-  { q: "Marshall Plan: Approximately how much aid was given (1948–1952)?", a: ["$400 million", "$2 billion", "$13 billion", "$50 billion"], correct: "$13 billion" },
-  { q: "Stalin attacked the Marshall Plan as:", a: ["Capitalist Charity", "Dollar Imperialism", "Democratic Expansion", "The Great Gamble"], correct: "Dollar Imperialism" },
-  { q: "Largest beneficiaries of Marshall aid were:", a: ["Greece and Turkey", "Britain and France", "Germany and Italy", "Poland and Czechoslovakia"], correct: "Britain and France" },
-
-  // IX. Stalin Taking Over Eastern Europe
-  { q: "Stalin called pro-Soviet regimes protecting the USSR:", a: ["Democratic Allies", "Satellite States / Buffer Zone", "Red Core", "Socialist Center"], correct: "Satellite States / Buffer Zone" },
-  { q: "Why was Stalin determined to control Eastern Europe after WWII?", a: ["Market for Soviet goods", "Prevent future invasions from the West", "Follow Marshall Plan terms", "Join NATO"], correct: "Prevent future invasions from the West" },
-  { q: "By July 1945, Soviet troops effectively controlled:", a: ["Britain and France", "Baltic states, Poland, Czechoslovakia, Hungary, Bulgaria, Romania", "Greece and Turkey", "Italy and Spain"], correct: "Baltic states, Poland, Czechoslovakia, Hungary, Bulgaria, Romania" },
-  { q: "“Baggage Train” leaders were:", a: ["Supply soldiers", "Moscow-trained communists returning home to lead pro-Soviet governments", "Refugees fleeing West", "Pro-Marshall Plan politicians"], correct: "Moscow-trained communists returning home to lead pro-Soviet governments" },
-  { q: "Which government-in-exile was largely excluded after the war (London Poles)?", a: ["Hungary", "Poland", "Czechoslovakia", "Romania"], correct: "Poland" },
-
-  // X. Salami Tactics
-  { q: "Who coined the term “Salami Tactics”?", a: ["Joseph Stalin", "Matyas Rakosi", "Winston Churchill", "George Kennan"], correct: "Matyas Rakosi" },
-  { q: "“Salami Tactics” means:", a: ["Food prep for Red Army", "Step-by-step elimination of opposition to gain total control", "Rapid invasion", "Division of Germany"], correct: "Step-by-step elimination of opposition to gain total control" },
-  { q: "Typical first stage of Salami Tactics:", a: ["Execute opponents immediately", "Create a broad “anti-fascist” coalition government", "Ban all parties", "Join NATO"], correct: "Create a broad “anti-fascist” coalition government" },
-  { q: "In Hungary, Rakosi used which secret police to arrest opponents?", a: ["KGB", "AVO/AVH", "Gestapo", "Stasi"], correct: "AVO/AVH" },
-  { q: "By which year did only Greece remain non-communist in Eastern Europe?", a: ["1945", "1946", "1947", "1948"], correct: "1948" },
-
-  // XI. NATO
-  { q: "NATO stands for:", a: ["North American Trade Office", "North Atlantic Treaty Organization", "National Anti-Totalitarian Organization", "Northern Alliance for Territorial Order"], correct: "North Atlantic Treaty Organization" },
-  { q: "NATO was established in:", a: ["1945", "1947", "1948", "1949"], correct: "1949" },
-  { q: "Article 5 in NATO means:", a: ["Economic aid", "Attack on one is attack on all", "USSR can join", "Bans nuclear weapons"], correct: "Attack on one is attack on all" },
-  { q: "NATO was the first time the US joined a:", a: ["Trade bloc", "Peacetime military alliance", "Temporary wartime partnership", "Secret spy network"], correct: "Peacetime military alliance" },
-  { q: "Which country joined NATO in 1955, prompting the Warsaw Pact?", a: ["West Germany", "Greece", "Turkey", "France"], correct: "West Germany" },
-
-  // XII. Warsaw Pact
-  { q: "The Warsaw Pact was formed in:", a: ["1949", "1951", "1953", "1955"], correct: "1955" },
-  { q: "Which communist state in Eastern Europe did NOT join the Warsaw Pact?", a: ["Poland", "Yugoslavia", "Hungary", "Albania"], correct: "Yugoslavia" },
-  { q: "Primary reason for the Warsaw Pact:", a: ["Coordinate Marshall Plan", "Response to West Germany joining NATO", "Invade the US", "Build Berlin Wall"], correct: "Response to West Germany joining NATO" },
-  { q: "Senior positions and central military command were held by:", a: ["All members equally", "Soviet officials and commanders", "UN Security Council", "East German military"], correct: "Soviet officials and commanders" },
-  { q: "Warsaw Pact was used by USSR in 1956 and 1968 to:", a: ["Provide humanitarian aid", "Crush uprisings and keep members in line", "Negotiate peace with NATO", "Dismantle Iron Curtain"], correct: "Crush uprisings and keep members in line" },
-
-  // XIII. Comecon
-  { q: "Purpose of Comecon:", a: ["Coordinate military attacks", "Coordinate economic policy and trade of communist states", "Spread anti-US propaganda", "Manage Berlin Airlift"], correct: "Coordinate economic policy and trade of communist states" },
-  { q: "Comecon was established in:", a: ["1947", "1949", "1953", "1955"], correct: "1949" },
-  { q: "Comecon was the Soviet response to:", a: ["NATO", "Marshall Plan", "Truman Doctrine", "Berlin Airlift"], correct: "Marshall Plan" },
-  { q: "Comecon shifted trade for members like Bulgaria to:", a: ["US trade", "Mostly within the communist bloc (around 90% by 1950s)", "No trade at all", "Free-market economy"], correct: "Mostly within the communist bloc (around 90% by 1950s)" },
-  { q: "Comecon administered financial aid via:", a: ["Truman Plan", "Molotov Plan", "Five-Year Plan", "Marshall Aid Plan"], correct: "Molotov Plan" },
-
-  // XIV. Cominform
-  { q: "Cominform stands for:", a: ["Communist Information Forum", "Communist Information Bureau", "Committee for International Reform", "Command for Information and Military"], correct: "Communist Information Bureau" },
-  { q: "Cominform was established in:", a: ["February 1945", "September 1947", "January 1949", "May 1955"], correct: "September 1947" },
-  { q: "Main goal of Cominform:", a: ["Aid Western Europe", "Coordinate European communist parties under Soviet control", "Peace treaty with US", "Build wall in Berlin"], correct: "Coordinate European communist parties under Soviet control" },
-  { q: "Which country was expelled from Cominform in 1948?", a: ["Poland", "Yugoslavia", "Hungary", "Czechoslovakia"], correct: "Yugoslavia" },
-  { q: "Stalin used Cominform meetings mainly to:", a: ["Promote religious freedom", "Spread anti-US propaganda and enforce Moscow’s line", "Share nuclear secrets", "Discuss joining the UN"], correct: "Spread anti-US propaganda and enforce Moscow’s line" },
-
-  // XV. Berlin Blockade
-  { q: "The Berlin Blockade began in:", a: ["March 1947", "June 1948", "May 1949", "August 1961"], correct: "June 1948" },
-  { q: "Immediate trigger for the Berlin blockade:", a: ["Formation of NATO", "New Deutsche Mark in Western sectors", "Start of Korean War", "Iron Curtain speech"], correct: "New Deutsche Mark in Western sectors" },
-  { q: "How did Stalin carry out the blockade?", a: ["Built a wall", "Cut rail/road/water links to West Berlin", "Bombed the city", "Invaded West Germany"], correct: "Cut rail/road/water links to West Berlin" },
-  { q: "Stalin’s main goal was to:", a: ["Feed the population", "Force Western Powers out of Berlin", "Start WWIII", "Join Marshall Plan"], correct: "Force Western Powers out of Berlin" },
-  { q: "West Berlin was located:", a: ["On border of French/Soviet zones", "About 100 miles inside Soviet-controlled zone", "In centre of American zone", "On Baltic coast"], correct: "About 100 miles inside Soviet-controlled zone" },
-
-  // XVI. Berlin Airlift
-  { q: "US code name for the Berlin Airlift:", a: ["Operation Downfall", "Operation Vittles", "Operation Centerboard", "Operation Little Boy"], correct: "Operation Vittles" },
-  { q: "In the Berlin Airlift who managed airlift logistics and scheduling?", a: ["George Marshall", "William Tunner", "Paul Tibbets", "Curtis LeMay"], correct: "William Tunner" },
-  { q: "In the Berlin Blockade pilot Gail Halvorsen was nicknamed:", a: ["The Sky King", "The Candy Bomber", "The Berlin Ace", "The Propeller Prince"], correct: "The Candy Bomber" },
-  { q: "How long did the airlift last before the blockade was lifted?", a: ["3 months", "6 months", "11 months (continued longer as buffer)", "2 years"], correct: "11 months (continued longer as buffer)" },
-  { q: "In the Berlin Airlift record set on New Year’s Eve 1948:", a: ["1,000 tons", "4,000 tons", "Over 6,000 tons", "10,000 tons"], correct: "Over 6,000 tons" },
-
-  // XVII. Trizonia
-  { q: "Bizonia (early 1948) was:", a: ["A new Soviet tank", "UK + US zones merged into one economic unit", "A code name for airlift", "A hydrogen bomb target"], correct: "UK + US zones merged into one economic unit" },
-  { q: "In April 1949, which country joined Bizonia to create Trizonia?", a: ["Italy", "France", "West Germany", "Belgium"], correct: "France" },
-  { q: "Trizonia + a new currency led directly to:", a: ["Berlin Blockade", "End of Cold War", "Creation of UN", "Japan’s surrender"], correct: "Berlin Blockade" },
-  { q: "Trizonia later became:", a: ["GDR", "FRG (West Germany)", "EU", "Warsaw Pact"], correct: "FRG (West Germany)" },
-  { q: "Why combine zones into Trizonia?", a: ["Give land to USSR", "Rebuild German economy; separate zones drained resources", "Create secret nuclear site", "Fulfil Morgenthau Plan"], correct: "Rebuild German economy; separate zones drained resources" }
-];
-
-function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
-shuffle(questionsDeck);
-
-const blocks = Array.from({length: 40}, (_, i) => ({ x: 500 + (i * 350), y: 180, w: 50, h: 50, active: true }));
-
-document.getElementById('btn-start').onclick = () => {
-    document.getElementById('start-screen').style.display = 'none';
-    gameStarted = true; gameActive = true;
-    failSound.play().then(() => { failSound.pause(); failSound.currentTime = 0; }).catch(() => {});
+let state = {
+    gameStarted: false,
+    gameActive: false,
+    paused: false,
+    timer: 180,
+    score: 0,
+    viewportW: window.innerWidth,
+    viewportH: window.innerHeight,
+    particles: [],
+    bullets: [],
+    enemies: [],
+    lastSpawn: 0
 };
 
-const keys = {};
-window.onkeydown = e => keys[e.code] = true;
-window.onkeyup = e => keys[e.code] = false;
+const player = { x: 0, w: 120, h: 80, speed: 10 };
 
-function drawPlayer() {
-    ctx.save();
-    ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
-    if (!player.facingRight) ctx.scale(-1, 1);
-    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-15, -30, 30, 25);
-    ctx.fillStyle = "white"; ctx.fillRect(-10, -22, 8, 10); ctx.fillRect(2, -22, 8, 10);
-    ctx.fillStyle = "black"; ctx.fillRect(-7, -19, 4, 5); ctx.fillRect(5, -19, 4, 5);
-    ctx.fillStyle = "white"; ctx.fillRect(-16, -5, 32, 22);
-    ctx.fillStyle = "#0055ff"; ctx.fillRect(-16, 17, 32, 13);
-    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-12, 30, 8, 5); ctx.fillRect(4, 30, 8, 5);
-    ctx.restore();
+const QUEST_BANK = {
+    easy: [
+        { q: "What were the code names for the two atomic bombs used against Japan?", a: "Little Boy and Fat Man", o: ["Trinity and S-1", "Little Boy and Fat Man", "Olympic and Coronet", "Silverplate and Centerboard"] },
+        { q: "Which city was the primary target of the first atomic mission on 6 August 1945?", a: "Hiroshima", o: ["Nagasaki", "Kokura", "Hiroshima", "Kyoto"] },
+        { q: "What was the name of the first nuclear test explosion in New Mexico (July 1945)?", a: "Trinity", o: ["Operation Centerboard", "Trinity", "Manhattan Project", "Operation Meetinghouse"] },
+        { q: "Why did Henry Stimson insist on removing Kyoto from the target list?", a: "Due to its historical, religious, and cultural significance.", o: ["It had no military significance.", "Due to its historical, religious, and cultural significance.", "It had already been destroyed by firebombing.", "He wanted it to be post-war occupation HQ."] },
+        { q: "Stimson: the main psychological purpose of using the atomic bomb was to:", a: "Shock the Japanese ruling oligarchy into surrender.", o: ["Test the weapon for scientific data.", "Shock the Japanese ruling oligarchy into surrender.", "Intimidate the Soviet Union.", "Destroy Japanese culture."] },
+        { q: "In which year did Stalin first request the Allies open a Second Front in Western Europe?", a: "1941", o: ["1941", "1942", "1943", "1944"] },
+        { q: "Why was Stalin angry about the delay in opening the Second Front?", a: "It let Hitler concentrate forces against the USSR.", o: ["He wanted to invade Britain.", "It let Hitler concentrate forces against the USSR.", "He wanted American nuclear technology.", "He wanted to avoid the Nazi–Soviet Pact."] },
+        { q: "Suspected motive behind the delay in invading Western Europe?", a: "They wanted Germany and USSR to weaken each other.", o: ["The Allies lacked a navy.", "They wanted Germany and USSR to weaken each other.", "They were secretly helping Hitler.", "They prioritised the war in China."] },
+        { q: "Which operation finally opened the Second Front in June 1944?", a: "D-Day landings in Normandy", o: ["African Campaign", "Invasion of Italy", "D-Day landings in Normandy", "Operation Barbarossa"] },
+        { q: "Leader most vocal that a landing in Western Europe would cause prohibitive casualties?", a: "Winston Churchill", o: ["Joseph Stalin", "Winston Churchill", "Harry Truman", "Charles de Gaulle"] },
+        { q: "Who replaced Franklin D. Roosevelt at the Potsdam Conference?", a: "Harry S. Truman", o: ["George Marshall", "Harry S. Truman", "Clement Attlee", "Averell Harriman"] },
+        { q: "What did Truman privately reveal to Stalin at Potsdam?", a: "US tested a new weapon of mass destruction", o: ["US leaving the war", "US tested a new weapon of mass destruction", "Germany had surrendered", "No free elections in Poland"] },
+        { q: "At Potsdam, what did the Big Three decide about Germany?", a: "Divide into four occupation zones", o: ["Make it agricultural", "Divide into four occupation zones", "Keep it unified and unarmed", "Annex it into the USSR"] },
+        { q: "The Potsdam Declaration (26 July 1945) mainly:", a: "Outlined terms for Japan’s surrender", o: ["Defined Poland’s borders", "Outlined terms for Japan’s surrender", "Created the UN", "Split the Balkans into spheres"] },
+        { q: "Which leader attended Tehran, Yalta, AND Potsdam?", a: "Joseph Stalin", o: ["Winston Churchill", "Franklin Roosevelt", "Joseph Stalin", "Harry Truman"] },
+        { q: "Where and when was the Yalta Conference held?", a: "Crimea, February 1945", o: ["Germany, July 1945", "Crimea, February 1945", "Iran, November 1943", "Missouri, March 1946"] },
+        { q: "Concrete Pacific War accomplishment at Yalta?", a: "Stalin pledged to enter war vs Japan 3 months after Germany’s defeat", o: ["Immediate Japanese surrender", "Stalin pledged to enter war vs Japan 3 months after Germany’s defeat", "Bombing of Hiroshima", "Division of Korea"] },
+        { q: "What did the Allies agree about UN voting procedures?", a: "Permanent Security Council members have veto", o: ["All nations equal power", "Permanent Security Council members have veto", "Only US and USSR vote", "UN located in Moscow"] },
+        { q: "The Declaration of Liberated Europe promised:", a: "Free elections for democratic institutions in liberated states", o: ["Permanent Soviet occupation", "Free elections for democratic institutions in liberated states", "Return of all monarchs", "Marshall Plan aid"] },
+        { q: "Which nation received a fourth occupation zone in Germany carved from US/UK zones?", a: "France", o: ["Poland", "France", "Italy", "Canada"] }
+    ],
+    medium: [
+        { q: "When was the Truman Doctrine announced?", a: "March 1947", o: ["February 1945", "March 1947", "June 1948", "April 1949"] },
+        { q: "The Truman Doctrine marked a sharp break from traditional US:", a: "Isolationism", o: ["Isolationism", "Interventionism", "Imperialism", "Globalism"] },
+        { q: "Truman said the US should support:", a: "Free peoples resisting subjugation by armed minorities or outside pressures", o: ["Only capitalist nations", "Free peoples resisting subjugation by armed minorities or outside pressures", "USSR’s buffer zone", "All UN nations"] },
+        { q: "Initial aid requested for Greece and Turkey?", a: "$400 million", o: ["$100 million", "$400 million", "$1 billion", "$13 billion"] },
+        { q: "The Truman Doctrine responded to a power vacuum left by the decline of:", a: "Great Britain", o: ["Germany", "Great Britain", "France", "Japan"] },
+        { q: "Why did Britain tell the US in 1947 it could no longer support Greece?", a: "Britain lacked financial/military resources", o: ["Greece became communist", "Britain lacked financial/military resources", "Britain wanted to join USSR", "Britain focused on Japan"] },
+        { q: "Which group tried to take over the Greek government in 1946?", a: "Greek Communist Party (EAM/ELAS)", o: ["Nazi Party", "Greek Communist Party (EAM/ELAS)", "Ottoman Empire", "Red Guards"] },
+        { q: "Truman feared if Greece fell, which neighbour would be endangered next?", a: "Turkey", o: ["Italy", "Turkey", "Poland", "Iran"] },
+        { q: "By 1949, the communists in Greece were:", a: "Defeated", o: ["Victorious", "Defeated", "In coalition", "Annexed by USSR"] },
+        { q: "Dean Acheson used which theory to explain the danger?", a: "Domino Theory", o: ["Salami Tactics", "Domino Theory", "Iron Curtain Theory", "New Look Policy"] },
+        { q: "Objective of the Marshall Plan:", a: "Provide economic aid to rebuild Europe and resist communism", o: ["Launch war on USSR", "Provide economic aid to rebuild Europe and resist communism", "Build the Berlin Wall", "Arrest all communist leaders"] },
+        { q: "Marshall Plan: Approx aid given (1948–1952)?", a: "$13 billion", o: ["$400 million", "$2 billion", "$13 billion", "$50 billion"] },
+        { q: "Stalin attacked the Marshall Plan as:", a: "Dollar Imperialism", o: ["Capitalist Charity", "Dollar Imperialism", "Democratic Expansion", "The Great Gamble"] },
+        { q: "Largest beneficiaries of Marshall aid were:", a: "Britain and France", o: ["Greece and Turkey", "Britain and France", "Germany and Italy", "Poland and Czechoslovakia"] },
+        { q: "Stalin called pro-Soviet regimes protecting the USSR:", a: "Satellite States / Buffer Zone", o: ["Democratic Allies", "Satellite States / Buffer Zone", "Red Core", "Socialist Center"] },
+        { q: "Why control Eastern Europe after WWII?", a: "Prevent future invasions from the West", o: ["Market for Soviet goods", "Prevent future invasions from the West", "Follow Marshall Plan terms", "Join NATO"] },
+        { q: "By July 1945, Soviet troops effectively controlled:", a: "Baltic states, Poland, Czechoslovakia, Hungary, Bulgaria, Romania", o: ["Britain and France", "Baltic states, Poland, Czechoslovakia, Hungary, Bulgaria, Romania", "Greece and Turkey", "Italy and Spain"] },
+        { q: "“Baggage Train” leaders were:", a: "Moscow-trained communists returning home to lead pro-Soviet governments", o: ["Supply soldiers", "Moscow-trained communists returning home to lead pro-Soviet governments", "Refugees fleeing West", "Pro-Marshall Plan politicians"] },
+        { q: "Which government-in-exile was largely excluded after the war?", a: "Poland", o: ["Hungary", "Poland", "Czechoslovakia", "Romania"] },
+        { q: "Who coined the term “Salami Tactics”?", a: "Matyas Rakosi", o: ["Joseph Stalin", "Matyas Rakosi", "Winston Churchill", "George Kennan"] },
+        { q: "“Salami Tactics” means:", a: "Step-by-step elimination of opposition to gain total control", o: ["Food prep", "Step-by-step elimination of opposition to gain total control", "Rapid invasion", "Division of Germany"] },
+        { q: "Typical first stage of Salami Tactics:", a: "Create a broad “anti-fascist” coalition government", o: ["Execute opponents immediately", "Create a broad “anti-fascist” coalition government", "Ban all parties", "Join NATO"] },
+        { q: "In Hungary, Rakosi used which secret police to arrest opponents?", a: "AVO/AVH", o: ["KGB", "AVO/AVH", "Gestapo", "Stasi"] },
+        { q: "By which year did only Greece remain non-communist in Eastern Europe?", a: "1948", o: ["1945", "1946", "1947", "1948"] },
+        { q: "The Berlin Blockade began in:", a: "June 1948", o: ["March 1947", "June 1948", "May 1949", "August 1961"] },
+        { q: "Trigger for the Berlin blockade:", a: "New Deutsche Mark in Western sectors", o: ["Formation of NATO", "New Deutsche Mark in Western sectors", "Start of Korean War", "Iron Curtain speech"] },
+        { q: "How did Stalin carry out the blockade?", a: "Cut rail/road/water links to West Berlin", o: ["Built a wall", "Cut rail/road/water links to West Berlin", "Bombed the city", "Invaded West Germany"] },
+        { q: "Stalin’s main goal for the blockade:", a: "Force Western Powers out of Berlin", o: ["Feed the population", "Force Western Powers out of Berlin", "Start WWIII", "Join Marshall Plan"] },
+        { q: "West Berlin location:", a: "About 100 miles inside Soviet-controlled zone", o: ["On border", "About 100 miles inside Soviet-controlled zone", "In centre of American zone", "On Baltic coast"] },
+        { q: "US code name for the Berlin Airlift:", a: "Operation Vittles", o: ["Operation Downfall", "Operation Vittles", "Operation Centerboard", "Operation Little Boy"] },
+        { q: "In the Berlin Airlift who managed logistics and scheduling?", a: "William Tunner", o: ["George Marshall", "William Tunner", "Paul Tibbets", "Curtis LeMay"] },
+        { q: "Berlin Blockade pilot Gail Halvorsen was nicknamed:", a: "The Candy Bomber", o: ["The Sky King", "The Candy Bomber", "The Berlin Ace", "The Propeller Prince"] },
+        { q: "How long did the airlift last before the blockade was lifted?", a: "11 months (continued longer as buffer)", o: ["3 months", "6 months", "11 months (continued longer as buffer)", "2 years"] },
+        { q: "Record set on New Year’s Eve 1948 in Berlin Airlift:", a: "Over 6,000 tons", o: ["1,000 tons", "4,000 tons", "Over 6,000 tons", "10,000 tons"] }
+    ],
+    hard: [
+        { q: "Kennan: Long Telegram length (1946)?", a: "8,000", o: ["800", "1,500", "8,000", "20,000"] },
+        { q: "Foreign policy concept Kennan proposed:", a: "Containment", o: ["Appeasement", "Containment", "Isolationism", "Rollback"] },
+        { q: "Kennan: Soviet power was sensitive to:", a: "The logic of force", o: ["Economic aid", "The logic of force", "Democratic elections", "International law"] },
+        { q: "Kennan: the Kremlin’s neurotic worldview came from:", a: "An instinctive Russian sense of insecurity", o: ["Desire for global trade", "An instinctive Russian sense of insecurity", "Belief in UN Charter", "Desire to cooperate"] },
+        { q: "Kennan compared world communism to:", a: "A malignant parasite feeding on diseased tissue", o: ["Beneficial bacteria", "A malignant parasite feeding on diseased tissue", "A slow-moving tortoise", "A protective shield"] },
+        { q: "NATO stands for:", a: "North Atlantic Treaty Organization", o: ["North American Trade Office", "North Atlantic Treaty Organization", "National Anti-Totalitarian Organization", "Northern Alliance"] },
+        { q: "NATO was established in:", a: "1949", o: ["1945", "1947", "1948", "1949"] },
+        { q: "Article 5 in NATO means:", a: "Attack on one is attack on all", o: ["Economic aid", "Attack on one is attack on all", "USSR can join", "Bans nuclear weapons"] },
+        { q: "NATO was the first time the US joined a:", a: "Peacetime military alliance", o: ["Trade bloc", "Peacetime military alliance", "Temporary wartime partnership", "Secret spy network"] },
+        { q: "Country joined NATO in 1955, prompting the Warsaw Pact?", a: "West Germany", o: ["West Germany", "Greece", "Turkey", "France"] },
+        { q: "The Warsaw Pact was formed in:", a: "1955", o: ["1949", "1951", "1953", "1955"] },
+        { q: "Which communist state did NOT join the Warsaw Pact?", a: "Yugoslavia", o: ["Poland", "Yugoslavia", "Hungary", "Albania"] },
+        { q: "Primary reason for the Warsaw Pact:", a: "Response to West Germany joining NATO", o: ["Coordinate Marshall Plan", "Response to West Germany joining NATO", "Invade the US", "Build Berlin Wall"] },
+        { q: "Warsaw Pact senior military command positions were held by:", a: "Soviet officials and commanders", o: ["All members equally", "Soviet officials and commanders", "UN Security Council", "East German military"] },
+        { q: "Warsaw Pact used by USSR in 1956 and 1968 to:", a: "Crush uprisings and keep members in line", o: ["Provide humanitarian aid", "Crush uprisings and keep members in line", "Negotiate peace with NATO", "Iron Curtain"] },
+        { q: "Purpose of Comecon:", a: "Coordinate economic policy and trade of communist states", o: ["Coordinate military attacks", "Coordinate economic policy and trade of communist states", "Spread anti-US propaganda", "Manage Berlin Airlift"] },
+        { q: "Comecon was established in:", a: "1949", o: ["1947", "1949", "1953", "1955"] },
+        { q: "Comecon was the Soviet response to:", a: "Marshall Plan", o: ["NATO", "Marshall Plan", "Truman Doctrine", "Berlin Airlift"] },
+        { q: "Comecon trade for members like Bulgaria (1950s):", a: "Mostly within the communist bloc (around 90%)", o: ["US trade", "Mostly within the communist bloc (around 90%)", "No trade at all", "Free-market economy"] },
+        { q: "Comecon administered financial aid via:", a: "Molotov Plan", o: ["Truman Plan", "Molotov Plan", "Five-Year Plan", "Marshall Aid Plan"] },
+        { q: "Cominform stands for:", a: "Communist Information Bureau", o: ["Communist Information Forum", "Communist Information Bureau", "Committee for International Reform", "Command for Information"] },
+        { q: "Cominform was established in:", a: "September 1947", o: ["February 1945", "September 1947", "January 1949", "May 1955"] },
+        { q: "Main goal of Cominform:", a: "Coordinate European communist parties under Soviet control", o: ["Aid Western Europe", "Coordinate European communist parties under Soviet control", "Peace treaty with US", "Build wall in Berlin"] },
+        { q: "Which country was expelled from Cominform in 1948?", a: "Yugoslavia", o: ["Poland", "Yugoslavia", "Hungary", "Czechoslovakia"] },
+        { q: "Stalin used Cominform meetings mainly to:", a: "Spread anti-US propaganda and enforce Moscow’s line", o: ["Promote religious freedom", "Spread anti-US propaganda and enforce Moscow’s line", "Share nuclear secrets", "Discuss joining the UN"] },
+        { q: "Bizonia (early 1948) was:", a: "UK + US zones merged into one economic unit", o: ["A new Soviet tank", "UK + US zones merged into one economic unit", "A code name for airlift", "A hydrogen bomb target"] },
+        { q: "April 1949: Bizonia merged with which country for Trizonia?", a: "France", o: ["Italy", "France", "West Germany", "Belgium"] },
+        { q: "Trizonia + a new currency led directly to:", a: "Berlin Blockade", o: ["Berlin Blockade", "End of Cold War", "Creation of UN", "Japan’s surrender"] },
+        { q: "Trizonia later became:", a: "FRG (West Germany)", o: ["GDR", "FRG (West Germany)", "EU", "Warsaw Pact"] },
+        { q: "Why combine zones into Trizonia?", a: "Rebuild German economy; separate zones drained resources", o: ["Give land to USSR", "Rebuild German economy; separate zones drained resources", "Create secret nuclear site", "Fulfil Morgenthau Plan"] }
+    ]
+};
+
+let sessionDeck = [];
+function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+
+function buildSessionDeck() {
+    let easy = shuffle([...QUEST_BANK.easy]);
+    let mid = shuffle([...QUEST_BANK.medium]);
+    let diff = shuffle([...QUEST_BANK.hard]);
+    
+    let deck = [];
+    while(easy.length > 0 || mid.length > 0 || diff.length > 0) {
+        if(easy.length > 0) deck.push(easy.pop());
+        if(easy.length > 0) deck.push(easy.pop());
+        if(mid.length > 0) deck.push(mid.pop());
+        if(diff.length > 0) deck.push(diff.pop());
+    }
+    return deck;
+}
+sessionDeck = buildSessionDeck();
+
+function resize() {
+    state.viewportW = window.innerWidth;
+    state.viewportH = window.innerHeight;
+    canvas.width = state.viewportW;
+    canvas.height = state.viewportH;
+    player.x = state.viewportW / 2 - player.w / 2;
+}
+
+const touch = { left: false, right: false };
+function init() {
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    resize();
+    
+    document.getElementById('btn-start').onclick = () => {
+        document.getElementById('start-screen').classList.add('hidden');
+        state.gameStarted = true; state.gameActive = true;
+    };
+    document.getElementById('btn-restart').onclick = () => location.reload();
+
+    const setupTouch = (id, key) => {
+        const el = document.getElementById(id);
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); touch[key] = true; });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); touch[key] = false; });
+    };
+    setupTouch('ctrl-left', 'left');
+    setupTouch('ctrl-right', 'right');
+    document.getElementById('ctrl-shoot').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (state.gameActive && !state.paused) shoot();
+    });
+
+    requestAnimationFrame(update);
+}
+
+function shoot() {
+    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 180, r: 8, speed: 12 });
+}
+
+function spawnEnemy() {
+    const r = 35;
+    state.enemies.push({
+        x: Math.random() * (state.viewportW - r*2) + r,
+        y: -r,
+        r: r,
+        speed: 2.5 + Math.random() * 2,
+        type: 'mcq'
+    });
+}
+
+function createFireworks(x, y) {
+    const colors = ['#3b82f6', '#fbbf24', '#ef4444', '#22c55e', '#ffffff'];
+    for (let i = 0; i < 60; i++) {
+        state.particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 15,
+            vy: (Math.random() - 0.5) * 15,
+            life: 1.0,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 5 + 2
+        });
+    }
 }
 
 function triggerQuiz() {
-    gameActive = false;
-    const currentQ = questionsDeck[0];
-
-    document.getElementById('question-text').innerText = currentQ.q;
+    state.paused = true;
+    const q = sessionDeck[0];
+    const modal = document.getElementById('quiz-overlay');
     const container = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback');
+    
+    document.getElementById('question-text').innerText = q.q;
+    document.getElementById('stats-q').innerText = sessionDeck.length;
     container.innerHTML = '';
-
-    let opts = [...currentQ.a]; shuffle(opts);
-
-    opts.forEach(opt => {
+    feedback.innerText = '';
+    
+    shuffle([...q.o]).forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn'; btn.innerText = opt;
+        btn.className = 'option-btn';
+        btn.innerText = opt;
         btn.onclick = () => {
-            document.getElementById('quiz-overlay').style.display = 'none';
-            if (opt === currentQ.correct) {
-                coins += 10; streak++;
-                if (streak === 10) { coins += 5; streak = 0; }
-                document.getElementById('stats-coins').innerText = `Coins: ${coins}`;
-                questionsDeck.shift();
-                gameActive = (timer > 0);
+            Array.from(container.children).forEach(b => b.disabled = true);
+            if (opt === q.a) {
+                state.score += 50;
+                document.getElementById('stats-coins').innerText = state.score;
+                createFireworks(state.viewportW / 2, state.viewportH / 2);
+                sessionDeck.shift();
+                if (sessionDeck.length === 0) endGame();
+                else resume();
             } else {
-                streak = 0; isFalling = true; failSound.play();
-                questionsDeck.push(questionsDeck.shift());
+                btn.classList.add('wrong');
+                feedback.innerText = `Incorrect. Intel: ${q.a}`;
+                feedback.className = "mt-6 text-center font-black uppercase italic text-red-500 text-xl";
+                
+                const missed = sessionDeck.shift();
+                // Reinforcement: Repeat missed question 2 positions later
+                sessionDeck.splice(2, 0, missed);
+                
+                setTimeout(() => {
+                    resume();
+                }, 2000);
             }
         };
         container.appendChild(btn);
     });
+    modal.classList.remove('hidden');
+}
 
-    document.getElementById('quiz-overlay').style.display = 'flex';
+function resume() {
+    document.getElementById('quiz-overlay').classList.add('hidden');
+    state.paused = false;
 }
 
 function update() {
-    if (!gameStarted) { requestAnimationFrame(update); return; }
+    if (!state.gameStarted) { requestAnimationFrame(update); return; }
 
-    if (timer <= 0) {
-        gameActive = false;
-        document.getElementById('message').style.display = 'block';
-        document.getElementById('message').innerText = "TIME UP!";
-    }
+    if (!state.paused) {
+        if (touch.left && player.x > 0) player.x -= player.speed;
+        if (touch.right && player.x < state.viewportW - player.w) player.x += player.speed;
 
-    if (isFalling) {
-        player.vy += gravity; player.y += player.vy;
-        if (player.y > 500) {
-            lives--; document.getElementById('stats-lives').innerText = `Lives: ${lives}`;
-            if (lives <= 0) {
-                gameActive = false;
-                document.getElementById('message').style.display = 'block';
-                document.getElementById('message').innerText = "GAME OVER";
-            } else {
-                player.x -= 300; player.y = 100; player.vy = 0; isFalling = false;
-                if (timer > 0) gameActive = true;
-            }
+        if (Date.now() - state.lastSpawn > 2200) {
+            spawnEnemy();
+            state.lastSpawn = Date.now();
         }
-    } else if (gameActive) {
-        if (keys['ArrowRight']) { player.vx = player.speed; player.facingRight = true; }
-        else if (keys['ArrowLeft']) { player.vx = -player.speed; player.facingRight = false; }
-        else player.vx *= 0.8;
 
-        if (keys['Space'] && player.grounded) { player.vy = player.jumpPower; player.grounded = false; }
+        for (let i = state.bullets.length - 1; i >= 0; i--) {
+            const b = state.bullets[i];
+            b.y -= b.speed;
+            if (b.y < -20) state.bullets.splice(i, 1);
+        }
 
-        player.vy += gravity; player.x += player.vx; player.y += player.vy;
+        for (let i = state.enemies.length - 1; i >= 0; i--) {
+            const en = state.enemies[i];
+            en.y += en.speed;
+            if (en.y > state.viewportH + en.r) {
+                state.enemies.splice(i, 1);
+                continue;
+            }
 
-        if (player.y + player.h > 350) { player.y = 350 - player.h; player.vy = 0; player.grounded = true; }
-
-        blocks.forEach((b) => {
-            if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
-                if (player.vy < 0) {
-                    b.active = false; player.vy = 2;
-                    if (questionsDeck.length > 0) triggerQuiz();
-                    else {
-                        gameActive = false;
-                        document.getElementById('message').style.display = 'block';
-                        document.getElementById('message').innerText = "MASTERY!";
-                    }
+            for (let j = state.bullets.length - 1; j >= 0; j--) {
+                const b = state.bullets[j];
+                const dist = Math.hypot(b.x - en.x, b.y - en.y);
+                if (dist < en.r + 15) {
+                    state.bullets.splice(j, 1);
+                    state.enemies.splice(i, 1);
+                    triggerQuiz();
+                    break;
                 }
             }
-        });
+        }
     }
 
-    ctx.setTransform(1,0,0,1,0,0); ctx.clearRect(0,0,canvas.width,canvas.height);
-    let camX = -player.x + 150; if (camX > 0) camX = 0;
-    ctx.translate(camX, 0);
+    for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.02;
+        if (p.life <= 0) state.particles.splice(i, 1);
+    }
 
-    ctx.fillStyle = isFalling ? '#111' : '#333'; ctx.fillRect(-1000, 350, 20000, 50);
-
-    blocks.forEach(b => {
-        if (b.active) {
-            ctx.fillStyle = '#ffd600'; ctx.fillRect(b.x, b.y, b.w, b.h);
-            ctx.fillStyle = 'black'; ctx.font = 'bold 20px Arial'; ctx.fillText('?', b.x+15, b.y+33);
-        }
-    });
-
-    drawPlayer();
+    render();
     requestAnimationFrame(update);
 }
 
+function render() {
+    ctx.clearRect(0, 0, state.viewportW, state.viewportH);
+    
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    for(let i=0; i<30; i++) {
+        ctx.fillRect((Date.now()/60 + i*141) % state.viewportW, (i*179) % state.viewportH, 2, 2);
+    }
+
+    ctx.fillStyle = "#3b82f6";
+    ctx.fillRect(player.x, state.viewportH - 160, player.w, 45);
+    ctx.fillStyle = "#60a5fa";
+    ctx.fillRect(player.x + (player.w * 0.25), state.viewportH - 185, player.w * 0.5, 25);
+
+    state.enemies.forEach(en => {
+        ctx.beginPath();
+        ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#dc2626";
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 24px Inter";
+        ctx.textAlign = "center";
+        ctx.fillText("?", en.x, en.y + 8);
+    });
+
+    ctx.fillStyle = "#fbbf24";
+    state.bullets.forEach(b => {
+        ctx.fillRect(b.x, b.y, 8, 22);
+    });
+
+    state.particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+}
+
+function endGame() {
+    state.gameActive = false;
+    document.getElementById('final-score').innerText = state.score;
+    document.getElementById('end-screen').classList.remove('hidden');
+}
+
 setInterval(() => {
-    if (gameActive && timer > 0) {
-        timer--;
-        document.getElementById('stats-timer').innerText = timer + "s";
+    if (state.gameActive && !state.paused && state.timer > 0) {
+        state.timer--;
+        document.getElementById('stats-timer').innerText = state.timer + "s";
+        if (state.timer <= 0) endGame();
     }
 }, 1000);
 
-update();
+init();
 </script>
 </body>
 </html>
