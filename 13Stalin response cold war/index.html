@@ -64,9 +64,9 @@
             min-height: 3rem;
             display: flex;
             align-items: center;
-            justify-content: center;
+            justify-content: flex-start; /* Changed to flex-start for left justification */
             text-align: left;
-            padding: 0.6rem 1rem;
+            padding: 0.6rem 1.2rem;
             width: 100%;
             border-radius: 12px;
             font-weight: 800;
@@ -221,14 +221,14 @@ const QUEST_BANK = {
     hard: [
         { q: "Foreign policy concept George Kennan proposed:", a: "Containment", o: ["Appeasement", "Containment", "Isolationism", "Rollback"] },
         { q: "Kennan: the Kremlin’s neurotic worldview came from:", a: "An instinctive Russian sense of insecurity", o: ["Desire for trade", "An instinctive Russian sense of insecurity", "Belief in UN", "Cooperation"] },
-        { q: "Article 5 in NATO means:", a: "Attack on one is attack on all", o: ["Economic aid", "Attack on one is attack on all", "USSR join", "Bans nukes"] },
-        { q: "NATO was the first time the US joined a:", a: "Peacetime military alliance", o: ["Trade bloc", "Peacetime military alliance", "Wartime partnership", "Spy network"] },
+        { q: "Article 5 in NATO means:", a: "Attack on one is attack on all", o: ["Attack on one is attack on all", "Economic aid", "USSR join", "Bans nukes"] },
+        { q: "NATO was the first time the US joined a:", a: "Peacetime military alliance", o: ["Peacetime military alliance", "Trade bloc", "Wartime partnership", "Spy network"] },
         { q: "Primary reason for the Warsaw Pact (1955):", a: "Response to West Germany joining NATO", o: ["Coordinate Marshall Plan", "Response to West Germany joining NATO", "Invade US", "Berlin Wall"] },
-        { q: "Purpose of Comecon:", a: "Coordinate economic policy and trade of communist states", o: ["Military attacks", "Coordinate economic policy and trade of communist states", "Propaganda", "Manage Airlift"] },
+        { q: "Purpose of Comecon:", a: "Coordinate economic policy and trade of communist states", o: ["Coordinate economic policy and trade of communist states", "Military attacks", "Propaganda", "Manage Airlift"] },
         { q: "Comecon was the Soviet response to:", a: "Marshall Plan", o: ["NATO", "Marshall Plan", "Truman Doctrine", "Berlin Airlift"] },
-        { q: "Cominform stands for:", a: "Communist Information Bureau", o: ["Communist Forum", "Communist Information Bureau", "Committee for Reform", "Military Command"] },
-        { q: "Which country was expelled from Cominform in 1948?", a: "Yugoslavia", o: ["Poland", "Yugoslavia", "Hungary", "Czechoslovakia"] },
-        { q: "April 1949: Bizonia merged with which country for Trizonia?", a: "France", o: ["Italy", "France", "West Germany", "Belgium"] },
+        { q: "Cominform stands for:", a: "Communist Information Bureau", o: ["Communist Information Bureau", "Communist Forum", "Committee for Reform", "Military Command"] },
+        { q: "Which country was expelled from Cominform in 1948?", a: "Yugoslavia", o: ["Yugoslavia", "Poland", "Hungary", "Czechoslovakia"] },
+        { q: "April 1949: Bizonia merged with which country for Trizonia?", a: "France", o: ["France", "Italy", "West Germany", "Belgium"] },
         { q: "Trizonia + a new currency led directly to:", a: "Berlin Blockade", o: ["Berlin Blockade", "End of Cold War", "Creation of UN", "Surrender"] }
     ]
 };
@@ -287,7 +287,6 @@ function init() {
 }
 
 function shoot() {
-    // Spawns from front of ship (which is now lower in landscape for visibility)
     state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 120, r: 10, speed: 14 });
 }
 
@@ -419,21 +418,16 @@ function update() {
 function render() {
     ctx.clearRect(0, 0, state.viewportW, state.viewportH);
     
-    // Distant stars
     ctx.fillStyle = "rgba(255,255,255,0.2)";
     for(let i=0; i<30; i++) {
         ctx.fillRect((Date.now()/70 + i*167) % state.viewportW, (i*193) % state.viewportH, 2, 2);
     }
 
-    // Player Ship (Landscape Position)
     ctx.fillStyle = "#3b82f6";
-    // Base: Y position adjusted for shorter screen
     ctx.fillRect(player.x, state.viewportH - 100, player.w, 35);
     ctx.fillStyle = "#60a5fa";
-    // Cockpit
     ctx.fillRect(player.x + (player.w * 0.3), state.viewportH - 120, player.w * 0.4, 20);
 
-    // Enemies (Red MCQ Orbs)
     state.enemies.forEach(en => {
         ctx.beginPath();
         ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
@@ -448,13 +442,11 @@ function render() {
         ctx.fillText("?", en.x, en.y + 8);
     });
 
-    // Bullets (Energy Bolts)
     ctx.fillStyle = "#fbbf24";
     state.bullets.forEach(b => {
         ctx.fillRect(b.x, b.y, 10, 26);
     });
 
-    // Fireworks Particles
     state.particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
