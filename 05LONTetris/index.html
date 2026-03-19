@@ -429,18 +429,13 @@
             const fText = document.getElementById('feedback-text');
             const nextBtn = document.getElementById('mcq-continue-btn');
 
-            container.classList.add('hidden');
-            feedback.classList.remove('hidden');
-
             if (choice === q.a) {
                 state.score += 200;
                 state.qRhythm = (state.qRhythm + 1) % 3;
-                fTitle.innerText = "Correct!";
-                fTitle.className = "font-black uppercase text-sm mb-1 text-green-500";
-                fText.innerText = q.ex;
-                nextBtn.innerText = "Resume Mission";
-                nextBtn.onclick = () => resume();
+                resume(); // Move on immediately for correct answers
             } else {
+                container.classList.add('hidden');
+                feedback.classList.remove('hidden');
                 state.lives--;
                 fTitle.innerText = "Incorrect!";
                 fTitle.className = "font-black uppercase text-sm mb-1 text-red-500";
