@@ -130,7 +130,7 @@
                 <h3 id="question-text" class="text-lg font-bold mb-6 text-white leading-tight"></h3>
                 <div id="options-container" class="grid grid-cols-1 gap-3"></div>
                 
-                <!-- Feedback Overlay -->
+                <!-- Feedback Overlay (Only for Incorrect Answers) -->
                 <div id="feedback-area" class="hidden mt-6 p-4 rounded-xl border-l-4">
                     <p id="feedback-title" class="font-black uppercase text-sm mb-1"></p>
                     <p id="feedback-text" class="text-xs text-slate-300 leading-relaxed mb-4"></p>
@@ -432,8 +432,9 @@
             if (choice === q.a) {
                 state.score += 200;
                 state.qRhythm = (state.qRhythm + 1) % 3;
-                resume(); // Move on immediately for correct answers
+                resume(); // Correct answers unpause the game immediately
             } else {
+                // Incorrect answers show feedback for learning reinforcement
                 container.classList.add('hidden');
                 feedback.classList.remove('hidden');
                 state.lives--;
