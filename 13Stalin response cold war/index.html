@@ -1,241 +1,485 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Stalin’s Mood Board – Events & Explanations</title>
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<style>
-    * { box-sizing: border-box; }
-    body {
-        margin: 0;
-        font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
-        background: linear-gradient(135deg,#1c2541 0%,#3a506b 50%,#5bc0be 100%);
-        color: #222;
-        line-height: 1.5;
-    }
-    header {
-        text-align: center;
-        padding: 1.5rem 1rem;
-        background: rgba(0,0,0,0.25);
-        color: #fff;
-    }
-    header h1 {
-        margin: 0 0 .3rem;
-        font-size: 1.8rem;
-    }
-    header p {
-        margin: 0;
-        font-size: .95rem;
-        opacity: 0.9;
-    }
-    main {
-        max-width: 1100px;
-        margin: 1.5rem auto;
-        background: #f7f9fc;
-        padding: 1.5rem;
-        border-radius: 12px;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.18);
-    }
-    h2 {
-        margin-top: 0;
-        font-size: 1.2rem;
-    }
-    .instructions {
-        font-size: .95rem;
-        margin-bottom: 1rem;
-    }
-    .instructions ol {
-        padding-left: 1.2rem;
-        margin: .5rem 0 0;
-    }
-    table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 1rem;
-        font-size: .92rem;
-        table-layout: fixed;
-    }
-    th, td {
-        border: 1px solid #cbd5e0;
-        padding: .6rem .5rem;
-        vertical-align: top;
-    }
-    th {
-        background: #e2e8f0;
-        text-align: left;
-        font-weight: 600;
-    }
-    td.event {
-        width: 20%;
-        font-weight: 600;
-    }
-    td.summary {
-        width: 45%;
-    }
-    td.explain {
-        width: 35%;
-    }
-    textarea.explain-box {
-        width: 100%;
-        min-height: 90px;
-        resize: vertical;
-        padding: .4rem .5rem;
-        font-family: inherit;
-        font-size: .9rem;
-        border-radius: 6px;
-        border: 1px solid #cbd5e0;
-        background: #ffffff;
-    }
-    textarea.explain-box:focus {
-        outline: 2px solid #63b3ed;
-        border-color: #63b3ed;
-    }
-    @media print {
-        body { background: #fff; }
-        main { box-shadow: none; border-radius: 0; }
-        textarea.explain-box {
-            border: 1px solid #000;
-            resize: none;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Alien Intelligence: Cold War Mastery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
+        
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
         }
-    }
-</style>
+
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { 
+            margin: 0; 
+            background: #020617; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            color: white; 
+            touch-action: none; 
+            height: 100dvh;
+            width: 100vw;
+            position: fixed;
+        }
+
+        .loud-font { font-family: 'Black Ops One', cursive; }
+        
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
+            background: radial-gradient(circle at 50% 100%, #1e1b4b 0%, #020617 70%);
+            overflow: hidden;
+        }
+
+        canvas { display: block; width: 100%; height: 100%; }
+
+        .control-btn {
+            background: rgba(59, 130, 246, 0.15);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            backdrop-filter: blur(8px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        .control-btn:active { background: rgba(59, 130, 246, 0.4); transform: scale(0.92); }
+
+        .option-btn {
+            transition: all 0.2s;
+            min-height: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: left;
+            padding: 0.6rem 1rem;
+            width: 100%;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: #1e293b;
+            border: 2px solid #334155;
+            color: #fff;
+            text-transform: uppercase;
+        }
+
+        #hud {
+            padding-top: calc(0.5rem + var(--sat));
+            padding-left: calc(1rem + var(--sal));
+            padding-right: calc(1rem + var(--sar));
+        }
+
+        @media (orientation: portrait) {
+            #portrait-warning { display: flex !important; }
+        }
+
+        .correct { background: #16a34a !important; border-color: #22c55e !important; }
+        .wrong { background: #dc2626 !important; border-color: #ef4444 !important; }
+    </style>
 </head>
 <body>
-<header>
-    <h1>Stalin’s Mood Board – Events & Explanations</h1>
-    <p>Read the Cold War event, then explain Stalin’s reaction in your own words.</p>
-</header>
 
-<main>
-    <h2>Instructions</h2>
-    <div class="instructions">
-        <ol>
-            <li>Read the event and short explanation in each row.</li>
-            <li>Think about Stalin’s aims, fears and priorities at this time.</li>
-            <li>In the last column, type a short explanation (2–3 sentences) of how and why Stalin would react.</li>
-        </ol>
+<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+    <div class="animate-bounce mb-4 text-blue-500">
+        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v16a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H6a2 2 0 00-2 2zM9 20h6"/></svg>
+    </div>
+    <h2 class="text-2xl loud-font text-blue-400 mb-2 uppercase">Rotate for Landscape</h2>
+    <p class="text-slate-500 text-sm">Target interception optimized for Wide View Mode.</p>
+</div>
+
+<div id="game-container">
+    <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
+        <h1 class="text-5xl md:text-8xl font-black text-blue-600 loud-font italic mb-2 tracking-tighter uppercase leading-tight">Cold War Mastery</h1>
+        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Revision Unit</p>
+        <button id="btn-start" class="px-16 py-5 bg-blue-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-blue-800">
+            Start Unit
+        </button>
     </div>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Cold War Event</th>
-                <th>What happened?</th>
-                <th>Explain Stalin’s reaction</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td class="event">Iron Curtain Speech (1946)</td>
-                <td class="summary">
-                    Churchill gives a speech saying an “iron curtain” has fallen across Europe, accusing the USSR of
-                    controlling Eastern Europe and spreading communism.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain how and why Stalin might react to this speech."></textarea>
-                </td>
-            </tr>
+    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
+        <div class="bg-blue-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[9px] uppercase font-black text-blue-400">Score</p>
+            <p id="stats-coins" class="text-lg font-black text-white">0</p>
+        </div>
+        <div class="bg-blue-900/40 backdrop-blur-md px-6 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[9px] uppercase font-black text-blue-400">Time Remaining</p>
+            <p id="stats-timer" class="text-lg font-black text-white">180s</p>
+        </div>
+        <div class="bg-blue-900/40 backdrop-blur-md px-4 py-2 rounded-xl border border-blue-500/30 text-center">
+            <p class="text-[9px] uppercase font-black text-blue-400">Intelligence</p>
+            <p id="stats-q" class="text-lg font-black text-white">0</p>
+        </div>
+    </div>
 
-            <tr>
-                <td class="event">Poland under Soviet Control</td>
-                <td class="summary">
-                    After the war, a communist government takes power in Poland with Soviet backing, even though the USSR
-                    had agreed at Yalta that there would be free elections.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain Stalin’s reaction to gaining control over Poland."></textarea>
-                </td>
-            </tr>
+    <canvas id="gameCanvas"></canvas>
 
-            <tr>
-                <td class="event">COMINFORM (1947)</td>
-                <td class="summary">
-                    Stalin creates Cominform, an organisation to coordinate and direct communist parties in Europe from
-                    Moscow.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain why Stalin would react by setting up Cominform and how he would feel about it."></textarea>
-                </td>
-            </tr>
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-md">
+        <div class="w-full max-w-2xl bg-slate-900 border-t-[8px] border-blue-600 rounded-b-3xl p-6 shadow-2xl max-h-[92vh] overflow-y-auto">
+            <div class="text-blue-500 font-black uppercase tracking-[0.2em] text-[10px] mb-2">Decryption Required</div>
+            <h3 id="question-text" class="text-xl font-black italic uppercase mb-6 text-white leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-2 gap-3"></div>
+            <div id="feedback" class="mt-4 text-center font-black h-8 uppercase italic text-lg"></div>
+        </div>
+    </div>
 
-            <tr>
-                <td class="event">Marshall Plan (1947)</td>
-                <td class="summary">
-                    The USA offers billions of dollars to help European countries rebuild their economies. The plan is
-                    open to all European states, including those in Eastern Europe.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain how Stalin might respond to the Marshall Plan and why."></textarea>
-                </td>
-            </tr>
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
+        <h1 class="text-6xl loud-font italic text-blue-600 mb-6 uppercase">Mission End</h1>
+        <div class="mb-10">
+            <p class="text-slate-500 text-xs uppercase font-black tracking-widest mb-1">Final Intelligence Mastery</p>
+            <div class="text-7xl font-black text-white" id="final-score">0</div>
+        </div>
+        <button id="btn-restart" class="px-16 py-6 bg-white text-black loud-font rounded-full active:bg-blue-600 active:text-white transition-all uppercase tracking-widest text-xl shadow-2xl">
+            Restart
+        </button>
+    </div>
 
-            <tr>
-                <td class="event">Czechoslovak Coup (1948)</td>
-                <td class="summary">
-                    Communists, supported by the USSR, remove non-communist leaders in Czechoslovakia and take full
-                    control of the government.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain Stalin’s reaction to events in Czechoslovakia."></textarea>
-                </td>
-            </tr>
+    <!-- Mobile Controls Optimized for Landscape Thumbs -->
+    <div class="absolute bottom-[calc(1.5rem+var(--sab))] left-[calc(1.5rem+var(--sal))] flex gap-4 z-30 pointer-events-none">
+        <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
+            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+        </div>
+        <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
+            <svg class="w-10 h-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
+        </div>
+    </div>
+    <div class="absolute bottom-[calc(1.5rem+var(--sab))] right-[calc(1.5rem+var(--sar))] z-30 pointer-events-none">
+        <div id="ctrl-shoot" class="control-btn w-24 h-24 bg-red-600/20 border-red-600/40 pointer-events-auto">
+            <div class="w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
+        </div>
+    </div>
+</div>
 
-            <tr>
-                <td class="event">Berlin Blockade (1948–49)</td>
-                <td class="summary">
-                    The Western Allies introduce a new currency in their zones of Germany and in West Berlin. In response,
-                    Stalin blocks all land and water routes to West Berlin to try to force them out.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain why Stalin reacts with a blockade and what he hopes to achieve."></textarea>
-                </td>
-            </tr>
+<script>
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
 
-            <tr>
-                <td class="event">Berlin Airlift Succeeds</td>
-                <td class="summary">
-                    The USA and Britain organise an airlift, flying supplies into West Berlin for almost a year. The
-                    blockade fails and Stalin eventually reopens the routes.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain Stalin’s reaction when the airlift succeeds."></textarea>
-                </td>
-            </tr>
+let state = {
+    gameStarted: false,
+    gameActive: false,
+    paused: false,
+    timer: 180,
+    score: 0,
+    viewportW: window.innerWidth,
+    viewportH: window.innerHeight,
+    particles: [],
+    bullets: [],
+    enemies: [],
+    lastSpawn: 0
+};
 
-            <tr>
-                <td class="event">NATO Formed (1949)</td>
-                <td class="summary">
-                    The USA, Britain and other Western countries form NATO, a military alliance promising to defend one
-                    another if attacked.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain how Stalin might react to the creation of NATO."></textarea>
-                </td>
-            </tr>
+// 2x size for mobile clarity
+const player = { x: 0, w: 110, h: 70, speed: 11 };
 
-            <tr>
-                <td class="event">COMECON (1949)</td>
-                <td class="summary">
-                    The USSR sets up Comecon to organise economic cooperation between communist countries and link their
-                    economies more closely to the Soviet Union.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain Stalin’s reaction to creating Comecon."></textarea>
-                </td>
-            </tr>
+const QUEST_BANK = {
+    easy: [
+        { q: "What were the code names for the two atomic bombs used against Japan?", a: "Little Boy and Fat Man", o: ["Trinity and S-1", "Little Boy and Fat Man", "Olympic and Coronet", "Silverplate and Centerboard"] },
+        { q: "Which city was the primary target of the first atomic mission on 6 August 1945?", a: "Hiroshima", o: ["Nagasaki", "Kokura", "Hiroshima", "Kyoto"] },
+        { q: "What was the name of the first nuclear test explosion in New Mexico?", a: "Trinity", o: ["Operation Centerboard", "Trinity", "Manhattan Project", "Operation Meetinghouse"] },
+        { q: "Henry Stimson insisted on removing Kyoto from target list due to:", a: "Its historical, religious, and cultural significance.", o: ["No military significance.", "Its historical, religious, and cultural significance.", "Already destroyed.", "Post-war HQ."] },
+        { q: "The psychological purpose of using the atomic bomb was to:", a: "Shock the Japanese ruling oligarchy into surrender.", o: ["Test for scientific data.", "Shock the Japanese ruling oligarchy into surrender.", "Intimidate the Soviet Union.", "Destroy culture."] },
+        { q: "In which year did Stalin first request the Allies open a Second Front?", a: "1941", o: ["1941", "1942", "1943", "1944"] },
+        { q: "Why was Stalin angry about the delay in opening the Second Front?", a: "It let Hitler concentrate forces against the USSR.", o: ["Invasion of Britain.", "It let Hitler concentrate forces against the USSR.", "American nuclear tech.", "Nazi–Soviet Pact."] },
+        { q: "Stalin suspected the motive behind the delay in invading Europe was:", a: "They wanted Germany and USSR to weaken each other.", o: ["Lacked a navy.", "They wanted Germany and USSR to weaken each other.", "Helping Hitler.", "War in China."] },
+        { q: "Which operation finally opened the Second Front in June 1944?", a: "D-Day landings in Normandy", o: ["African Campaign", "Invasion of Italy", "D-Day landings in Normandy", "Operation Barbarossa"] },
+        { q: "Who replaced Franklin D. Roosevelt at the Potsdam Conference?", a: "Harry S. Truman", o: ["George Marshall", "Harry S. Truman", "Clement Attlee", "Averell Harriman"] },
+        { q: "At Potsdam, Truman privately revealed to Stalin that the US:", a: "Tested a new weapon of mass destruction", o: ["Leaving the war", "Tested a new weapon of mass destruction", "Germany surrendered", "No free elections."] },
+        { q: "At Potsdam, what did the Big Three decide about Germany?", a: "Divide into four occupation zones", o: ["Make it agricultural", "Divide into four occupation zones", "Unified and unarmed", "Annex it."] },
+        { q: "The Potsdam Declaration (26 July 1945) mainly:", a: "Outlined terms for Japan’s surrender", o: ["Poland’s borders", "Outlined terms for Japan’s surrender", "Created UN", "Split Balkans."] },
+        { q: "Where and when was the Yalta Conference held?", a: "Crimea, February 1945", o: ["Germany, July 1945", "Crimea, February 1945", "Iran, Nov 1943", "Missouri, March 1946"] },
+        { q: "Concrete Pacific War accomplishment at Yalta?", a: "Stalin pledged to enter war vs Japan in 3 months", o: ["Japanese surrender", "Stalin pledged to enter war vs Japan in 3 months", "Hiroshima bombing", "Division of Korea"] }
+    ],
+    medium: [
+        { q: "When was the Truman Doctrine announced?", a: "March 1947", o: ["Feb 1945", "March 1947", "June 1948", "April 1949"] },
+        { q: "The Truman Doctrine marked a sharp break from traditional US:", a: "Isolationism", o: ["Isolationism", "Interventionism", "Imperialism", "Globalism"] },
+        { q: "Initial aid requested for Greece and Turkey under Truman Doctrine?", a: "$400 million", o: ["$100 million", "$400 million", "$1 billion", "$13 billion"] },
+        { q: "Truman Doctrine responded to power vacuum left by decline of:", a: "Great Britain", o: ["Germany", "Great Britain", "France", "Japan"] },
+        { q: "Main objective of the Marshall Plan:", a: "Economic aid to rebuild Europe and resist communism", o: ["Launch war on USSR", "Economic aid to rebuild Europe and resist communism", "Berlin Wall", "Arrest leaders"] },
+        { q: "Marshall Plan: Approx aid given (1948–1952)?", a: "$13 billion", o: ["$400 million", "$2 billion", "$13 billion", "$50 billion"] },
+        { q: "Stalin called pro-Soviet regimes protecting the USSR:", a: "Satellite States / Buffer Zone", o: ["Democratic Allies", "Satellite States / Buffer Zone", "Red Core", "Socialist Center"] },
+        { q: "“Baggage Train” leaders were:", a: "Moscow-trained communists returning home", o: ["Supply soldiers", "Moscow-trained communists returning home", "Refugees West", "Pro-Marshall politicians"] },
+        { q: "Who coined the term “Salami Tactics”?", a: "Matyas Rakosi", o: ["Joseph Stalin", "Matyas Rakosi", "Winston Churchill", "George Kennan"] },
+        { q: "“Salami Tactics” means:", a: "Step-by-step elimination of opposition", o: ["Food prep", "Step-by-step elimination of opposition", "Rapid invasion", "Division of Germany"] },
+        { q: "The Berlin Blockade began in:", a: "June 1948", o: ["March 1947", "June 1948", "May 1949", "Aug 1961"] },
+        { q: "Stalin’s carry out of the Berlin blockade:", a: "Cut rail/road/water links to West Berlin", o: ["Built a wall", "Cut rail/road/water links to West Berlin", "Bombed the city", "Invaded West Germany"] },
+        { q: "US code name for the Berlin Airlift:", a: "Operation Vittles", o: ["Operation Downfall", "Operation Vittles", "Operation Centerboard", "Little Boy"] },
+        { q: "Berlin Blockade pilot Gail Halvorsen was nicknamed:", a: "The Candy Bomber", o: ["The Sky King", "The Candy Bomber", "The Berlin Ace", "Propeller Prince"] }
+    ],
+    hard: [
+        { q: "Foreign policy concept George Kennan proposed:", a: "Containment", o: ["Appeasement", "Containment", "Isolationism", "Rollback"] },
+        { q: "Kennan: the Kremlin’s neurotic worldview came from:", a: "An instinctive Russian sense of insecurity", o: ["Desire for trade", "An instinctive Russian sense of insecurity", "Belief in UN", "Cooperation"] },
+        { q: "Article 5 in NATO means:", a: "Attack on one is attack on all", o: ["Economic aid", "Attack on one is attack on all", "USSR join", "Bans nukes"] },
+        { q: "NATO was the first time the US joined a:", a: "Peacetime military alliance", o: ["Trade bloc", "Peacetime military alliance", "Wartime partnership", "Spy network"] },
+        { q: "Primary reason for the Warsaw Pact (1955):", a: "Response to West Germany joining NATO", o: ["Coordinate Marshall Plan", "Response to West Germany joining NATO", "Invade US", "Berlin Wall"] },
+        { q: "Purpose of Comecon:", a: "Coordinate economic policy and trade of communist states", o: ["Military attacks", "Coordinate economic policy and trade of communist states", "Propaganda", "Manage Airlift"] },
+        { q: "Comecon was the Soviet response to:", a: "Marshall Plan", o: ["NATO", "Marshall Plan", "Truman Doctrine", "Berlin Airlift"] },
+        { q: "Cominform stands for:", a: "Communist Information Bureau", o: ["Communist Forum", "Communist Information Bureau", "Committee for Reform", "Military Command"] },
+        { q: "Which country was expelled from Cominform in 1948?", a: "Yugoslavia", o: ["Poland", "Yugoslavia", "Hungary", "Czechoslovakia"] },
+        { q: "April 1949: Bizonia merged with which country for Trizonia?", a: "France", o: ["Italy", "France", "West Germany", "Belgium"] },
+        { q: "Trizonia + a new currency led directly to:", a: "Berlin Blockade", o: ["Berlin Blockade", "End of Cold War", "Creation of UN", "Surrender"] }
+    ]
+};
 
-            <tr>
-                <td class="event">USSR Tests A-bomb (1949)</td>
-                <td class="summary">
-                    The Soviet Union successfully tests its first atomic bomb, ending the period when only the USA had
-                    nuclear weapons.
-                </td>
-                <td class="explain">
-                    <textarea class="explain-box" placeholder="Explain Stalin’s reaction to having nuclear weapons."></textarea>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-</main>
+let sessionDeck = [];
+function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
+
+function buildSessionDeck() {
+    let easy = shuffle([...QUEST_BANK.easy]);
+    let mid = shuffle([...QUEST_BANK.medium]);
+    let diff = shuffle([...QUEST_BANK.hard]);
+    let deck = [];
+    while(easy.length > 0 || mid.length > 0 || diff.length > 0) {
+        if(easy.length > 0) deck.push(easy.pop());
+        if(mid.length > 0) deck.push(mid.pop());
+        if(diff.length > 0) deck.push(diff.pop());
+    }
+    return deck;
+}
+sessionDeck = buildSessionDeck();
+
+function resize() {
+    state.viewportW = window.innerWidth;
+    state.viewportH = window.innerHeight;
+    canvas.width = state.viewportW;
+    canvas.height = state.viewportH;
+    player.x = state.viewportW / 2 - player.w / 2;
+}
+
+const touch = { left: false, right: false };
+function init() {
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
+    resize();
+    
+    document.getElementById('btn-start').onclick = () => {
+        document.getElementById('start-screen').classList.add('hidden');
+        state.gameStarted = true; state.gameActive = true;
+    };
+    document.getElementById('btn-restart').onclick = () => location.reload();
+
+    const setupTouch = (id, key) => {
+        const el = document.getElementById(id);
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); touch[key] = true; });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); touch[key] = false; });
+        el.addEventListener('touchcancel', (e) => { e.preventDefault(); touch[key] = false; });
+    };
+    setupTouch('ctrl-left', 'left');
+    setupTouch('ctrl-right', 'right');
+    document.getElementById('ctrl-shoot').addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (state.gameActive && !state.paused) shoot();
+    });
+
+    requestAnimationFrame(update);
+}
+
+function shoot() {
+    // Spawns from front of ship (which is now lower in landscape for visibility)
+    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 120, r: 10, speed: 14 });
+}
+
+function spawnEnemy() {
+    const r = 30;
+    state.enemies.push({
+        x: Math.random() * (state.viewportW - r*2) + r,
+        y: -r,
+        r: r,
+        speed: 2 + Math.random() * 2,
+        type: 'mcq'
+    });
+}
+
+function createFireworks(x, y) {
+    const colors = ['#3b82f6', '#fbbf24', '#ef4444', '#22c55e', '#ffffff'];
+    for (let i = 0; i < 60; i++) {
+        state.particles.push({
+            x: x,
+            y: y,
+            vx: (Math.random() - 0.5) * 16,
+            vy: (Math.random() - 0.5) * 16,
+            life: 1.0,
+            color: colors[Math.floor(Math.random() * colors.length)],
+            size: Math.random() * 5 + 2
+        });
+    }
+}
+
+function triggerQuiz() {
+    state.paused = true;
+    const q = sessionDeck[0];
+    const modal = document.getElementById('quiz-overlay');
+    const container = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback');
+    
+    document.getElementById('question-text').innerText = q.q;
+    document.getElementById('stats-q').innerText = sessionDeck.length;
+    container.innerHTML = '';
+    feedback.innerText = '';
+    
+    shuffle([...q.o]).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => {
+            Array.from(container.children).forEach(b => b.disabled = true);
+            if (opt === q.a) {
+                state.score += 50;
+                document.getElementById('stats-coins').innerText = state.score;
+                createFireworks(state.viewportW / 2, state.viewportH / 2);
+                sessionDeck.shift();
+                if (sessionDeck.length === 0) endGame();
+                else resume();
+            } else {
+                btn.classList.add('wrong');
+                feedback.innerText = `Incorrect. Data Point: ${q.a}`;
+                feedback.className = "mt-4 text-center font-black uppercase italic text-red-500 text-lg";
+                
+                const missed = sessionDeck.shift();
+                sessionDeck.splice(2, 0, missed);
+                
+                setTimeout(() => {
+                    resume();
+                }, 2200);
+            }
+        };
+        container.appendChild(btn);
+    });
+    modal.classList.remove('hidden');
+}
+
+function resume() {
+    document.getElementById('quiz-overlay').classList.add('hidden');
+    state.paused = false;
+}
+
+function update() {
+    if (!state.gameStarted) { requestAnimationFrame(update); return; }
+
+    if (!state.paused) {
+        if (touch.left && player.x > 0) player.x -= player.speed;
+        if (touch.right && player.x < state.viewportW - player.w) player.x += player.speed;
+
+        if (Date.now() - state.lastSpawn > 2200) {
+            spawnEnemy();
+            state.lastSpawn = Date.now();
+        }
+
+        for (let i = state.bullets.length - 1; i >= 0; i--) {
+            const b = state.bullets[i];
+            b.y -= b.speed;
+            if (b.y < -20) state.bullets.splice(i, 1);
+        }
+
+        for (let i = state.enemies.length - 1; i >= 0; i--) {
+            const en = state.enemies[i];
+            en.y += en.speed;
+            if (en.y > state.viewportH + en.r) {
+                state.enemies.splice(i, 1);
+                continue;
+            }
+
+            for (let j = state.bullets.length - 1; j >= 0; j--) {
+                const b = state.bullets[j];
+                const dist = Math.hypot(b.x - en.x, b.y - en.y);
+                if (dist < en.r + 20) {
+                    state.bullets.splice(j, 1);
+                    state.enemies.splice(i, 1);
+                    triggerQuiz();
+                    break;
+                }
+            }
+        }
+    }
+
+    for (let i = state.particles.length - 1; i >= 0; i--) {
+        const p = state.particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= 0.025;
+        if (p.life <= 0) state.particles.splice(i, 1);
+    }
+
+    render();
+    requestAnimationFrame(update);
+}
+
+function render() {
+    ctx.clearRect(0, 0, state.viewportW, state.viewportH);
+    
+    // Distant stars
+    ctx.fillStyle = "rgba(255,255,255,0.2)";
+    for(let i=0; i<30; i++) {
+        ctx.fillRect((Date.now()/70 + i*167) % state.viewportW, (i*193) % state.viewportH, 2, 2);
+    }
+
+    // Player Ship (Landscape Position)
+    ctx.fillStyle = "#3b82f6";
+    // Base: Y position adjusted for shorter screen
+    ctx.fillRect(player.x, state.viewportH - 100, player.w, 35);
+    ctx.fillStyle = "#60a5fa";
+    // Cockpit
+    ctx.fillRect(player.x + (player.w * 0.3), state.viewportH - 120, player.w * 0.4, 20);
+
+    // Enemies (Red MCQ Orbs)
+    state.enemies.forEach(en => {
+        ctx.beginPath();
+        ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
+        ctx.fillStyle = "#dc2626";
+        ctx.fill();
+        ctx.strokeStyle = "#ffffff";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "900 24px Inter";
+        ctx.textAlign = "center";
+        ctx.fillText("?", en.x, en.y + 8);
+    });
+
+    // Bullets (Energy Bolts)
+    ctx.fillStyle = "#fbbf24";
+    state.bullets.forEach(b => {
+        ctx.fillRect(b.x, b.y, 10, 26);
+    });
+
+    // Fireworks Particles
+    state.particles.forEach(p => {
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+    });
+    ctx.globalAlpha = 1.0;
+}
+
+function endGame() {
+    state.gameActive = false;
+    document.getElementById('final-score').innerText = state.score;
+    document.getElementById('end-screen').classList.remove('hidden');
+}
+
+setInterval(() => {
+    if (state.gameActive && !state.paused && state.timer > 0) {
+        state.timer--;
+        document.getElementById('stats-timer').innerText = state.timer + "s";
+        if (state.timer <= 0) endGame();
+    }
+}, 1000);
+
+init();
+</script>
 </body>
 </html>
