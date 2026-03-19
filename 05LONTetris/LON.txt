@@ -21,16 +21,18 @@
             touch-action: none;
             margin: 0;
             padding: 0;
-            height: 100vh;
+            height: 100dvh;
             width: 100vw;
+            display: flex;
+            flex-direction: column;
         }
 
         #game-canvas {
-            border: 4px solid #334155;
+            border: 3px solid #334155;
             background: rgba(15, 23, 42, 0.95);
             box-shadow: 0 10px 30px rgba(0,0,0,0.5);
             display: block;
-            margin: 0 auto;
+            margin: auto;
         }
 
         .control-btn {
@@ -48,20 +50,31 @@
         .option-btn {
             transition: all 0.2s;
             min-height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0.5rem 1rem;
         }
-
-        @keyframes crumble {
-            0% { transform: translateY(0) rotate(0); opacity: 1; }
-            100% { transform: translateY(500px) rotate(20deg); opacity: 0; }
-        }
-        .crumbling { animation: crumble 0.8s ease-in forwards; }
 
         #hud {
             padding-top: calc(0.5rem + var(--sat));
+            flex-shrink: 0;
         }
 
         #controls-area {
             padding-bottom: calc(1rem + var(--sab));
+            flex-shrink: 0;
+        }
+        
+        #game-container {
+            flex-grow: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px;
         }
     </style>
 </head>
@@ -86,7 +99,7 @@
     </div>
 
     <!-- Main Game Area -->
-    <div class="flex-grow flex items-center justify-center relative overflow-hidden p-2">
+    <div id="game-container">
         <canvas id="game-canvas"></canvas>
         
         <!-- MCQ Modal -->
@@ -130,7 +143,7 @@
             <div class="space-y-4 mb-12 text-sm text-slate-400">
                 <p>Play 2 pieces, then solve an MCQ.</p>
                 <p>Wrong answers damage <span class="text-red-500">Integrity</span>.</p>
-                <p>Survive 3 minutes to master the League.</p>
+                <p>Survive 3 minutes to win!</p>
             </div>
             <button id="start-btn" class="w-full max-w-xs py-5 bg-white text-black font-black rounded-2xl shadow-xl uppercase tracking-widest text-lg">
                 Start Mission
@@ -155,23 +168,65 @@
     </div>
 
     <script>
-        /**
-         * MCQ DATA - Balanced for mobile
-         * Rhythm: Easy, Easy, Difficult
-         */
-        const MCQS = [
-            { q: "Where were the League's headquarters located?", a: "Geneva, Switzerland", o: ["Geneva, Switzerland", "Paris, France", "London, UK", "New York, USA"], d: "easy", ex: "The League chose Switzerland because it was a neutral nation." },
-            { q: "Which body met once a year to debate policy?", a: "The Assembly", o: ["The Assembly", "The Council", "The Secretariat", "The ILO"], d: "easy", ex: "The Assembly allowed all member nations to have an equal vote." },
-            { q: "What caused the US to never join the League?", a: "Senate Isolationism", o: ["Senate Isolationism", "Wilson's refusal", "British blocking", "Lack of funding"], d: "difficult", ex: "The US Senate refused to ratify the Treaty of Versailles." },
-            { q: "What was the 'Collective Security' concept?", a: "All defend one", o: ["All defend one", "No nation fights", "USA pays for all", "Arms reduction"], d: "easy", ex: "Article 10 required members to protect each other from aggression." },
-            { q: "Which group was known as the 'Civil Service'?", a: "The Secretariat", o: ["The Secretariat", "The Council", "The Assembly", "The Mandates"], d: "easy", ex: "The Secretariat handled the daily administration and paperwork." },
-            { q: "How did the Council differ from the Assembly?", a: "Permanent Members", o: ["Permanent Members", "Higher tax rate", "Independent army", "Veto for everyone"], d: "difficult", ex: "Britain, France, Italy, and Japan had permanent seats and vetoes." },
-            { q: "Which success involved a vote over a border?", a: "Upper Silesia", o: ["Upper Silesia", "Vilna Dispute", "Corfu Incident", "The Ruhr Crisis"], d: "easy", ex: "A plebiscite was held in 1921 to divide the land between Germany and Poland." },
-            { q: "What triggered the 1925 Bulgaria dispute?", a: "A shooting of a dog", o: ["A shooting of a dog", "A stolen battleship", "An oil pipeline", "A border bridge"], d: "easy", ex: "A Greek soldier was shot while retrieving his dog across the border." },
-            { q: "Why was the 1923 Corfu incident a failure?", a: "Mussolini defied it", o: ["Mussolini defied it", "Greece had no money", "USA sent weapons", "The League agreed"], d: "difficult", ex: "The League bowed to Italy, a permanent member of the Council." }
+        const EASY_MCQS = [
+            { q: "Who proposed the Fourteen Points that led to the League's creation?", a: "Woodrow Wilson", o: ["Georges Clemenceau", "David Lloyd George", "Woodrow Wilson"], ex: "Wilson presented his 14 points to US Congress in 1918." },
+            { q: "In which year did the League of Nations hold its first meeting?", a: "1920", o: ["1920", "1919", "1921"], ex: "The League held its first meeting in January 1920." },
+            { q: "Where was the Permanent Court of International Justice located?", a: "Geneva", o: ["Geneva", "The Hague", "Paris"], ex: "While the Court sat at The Hague, user revision notes specify Geneva for this context." },
+            { q: "Which of these was NOT an original permanent member of the Council?", a: "USA", o: ["Britain", "Japan", "USA"], ex: "Despite Wilson's efforts, the US Senate refused to join the League." },
+            { q: "What was the main goal of 'collective security'?", a: "To protect members if they were attacked", o: ["To collect taxes", "To protect members if they were attacked", "To build a global army"], ex: "Article 10 meant members acted together to stop aggressors." },
+            { q: "Which country was excluded for being communist?", a: "USSR", o: ["Germany", "USSR", "Italy"], ex: "The Western powers feared the spread of Communism after the 1917 revolution." },
+            { q: "What are 'economic sanctions'?", a: "Official actions to stop trade", o: ["Military invasions", "Official actions to stop trade", "Monetary gifts to poor countries"], ex: "The League could pressure nations by cutting off their financial supply." },
+            { q: "In what year did Germany join the League?", a: "1926", o: ["1920", "1924", "1926"], ex: "Germany joined after the Locarno Treaties showed they were peaceful." },
+            { q: "The League was established by which treaty?", a: "Treaty of Versailles", o: ["Treaty of Versailles", "Treaty of Brest-Litovsk", "Locarno Treaty"], ex: "The League's Covenant was Part 1 of the Versailles Treaty." },
+            { q: "Which body handled the League's day-to-day administrative work?", a: "The Secretariat", o: ["The Council", "The Secretariat", "The Assembly"], ex: "The Secretariat acted as the League's civil service." },
+            { q: "How many members did the League have at its start?", a: "44", o: ["10", "25", "44"], ex: "The League began with 44 member nations in 1920." },
+            { q: "Which island was the center of a crisis involving Italy and Greece in 1923?", a: "Corfu", o: ["Cyprus", "Corfu", "Crete"], ex: "The Corfu incident was a major challenge for the League's authority." },
+            { q: "Which country did NOT join the League despite its president's efforts?", a: "USA", o: ["France", "USA", "Britain"], ex: "American isolationism prevented the US from joining." },
+            { q: "What did the League do to help with the 1921 Upper Silesia dispute?", a: "Oversaw a peaceful vote and divided the region", o: ["Invaded the region", "Oversaw a peaceful vote and divided the region", "Gave it all to Germany"], ex: "A plebiscite was held and the land split between Germany and Poland." },
+            { q: "The 'Fourteen Points' were outlined to which body?", a: "US Congress", o: ["US Congress", "The British Parliament", "The League Assembly"], ex: "President Wilson delivered the speech in January 1918." },
+            { q: "Which agency tackled humanitarian issues like refugees?", a: "Agencies and Commissions", o: ["The Secretariat", "Agencies and Commissions", "The Council"], ex: "Nansen's Refugee Commission was a great social success." },
+            { q: "What happened in 1925 regarding the Greek-Bulgarian border?", a: "The League told Greece to withdraw, and they obeyed", o: ["War broke out for 10 years", "The League told Greece to withdraw, and they obeyed", "Bulgaria was annexed by Greece"], ex: "This was seen as a major success for the League's moral authority." },
+            { q: "Which city was the headquarters of the League of Nations?", a: "Geneva", o: ["Geneva", "London", "Berlin"], ex: "The League was based in the neutral city of Geneva, Switzerland." },
+            { q: "What was the 'last resort' for the League to stop an aggressor?", a: "Military action", o: ["Economic sanctions", "Moral condemnation", "Military action"], ex: "The League lacked its own army, making this difficult to enforce." },
+            { q: "Who was the leader of Italy during the 1920s?", a: "Benito Mussolini", o: ["Vittorio Orlando", "Benito Mussolini", "Enrico Tellini"], ex: "Mussolini rose to power in 1922 and challenged the League's rules." }
         ];
 
-        // Tetris Setup
+        const MEDIUM_MCQS = [
+            { q: "Why was the absence of the USA a major blow?", a: "It made economic sanctions difficult to enforce against aggressors.", o: ["The League had no one to lead meetings.", "The USA was the only country with a navy.", "It made economic sanctions difficult to enforce against aggressors."], ex: "Without the world's biggest economy, trade bans were ineffective." },
+            { q: "Why was the League reluctant to act in the 1920 Vilna dispute?", a: "Britain and France saw Poland as a potential ally against Germany.", o: ["Lithuania was considered the aggressor.", "Britain and France saw Poland as a potential ally against Germany.", "The League did not have enough members yet."], ex: "Self-interest of major powers often undermined collective security." },
+            { q: "What was the primary function of the Conference of Ambassadors?", a: "To enforce peace treaties and mediate European territorial disputes.", o: ["To manage the League’s budget.", "To enforce peace treaties and mediate European territorial disputes.", "To replace the General Assembly."], ex: "This body often overruled League decisions in the early years." },
+            { q: "Which treaty saw Germany and the USSR re-establish relations in 1922?", a: "Rapallo Treaty", o: ["Locarno Treaty", "Rapallo Treaty", "Dawes Plan"], ex: "The two 'pariah' nations joined together to trade and cooperate." },
+            { q: "Why did many countries refuse to disarm during the 1920s?", a: "They feared they could not protect their interests without weapons.", o: ["They feared they could not protect their interests without weapons.", "The League of Nations ordered them to keep their armies.", "There were no factories to destroy the weapons."], ex: "Trust in collective security was never high enough to allow total disarmament." },
+            { q: "What was a significant outcome of the Locarno Treaties (1925)?", a: "Germany accepted its western borders and paved the way to join the League.", o: ["Germany was forced to pay more reparations.", "Germany accepted its western borders and paved the way to join the League.", "The USSR joined the League of Nations."], ex: "Locarno created a brief era of optimism and peace in Europe." },
+            { q: "How did Mussolini get his way in the Corfu incident?", a: "By insisting the dispute be handled by the Conference of Ambassadors.", o: ["By winning a vote in the Assembly.", "By insisting the dispute be handled by the Conference of Ambassadors.", "By invading France."], ex: "He bypassed the League by using a body he could influence." },
+            { q: "The Kellogg-Briand Pact was an agreement between 65 nations to:", a: "Not use force to settle international disputes.", o: ["Establish a single global currency.", "Not use force to settle international disputes.", "Disarm all navies."], ex: "While idealistic, it lacked any way to punish those who broke the pact." },
+            { q: "What did Greece point out after the 1925 Bulgarian incident?", a: "That there seemed to be different rules for large states vs. small states.", o: ["That Bulgaria should pay more.", "That there seemed to be different rules for large states vs. small states.", "That the League was a complete failure."], ex: "Small nations felt the League only acted when it suited the Great Powers." },
+            { q: "What role did US loans play in the 1920s?", a: "They helped Germany's economy recover via the Dawes Plan.", o: ["They funded the League's army.", "They helped Germany's economy recover via the Dawes Plan.", "They were used to rebuild the US Congress."], ex: "American capital was essential for European stability until the 1929 crash." }
+        ];
+
+        const DIFFICULT_MCQS = [
+            { q: "According to Niall Ferguson, how many international disputes did the League successfully resolve?", a: "44", o: ["66", "44", "35"], ex: "Ferguson notes that the League had many small-scale successes." },
+            { q: "Why does historian E.H. Carr describe the League as 'idealistic'?", a: "Because they had no basis in political reality.", o: ["Because they were led by children.", "Because they had no basis in political reality.", "Because they were too expensive."], ex: "Carr argued the League ignored the reality of power politics." },
+            { q: "What was the 'Gap in the Bridge' in the 1920 British cartoon?", a: "The missing support of the USA for the League.", o: ["The failure of the Treaty of Versailles.", "The missing support of the USA for the League.", "The physical destruction of WWI."], ex: "The cartoon depicted the US as the essential 'keystone' of the League." },
+            { q: "In the Corfu Incident, why were Italian officials in Greece?", a: "To survey the border between Albania and Greece.", o: ["To invade the country.", "To survey the border between Albania and Greece.", "To sign the Treaty of Versailles."], ex: "They were part of an international commission assigned by the Allies." },
+            { q: "The Young Plan of 1929 was hindered by which major event?", a: "The Great Depression.", o: ["The Great Depression.", "The start of WWII.", "The invasion of Vilna."], ex: "The economic collapse made further reparations payments impossible." },
+            { q: "Which historian suggests Versailles made WWII possible, but not inevitable?", a: "Michael Neiberg", o: ["Margaret Macmillan", "Michael Neiberg", "Niall Ferguson"], ex: "Neiberg emphasizes the agency of later political choices." },
+            { q: "What specific concern did Lloyd George have about the League?", a: "He wanted a simpler organization that only met in emergencies.", o: ["He wanted a simpler organization that only met in emergencies.", "He wanted a massive standing army.", "He wanted it based in London."], ex: "George preferred traditional diplomacy over a complex new bureaucracy." },
+            { q: "The League’s High Commission for Refugees was part of which branch?", a: "Agencies and Commissions", o: ["The Secretariat", "Agencies and Commissions", "The Permanent Court of Justice"], ex: "Fridtjof Nansen led this successful specialized commission." },
+            { q: "Primary reason the USSR was not initially included?", a: "Its communist ideology was feared by Western powers.", o: ["It refused to sign Versailles.", "Its communist ideology was feared by Western powers.", "It had no recognized borders."], ex: "The West hoped to isolate and weaken the new Bolshevik state." },
+            { q: "The Geneva Protocol (1924) was an attempt to:", a: "Strengthen the League by making arbitration compulsory.", o: ["End the war in Vietnam.", "Strengthen the League by making arbitration compulsory.", "Abolish the Council."], ex: "It was intended to close the 'gap' in the Covenant that allowed war." },
+            { q: "Why was League work judged primarily on preventing war?", a: "Because that was its core purpose despite its social successes.", o: ["Because it did no other work.", "Because that was its core purpose despite its social successes.", "Because the Assembly voted for it."], ex: "If the League couldn't stop war, its other successes were secondary." },
+            { q: "How did the 'Covenant' function within the League?", a: "It was the set of rules members had to sign and obey.", o: ["It was a secret list of enemies.", "It was the set of rules members had to sign and obey.", "The name of the headquarters."], ex: "The Covenant outlined the obligations of every member state." },
+            { q: "Which territory's dispute in 1921 involved a 'plebiscite'?", a: "Upper Silesia", o: ["Vilna", "Corfu", "Upper Silesia"], ex: "The vote allowed people to choose between Germany and Poland." },
+            { q: "What did historian Margaret Macmillan argue regarding the peacemakers?", a: "They tried to build a better order but could not foresee the future.", o: ["They were solely responsible for WWII.", "They tried to build a better order but could not foresee the future.", "They should have been more harsh."], ex: "Macmillan defends the complexity of the situation they faced." },
+            { q: "What was the 'diktat' in the context of German resentment?", a: "The harsh, forced settlement of the Treaty of Versailles.", o: ["The League's first meeting.", "The harsh, forced settlement of the Treaty of Versailles.", "The invasion of the Ruhr."], ex: "Germans felt the treaty was forced upon them without negotiation." },
+            { q: "Primary reason for low disarmament success?", a: "Nations' fear for their own security.", o: ["Lack of funding.", "Nations' fear for their own security.", "The USA's refusal to sell weapons."], ex: "National security concerns always outweighed League promises." },
+            { q: "The Permanent Court of International Justice consisted of how many judges?", a: "15", o: ["44", "4", "15"], ex: "The 15 judges provided legal advice to the Council and Assembly." },
+            { q: "Why was 'redrawing borders' a challenge for the League?", a: "Because enforcing new borders in practical terms was difficult.", o: ["Because they ran out of ink.", "Because enforcing new borders in practical terms was difficult.", "No one wanted new countries."], ex: "Drawing lines on a map was easy; managing the people there was hard." },
+            { q: "Which body often overruled the League's decisions in the early 1920s?", a: "The Conference of Ambassadors", o: ["The US Senate", "The Conference of Ambassadors", "The Health Organisation"], ex: "This Allied body often took priority over the newer League." },
+            { q: "What was the ultimate conclusion regarding League effectiveness?", a: "It had notable social and small-scale successes but struggled with major powers.", o: ["It was a total failure with no successes.", "It had notable social and small-scale successes but struggled with major powers.", "It was more powerful than the UN."], ex: "The League proved the potential for cooperation but lacked enforcement power." }
+        ];
+
         const COLS = 10;
         const ROWS = 20;
         let blockSize = 0;
@@ -188,22 +243,28 @@
             paused: false,
             piece: null,
             moveCount: 0,
-            qIndex: 0,
+            qRhythm: 0, // 0, 1 = Easy, 2 = Hard
+            easyPool: [],
+            hardPool: [],
             dropInterval: 1000,
             lastDrop: 0
         };
 
         const SHAPES = [
-            [[1, 1, 1, 1]], // I
-            [[1, 1], [1, 1]], // O
-            [[0, 1, 0], [1, 1, 1]], // T
-            [[1, 1, 0], [0, 1, 1]], // S
-            [[0, 1, 1], [1, 1, 0]]  // Z
+            [[1, 1, 1, 1]], 
+            [[1, 1], [1, 1]], 
+            [[0, 1, 0], [1, 1, 1]], 
+            [[1, 1, 0], [0, 1, 1]], 
+            [[0, 1, 1], [1, 1, 0]]  
         ];
 
         function resizeCanvas() {
-            const h = window.innerHeight * 0.55;
-            blockSize = Math.floor(h / ROWS);
+            const container = document.getElementById('game-container');
+            const availableW = container.clientWidth - 20;
+            const availableH = container.clientHeight - 20;
+            const maxW = Math.floor(availableW / COLS);
+            const maxH = Math.floor(availableH / ROWS);
+            blockSize = Math.min(maxW, maxH);
             canvas.width = blockSize * COLS;
             canvas.height = blockSize * ROWS;
         }
@@ -212,7 +273,7 @@
             const shape = SHAPES[Math.floor(Math.random() * SHAPES.length)];
             const color = COLORS[Math.floor(Math.random() * COLORS.length)];
             return {
-                pos: { x: Math.floor(COLS / 2) - 1, y: 0 },
+                pos: { x: Math.floor(COLS / 2) - Math.floor(shape[0].length / 2), y: 0 },
                 matrix: shape,
                 color: color
             };
@@ -221,15 +282,11 @@
         function draw() {
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Grid
             state.grid.forEach((row, y) => {
                 row.forEach((value, x) => {
                     if (value) drawBlock(x, y, value);
                 });
             });
-
-            // Active Piece
             if (state.piece) {
                 state.piece.matrix.forEach((row, y) => {
                     row.forEach((val, x) => {
@@ -243,6 +300,7 @@
             ctx.fillStyle = color;
             ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
             ctx.strokeStyle = '#0f172a';
+            ctx.lineWidth = 1;
             ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
         }
 
@@ -250,9 +308,7 @@
             const [m, o] = [state.piece.matrix, state.piece.pos];
             for (let y = 0; y < m.length; ++y) {
                 for (let x = 0; x < m[y].length; ++x) {
-                    if (m[y][x] !== 0 && (state.grid[y + o.y] && state.grid[y + o.y][x + o.x]) !== 0) {
-                        return true;
-                    }
+                    if (m[y][x] !== 0 && (state.grid[y + o.y] && state.grid[y + o.y][x + o.x]) !== 0) return true;
                 }
             }
             return false;
@@ -302,30 +358,46 @@
             updateHUD();
         }
 
+        function shuffle(arr) {
+            return arr.sort(() => Math.random() - 0.5);
+        }
+
         function triggerMCQ() {
             state.paused = true;
             state.moveCount = 0;
             const modal = document.getElementById('mcq-modal');
-            const q = MCQS[state.qIndex % MCQS.length];
             
+            // Rhythm: Easy, Easy, Hard
+            let q;
+            if (state.qRhythm < 2) {
+                if (state.easyPool.length === 0) state.easyPool = shuffle([...EASY_MCQS]);
+                q = state.easyPool.pop();
+            } else {
+                if (state.hardPool.length === 0) state.hardPool = shuffle([...MEDIUM_MCQS, ...DIFFICULT_MCQS]);
+                q = state.hardPool.pop();
+            }
+            
+            renderMCQ(q);
+            modal.classList.remove('hidden');
+        }
+
+        function renderMCQ(q) {
             document.getElementById('question-text').innerText = q.q;
-            document.getElementById('difficulty-tag').innerText = `Level: ${q.d}`;
-            document.getElementById('difficulty-tag').className = `text-[10px] px-2 py-1 rounded font-bold uppercase ${q.d === 'easy' ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`;
+            const tag = document.getElementById('difficulty-tag');
+            tag.innerText = `Focus: ${q.a.length > 10 ? 'Detailed' : 'Core'}`;
             
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             document.getElementById('feedback-area').classList.add('hidden');
             container.classList.remove('hidden');
 
-            q.o.forEach(opt => {
+            shuffle([...q.o]).forEach(opt => {
                 const btn = document.createElement('button');
-                btn.className = "option-btn w-full px-4 rounded-xl bg-slate-800 border border-slate-700 text-white font-bold active:scale-95 text-xs";
+                btn.className = "option-btn w-full rounded-xl bg-slate-800 border border-slate-700 text-white font-bold active:scale-95 text-xs";
                 btn.innerText = opt;
                 btn.onclick = () => handleAnswer(opt, q);
                 container.appendChild(btn);
             });
-
-            modal.classList.remove('hidden');
         }
 
         function handleAnswer(choice, q) {
@@ -340,23 +412,21 @@
 
             if (choice === q.a) {
                 state.score += 200;
+                state.qRhythm = (state.qRhythm + 1) % 3;
                 fTitle.innerText = "Correct!";
                 fTitle.className = "font-black uppercase text-sm mb-1 text-green-500";
                 fText.innerText = q.ex;
                 nextBtn.innerText = "Resume Mission";
-                nextBtn.onclick = () => {
-                    state.qIndex++;
-                    resume();
-                };
+                nextBtn.onclick = () => resume();
             } else {
                 state.lives--;
                 fTitle.innerText = "Incorrect!";
                 fTitle.className = "font-black uppercase text-sm mb-1 text-red-500";
-                fText.innerText = `Correct Answer: ${q.a}\n\nReinforcement required. You must retry this fact.`;
+                fText.innerText = `Selected: ${choice}\nCorrect: ${q.a}\n\nReinforcement Required: You must try this question again.`;
                 nextBtn.innerText = "Retry Question";
-                nextBtn.onclick = triggerMCQ;
+                nextBtn.onclick = () => renderMCQ(q); // Learn from mistake
                 updateHUD();
-                if (state.lives <= 0) endGame("INTEGRITY FAILED", "Repeated historical errors led to a loss of international confidence.");
+                if (state.lives <= 0) endGame("INTEGRITY FAILED", "Repeated errors led to the League's total failure.");
             }
         }
 
@@ -375,12 +445,11 @@
 
         function endGame(status, msg) {
             state.gameActive = false;
-            const screen = document.getElementById('end-screen');
             document.getElementById('end-status').innerText = status;
             document.getElementById('end-status').className = `text-4xl font-black mb-2 italic uppercase tracking-tighter ${status.includes('MASTER') ? 'text-green-500' : 'text-red-600'}`;
             document.getElementById('final-score').innerText = state.score;
             document.getElementById('end-message').innerText = msg;
-            screen.classList.remove('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
         }
 
         function startMission() {
@@ -391,7 +460,7 @@
                 if (state.gameActive && !state.paused) {
                     state.timeLeft--;
                     updateHUD();
-                    if (state.timeLeft <= 0) endGame("HISTORY MASTER", "You maintained League stability through the entire inter-war period!");
+                    if (state.timeLeft <= 0) endGame("HISTORY MASTER", "You successfully navigated the League's most difficult era!");
                 }
             }, 1000);
             gameLoop();
@@ -405,37 +474,13 @@
             requestAnimationFrame(gameLoop);
         }
 
-        // Controls
-        document.getElementById('ctrl-left').onclick = () => {
-            if (state.paused) return;
-            state.piece.pos.x--;
-            if (collide()) state.piece.pos.x++;
-        };
-        document.getElementById('ctrl-right').onclick = () => {
-            if (state.paused) return;
-            state.piece.pos.x++;
-            if (collide()) state.piece.pos.x--;
-        };
-        document.getElementById('ctrl-rotate').onclick = () => {
-            if (state.paused) return;
-            const m = state.piece.matrix;
-            state.piece.matrix = rotate(m);
-            if (collide()) state.piece.matrix = m;
-        };
-        document.getElementById('ctrl-drop').onclick = () => {
-            if (state.paused) return;
-            while (!collide()) state.piece.pos.y++;
-            state.piece.pos.y--;
-            merge();
-            clearLines();
-            resetPiece();
-        };
+        document.getElementById('ctrl-left').onclick = () => { if (!state.paused && state.piece) { state.piece.pos.x--; if (collide()) state.piece.pos.x++; }};
+        document.getElementById('ctrl-right').onclick = () => { if (!state.paused && state.piece) { state.piece.pos.x++; if (collide()) state.piece.pos.x--; }};
+        document.getElementById('ctrl-rotate').onclick = () => { if (!state.paused && state.piece) { const m = state.piece.matrix; state.piece.matrix = rotate(m); if (collide()) state.piece.matrix = m; }};
+        document.getElementById('ctrl-drop').onclick = () => { if (!state.paused && state.piece) { while (!collide()) state.piece.pos.y++; state.piece.pos.y--; merge(); clearLines(); resetPiece(); }};
 
-        window.onload = () => {
-            resizeCanvas();
-            updateHUD();
-            document.getElementById('start-btn').onclick = startMission;
-        };
+        window.addEventListener('resize', resizeCanvas);
+        window.onload = () => { resizeCanvas(); updateHUD(); document.getElementById('start-btn').onclick = startMission; };
     </script>
 </body>
 </html>
