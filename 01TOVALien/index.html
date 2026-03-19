@@ -2,45 +2,41 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <!-- Mandatory Viewport Settings for Mobile Responsiveness -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Local Hero: Versailles Defense Mobile</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
-
+        
         :root {
-            --sat: env(safe-area-inset-top, 0px);
-            --sab: env(safe-area-inset-bottom, 0px);
-            --sal: env(safe-area-inset-left, 0px);
-            --sar: env(safe-area-inset-right, 0px);
-        }
-
-        html, body {
-            margin: 0;
-            padding: 0;
-            width: 100%;
-            height: 100%;
-            overflow: hidden;
-            background: #050505;
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
         }
 
         body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden; /* Prevents horizontal and vertical scrolling */
+            background-color: #050505;
             font-family: 'Courier New', Courier, monospace;
             user-select: none;
-            -webkit-user-select: none;
+            touch-action: none;
             -webkit-tap-highlight-color: transparent;
-            touch-action: manipulation;
+            position: fixed;
+            width: 100%;
+            height: 100%;
         }
 
         #game-container {
             position: relative;
-            width: 100vw;
-            height: 100dvh;
-            min-height: 100dvh;
+            width: 100%;
+            height: 100%;
             background: radial-gradient(circle at bottom, #1a1a2e 0%, #000 70%);
             overflow: hidden;
         }
 
+        /* Responsive Canvas Scaling */
         canvas {
             display: block;
             width: 100%;
@@ -76,11 +72,12 @@
             40%, 60% { transform: translate3d(5px, 0, 0); }
         }
 
+        /* Touch-Friendly Option Buttons */
         .option-btn {
             transition: all 0.15s;
             border: 2px solid #374151;
-            min-height: 3.5rem;
             touch-action: manipulation;
+            min-height: 3.5rem; /* Ensure large touch target */
         }
 
         .correct {
@@ -97,30 +94,35 @@
             animation: shake 0.3s;
         }
 
+        /* HUD Safe Area Padding */
         #hud {
             padding-top: calc(0.75rem + var(--sat));
-            padding-left: calc(1rem + var(--sal));
-            padding-right: calc(1rem + var(--sar));
+            padding-left: calc(1rem + env(safe-area-inset-left));
+            padding-right: calc(1rem + env(safe-area-inset-right));
         }
 
+        /* Controls Safe Area Padding */
         #mobile-controls {
-            padding-bottom: calc(1.2rem + var(--sab));
-            padding-left: calc(1rem + var(--sal));
-            padding-right: calc(1rem + var(--sar));
+            padding-bottom: calc(1.5rem + var(--sab));
+            padding-left: calc(1.5rem + env(safe-area-inset-left));
+            padding-right: calc(1.5rem + env(safe-area-inset-right));
         }
 
+        /* Responsive adjustments for screens below 768px */
         @media (max-width: 767px) {
-            .hero-title { font-size: 2.1rem; line-height: 1.1; }
-            .option-btn { font-size: 0.9rem; padding: 0.8rem; }
-            .control-btn { width: 4.25rem; height: 4.25rem; }
-            .fire-btn { width: 5.2rem; height: 5.2rem; }
+            .hero-title { font-size: 2.25rem; }
+            .option-btn { font-size: 0.875rem; padding: 0.75rem; }
+            .control-btn { width: 4.5rem; height: 4.5rem; }
+            .fire-btn { width: 5.5rem; height: 5.5rem; }
         }
     </style>
 </head>
 <body>
+
     <div id="game-container">
         <div class="scanline"></div>
-
+        
+        <!-- HUD - Flexbox Layout -->
         <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-center z-40 bg-black/40 backdrop-blur-sm border-b border-blue-900/30">
             <div class="flex flex-col">
                 <span class="text-blue-400 text-[10px] uppercase font-bold tracking-widest">Score</span>
@@ -136,17 +138,19 @@
             </div>
         </div>
 
+        <!-- Canvas scales to fill container -->
         <canvas id="gameCanvas"></canvas>
 
+        <!-- Start Screen - Flexbox Centering -->
         <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-6 text-center">
             <div class="mb-8 md:mb-12 w-full max-w-lg">
                 <h1 class="hero-title text-4xl md:text-7xl font-black text-white mb-2 tracking-tighter uppercase italic drop-shadow-lg">Local Hero</h1>
                 <h2 class="text-base md:text-2xl text-blue-500 font-mono tracking-widest">VERSAILLES DEFENSE</h2>
                 <div class="w-16 md:w-24 h-1 bg-blue-600 mx-auto mt-4 rounded-full"></div>
             </div>
-
+            
             <div class="w-full max-w-xs md:max-w-md text-gray-400 mb-8 md:mb-12 space-y-4 text-sm md:text-base">
-                <p>Preserve the 1919 settlement by neutralising oversized historical obstacles.</p>
+                <p>Preserve the 1919 settlement by neutralizing oversized historical obstacles.</p>
                 <div class="bg-gray-900/80 border border-gray-800 p-4 rounded-2xl text-left grid grid-cols-1 gap-3">
                     <div class="flex items-center gap-3">
                         <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse flex-shrink-0"></div>
@@ -164,6 +168,7 @@
             </button>
         </div>
 
+        <!-- MCQ Modal - Responsive Grid -->
         <div id="mcq-modal" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
             <div class="bg-gray-900 border-2 border-blue-500 rounded-3xl w-full max-w-md p-6 shadow-2xl relative overflow-hidden">
                 <div id="crisis-banner" class="hidden bg-red-600 text-white py-2 px-4 text-center text-[10px] font-bold uppercase tracking-tighter absolute top-0 left-0 w-full animate-pulse">
@@ -178,6 +183,7 @@
             </div>
         </div>
 
+        <!-- End Screen -->
         <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black p-8 text-center">
             <h2 id="end-status" class="text-3xl md:text-5xl font-black text-red-500 mb-2 italic uppercase">Mission Failed</h2>
             <div class="text-6xl md:text-8xl font-black text-white mb-6" id="final-score-display">0000</div>
@@ -186,18 +192,15 @@
                 Re-Negotiate
             </button>
         </div>
-
+        
+        <!-- Mobile Touch Controls - Ergonomic Placement -->
         <div id="mobile-controls" class="absolute bottom-0 left-0 w-full flex justify-between items-end z-30 pointer-events-none">
             <div class="flex gap-3 md:gap-4 pointer-events-auto">
                 <div id="btn-left" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl border-2 border-white/10 flex items-center justify-center active:bg-white/20 backdrop-blur-md">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/>
-                    </svg>
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
                 </div>
                 <div id="btn-right" class="control-btn w-16 h-16 md:w-20 md:h-20 bg-white/5 rounded-2xl border-2 border-white/10 flex items-center justify-center active:bg-white/20 backdrop-blur-md">
-                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/>
-                    </svg>
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
                 </div>
             </div>
             <div id="btn-fire" class="fire-btn w-20 h-20 md:w-24 md:h-24 bg-red-600/10 rounded-full border-4 border-red-600/30 flex items-center justify-center pointer-events-auto active:bg-red-600/40 backdrop-blur-md">
@@ -209,6 +212,9 @@
     </div>
 
     <script>
+        /**
+         * ASSETS & DATA
+         */
         const ASSETS = {
             hero: `<svg width="80" height="80" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 50 L50 50 L45 35 L15 35 Z" fill="#3B82F6"/><rect x="25" y="20" width="10" height="15" fill="#60A5FA"/><rect x="22" y="15" width="16" height="5" fill="#2563EB"/><circle cx="20" cy="50" r="5" fill="#1E40AF"/><circle cx="40" cy="50" r="5" fill="#1E40AF"/></svg>`,
             alien: `<svg width="100" height="100" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M5 20 Q20 5 35 20 Q20 35 5 20" fill="#EF4444"/><circle cx="20" cy="20" r="8" fill="#B91C1C"/><rect x="18" y="5" width="4" height="10" fill="#FCA5A5"/></svg>`,
@@ -230,7 +236,7 @@
 
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-
+        
         let state = {
             screen: 'start',
             score: 0,
@@ -239,145 +245,97 @@
             pausedForMCQ: false,
             isCrisis: false,
             crisisTimer: 10,
+            crisisNeeded: 0,
             lastSpawn: 0,
             lastFire: 0,
             spawnRate: 1800,
             qIndex: 0,
             questionPool: [],
-            viewport: { w: 0, h: 0 }
+            viewport: { w: window.innerWidth, h: window.innerHeight }
         };
 
-        let player = {
-            x: 0,
-            y: 0,
-            w: 0,
-            h: 0,
+        let player = { 
+            x: 0, 
+            y: 0, 
+            w: 0, 
+            h: 0, 
             targetSpeed: 0,
-            movingLeft: false,
-            movingRight: false
+            movingLeft: false, 
+            movingRight: false 
         };
-
+        
         let bullets = [];
-        let enemies = [];
-        let effects = [];
+        let enemies = []; 
+        let effects = []; 
         let timerInterval = null;
-        let crisisInterval = null;
 
-        const images = {
-            hero: new Image(),
-            alien: new Image(),
-            bomb: new Image()
-        };
+        const images = { hero: new Image(), alien: new Image(), bomb: new Image() };
 
         function init() {
+            window.addEventListener('resize', resize);
+            resize();
+
             images.hero.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.hero);
             images.alien.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.alien);
             images.bomb.src = 'data:image/svg+xml;base64,' + btoa(ASSETS.bomb);
 
-            window.addEventListener('resize', resize);
-            window.addEventListener('orientationchange', () => {
-                setTimeout(resize, 120);
-            });
-
-            setupControls();
-            document.getElementById('start-btn').onclick = startMission;
-            document.getElementById('restart-btn').onclick = resetGame;
-
-            resize();
-            updateHUD();
-            requestAnimationFrame(gameLoop);
-        }
-
-        function setupControls() {
+            // Responsive Touch Listeners
             const tLeft = document.getElementById('btn-left');
             const tRight = document.getElementById('btn-right');
             const tFire = document.getElementById('btn-fire');
 
-            tLeft.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                player.movingLeft = true;
-            }, { passive: false });
+            tLeft.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingLeft = true; });
+            tLeft.addEventListener('touchend', (e) => { e.preventDefault(); player.movingLeft = false; });
+            tRight.addEventListener('touchstart', (e) => { e.preventDefault(); player.movingRight = true; });
+            tRight.addEventListener('touchend', (e) => { e.preventDefault(); player.movingRight = false; });
+            tFire.addEventListener('touchstart', (e) => { e.preventDefault(); fire(); });
 
-            tLeft.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                player.movingLeft = false;
-            }, { passive: false });
-
-            tLeft.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                player.movingLeft = false;
-            }, { passive: false });
-
-            tRight.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                player.movingRight = true;
-            }, { passive: false });
-
-            tRight.addEventListener('touchend', (e) => {
-                e.preventDefault();
-                player.movingRight = false;
-            }, { passive: false });
-
-            tRight.addEventListener('touchcancel', (e) => {
-                e.preventDefault();
-                player.movingRight = false;
-            }, { passive: false });
-
-            tFire.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                fire();
-            }, { passive: false });
-
+            // Keyboard support
             window.addEventListener('keydown', (e) => {
                 if (e.key === 'ArrowLeft') player.movingLeft = true;
                 if (e.key === 'ArrowRight') player.movingRight = true;
-                if (e.key === ' ') {
-                    e.preventDefault();
-                    fire();
-                }
+                if (e.key === ' ') fire();
             });
-
             window.addEventListener('keyup', (e) => {
                 if (e.key === 'ArrowLeft') player.movingLeft = false;
                 if (e.key === 'ArrowRight') player.movingRight = false;
             });
+
+            document.getElementById('start-btn').onclick = startMission;
+            document.getElementById('restart-btn').onclick = resetGame;
+
+            requestAnimationFrame(gameLoop);
         }
 
         function resize() {
             const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
-
-            state.viewport.w = rect.width || window.innerWidth;
-            state.viewport.h = rect.height || window.innerHeight;
-
-            canvas.width = Math.round(state.viewport.w * dpr);
-            canvas.height = Math.round(state.viewport.h * dpr);
+            state.viewport.w = window.innerWidth;
+            state.viewport.h = window.innerHeight;
+            
+            canvas.width = state.viewport.w * dpr;
+            canvas.height = state.viewport.h * dpr;
             canvas.style.width = state.viewport.w + 'px';
             canvas.style.height = state.viewport.h + 'px';
-
-            ctx.setTransform(1, 0, 0, 1, 0, 0);
             ctx.scale(dpr, dpr);
 
+            // Responsive Entity Sizing (Percentage based)
             const baseSize = Math.min(state.viewport.w * 0.15, 70);
             player.w = baseSize;
             player.h = baseSize;
+            
+            // Adjust player position (higher on mobile to avoid thumbs)
             player.y = state.viewport.h - (state.viewport.w < 768 ? 180 : 140);
-            player.targetSpeed = Math.max(4, state.viewport.w * 0.022);
+            player.targetSpeed = state.viewport.w * 0.022;
 
-            if (state.screen === 'start') {
-                player.x = state.viewport.w / 2 - player.w / 2;
-            } else {
-                player.x = Math.max(0, Math.min(state.viewport.w - player.w, player.x));
-            }
+            if (state.screen === 'start') player.x = state.viewport.w / 2 - player.w / 2;
         }
 
         function startMission() {
             state.screen = 'playing';
             state.questionPool = shuffle([...QUESTIONS]);
             document.getElementById('start-screen').classList.add('hidden');
-            document.getElementById('end-screen').classList.add('hidden');
             updateHUD();
-
+            
             if (timerInterval) clearInterval(timerInterval);
             timerInterval = setInterval(() => {
                 if (state.screen === 'playing' && !state.pausedForMCQ) {
@@ -388,53 +346,41 @@
             }, 1000);
         }
 
-        function resetGame() {
+        // Prevents 404 by resetting in-memory instead of reloading URL
+        function resetGame(e) {
+            if (e) e.preventDefault();
             if (timerInterval) clearInterval(timerInterval);
-            if (crisisInterval) clearInterval(crisisInterval);
-
-            state = {
-                screen: 'start',
-                score: 0,
-                lives: 5,
-                timeLeft: 90,
-                pausedForMCQ: false,
-                isCrisis: false,
-                crisisTimer: 10,
-                lastSpawn: 0,
-                lastFire: 0,
-                spawnRate: 1800,
-                qIndex: 0,
-                questionPool: [],
-                viewport: state.viewport
-            };
-
+            
+            state.score = 0;
+            state.lives = 5;
+            state.timeLeft = 90;
+            state.pausedForMCQ = false;
+            state.isCrisis = false;
+            state.spawnRate = 1800;
+            state.qIndex = 0;
+            
             bullets = [];
             enemies = [];
             effects = [];
-
-            document.getElementById('mcq-modal').classList.add('hidden');
+            
             document.getElementById('end-screen').classList.add('hidden');
             document.getElementById('start-screen').classList.remove('hidden');
-            document.getElementById('feedback-text').innerText = "";
-            document.getElementById('crisis-banner').classList.add('hidden');
-
             resize();
             updateHUD();
+            state.screen = 'start';
         }
 
         function fire() {
             if (state.screen !== 'playing' || state.pausedForMCQ) return;
-
             const now = Date.now();
             if (now - state.lastFire < 220) return;
-
-            bullets.push({
-                x: player.x + player.w / 2 - 2,
-                y: player.y,
-                w: 4,
-                h: 20
+            
+            bullets.push({ 
+                x: player.x + player.w/2 - 2, 
+                y: player.y, 
+                w: 4, 
+                h: 20 
             });
-
             state.lastFire = now;
         }
 
@@ -445,9 +391,9 @@
             if (player.movingRight) player.x += player.targetSpeed;
             player.x = Math.max(0, Math.min(state.viewport.w - player.w, player.x));
 
-            bullets = bullets.filter((b) => {
-                b.y -= state.viewport.h * 0.018;
-                return b.y > -30;
+            bullets.forEach((b, i) => {
+                b.y -= (state.viewport.h * 0.018);
+                if (b.y < -30) bullets.splice(i, 1);
             });
 
             const now = Date.now();
@@ -457,57 +403,41 @@
                 state.spawnRate = Math.max(900, state.spawnRate - 15);
             }
 
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                const en = enemies[i];
+            enemies.forEach((en, i) => {
                 en.y += en.speed;
-
                 if (checkCollision(player, en)) {
                     enemies.splice(i, 1);
                     if (en.type === 'bomb') triggerCrisis();
                     else takeDamage();
-                    continue;
+                    return;
                 }
-
-                let enemyDestroyed = false;
-
-                for (let bi = bullets.length - 1; bi >= 0; bi--) {
-                    const b = bullets[bi];
+                bullets.forEach((b, bi) => {
                     if (checkCollision(b, en)) {
                         bullets.splice(bi, 1);
                         enemies.splice(i, 1);
-                        createExplosion(en.x + en.w / 2, en.y + en.h / 2, en.type === 'alien' ? '#EF4444' : '#FFFFFF');
-
+                        createExplosion(en.x + en.w/2, en.y + en.h/2, en.type === 'alien' ? '#EF4444' : '#FFF');
                         if (en.type === 'alien') {
-                            state.score += 50;
-                            updateHUD();
+                            state.score += 50; updateHUD();
                             if (Math.random() < 0.25) triggerMCQ(false);
                         }
-
-                        enemyDestroyed = true;
-                        break;
                     }
-                }
-
-                if (enemyDestroyed) continue;
-
+                });
                 if (en.y > state.viewport.h) {
                     enemies.splice(i, 1);
                     if (en.type === 'alien') takeDamage();
                 }
-            }
+            });
 
-            effects = effects.filter((eff) => {
-                eff.x += eff.vx;
-                eff.y += eff.vy;
+            effects.forEach((eff, i) => {
+                eff.x += eff.vx; eff.y += eff.vy;
                 eff.life -= 0.025;
-                return eff.life > 0;
+                if (eff.life <= 0) effects.splice(i, 1);
             });
         }
 
         function spawnEnemy() {
             const isBomb = Math.random() < 0.2;
-            const size = Math.min(state.viewport.w * 0.18, 85);
-
+            const size = Math.min(state.viewport.w * 0.18, 85); 
             enemies.push({
                 x: Math.random() * (state.viewport.w - size),
                 y: -size,
@@ -520,35 +450,26 @@
 
         function draw() {
             ctx.clearRect(0, 0, state.viewport.w, state.viewport.h);
-
             if (state.screen === 'start') {
                 ctx.drawImage(images.hero, player.x, player.y, player.w, player.h);
                 return;
             }
-
             ctx.fillStyle = '#60A5FA';
-            bullets.forEach((b) => {
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = '#60A5FA';
+            bullets.forEach(b => {
+                ctx.shadowBlur = 10; ctx.shadowColor = '#60A5FA';
                 ctx.fillRect(b.x, b.y, b.w, b.h);
                 ctx.shadowBlur = 0;
             });
-
-            enemies.forEach((en) => {
+            enemies.forEach(en => {
                 ctx.drawImage(images[en.type], en.x, en.y, en.w, en.h);
             });
-
             ctx.drawImage(images.hero, player.x, player.y, player.w, player.h);
-
-            effects.forEach((eff) => {
+            effects.forEach(eff => {
                 ctx.globalAlpha = eff.life;
                 ctx.fillStyle = eff.color;
-                ctx.beginPath();
-                ctx.arc(eff.x, eff.y, eff.size || 2.5, 0, Math.PI * 2);
-                ctx.fill();
+                ctx.beginPath(); ctx.arc(eff.x, eff.y, eff.size || 2.5, 0, Math.PI * 2); ctx.fill();
             });
-
-            ctx.globalAlpha = 1;
+            ctx.globalAlpha = 1.0;
         }
 
         function gameLoop() {
@@ -559,12 +480,8 @@
 
         function checkCollision(a, b) {
             const p = 8;
-            return (
-                a.x + p < b.x + b.w - p &&
-                a.x + a.w - p > b.x + p &&
-                a.y + p < b.y + b.h - p &&
-                a.y + a.h - p > b.y + p
-            );
+            return a.x + p < b.x + b.w - p && a.x + a.w - p > b.x + p && 
+                   a.y + p < b.y + b.h - p && a.y + a.h - p > b.y + p;
         }
 
         function updateHUD() {
@@ -574,72 +491,41 @@
         }
 
         function takeDamage() {
-            state.lives--;
-            updateHUD();
-
-            const container = document.getElementById('game-container');
-            container.classList.add('shake');
-            setTimeout(() => container.classList.remove('shake'), 400);
-
+            state.lives--; updateHUD();
+            document.getElementById('game-container').classList.add('shake');
+            setTimeout(() => document.getElementById('game-container').classList.remove('shake'), 400);
             if (state.lives <= 0) endGame("TREATY COLLAPSED");
         }
 
         function triggerMCQ(crisis = false) {
-            if (state.screen !== 'playing') return;
-
             state.pausedForMCQ = true;
             state.isCrisis = crisis;
-
             const modal = document.getElementById('mcq-modal');
             const banner = document.getElementById('crisis-banner');
-
             modal.classList.remove('hidden');
-
             if (crisis) {
                 banner.classList.remove('hidden');
                 state.crisisTimer = 10;
                 document.getElementById('crisis-timer').innerText = state.crisisTimer;
-
-                if (crisisInterval) clearInterval(crisisInterval);
-                crisisInterval = setInterval(() => {
-                    if (!state.pausedForMCQ || !state.isCrisis) {
-                        clearInterval(crisisInterval);
-                        crisisInterval = null;
-                        return;
-                    }
-
+                const crisisInt = setInterval(() => {
+                    if (!state.pausedForMCQ || !state.isCrisis) { clearInterval(crisisInt); return; }
                     state.crisisTimer--;
                     document.getElementById('crisis-timer').innerText = state.crisisTimer;
-
-                    if (state.crisisTimer <= 0) {
-                        clearInterval(crisisInterval);
-                        crisisInterval = null;
-                        endGame("CRITICAL BREACH");
-                    }
+                    if (state.crisisTimer <= 0) { clearInterval(crisisInt); endGame("CRITICAL BREACH"); }
                 }, 1000);
-            } else {
-                banner.classList.add('hidden');
-            }
-
+            } else banner.classList.add('hidden');
             renderQuestion();
         }
 
-        function triggerCrisis() {
-            triggerMCQ(true);
-        }
+        function triggerCrisis() { triggerMCQ(true); }
 
         function renderQuestion() {
             const q = state.questionPool[state.qIndex % state.questionPool.length];
             document.getElementById('question-text').innerText = q.q;
-
             const container = document.getElementById('options-container');
             const feedback = document.getElementById('feedback-text');
-
-            feedback.innerText = "";
-            feedback.style.color = "";
-            container.innerHTML = "";
-
-            shuffle([...q.o]).forEach((opt) => {
+            feedback.innerText = ""; container.innerHTML = "";
+            shuffle([...q.o]).forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = "option-btn w-full px-5 py-3 text-left text-white rounded-2xl bg-gray-800 font-bold text-sm border-gray-700 shadow-lg active:scale-95";
                 btn.innerText = opt;
@@ -650,79 +536,35 @@
 
         function handleAnswer(selected, correct, btn) {
             const allBtns = document.querySelectorAll('.option-btn');
-            allBtns.forEach((b) => b.disabled = true);
-
+            allBtns.forEach(b => b.disabled = true);
             if (selected === correct) {
                 btn.classList.add('correct');
-                state.score += 150;
-                state.qIndex++;
-                updateHUD();
+                state.score += 150; state.qIndex++; updateHUD();
                 setTimeout(resumeMission, 700);
             } else {
                 btn.classList.add('wrong');
-
-                allBtns.forEach((b) => {
-                    if (b.innerText === correct) b.classList.add('correct');
-                });
-
-                const feedback = document.getElementById('feedback-text');
-                feedback.innerText = "DATA BREACH DETECTED";
-                feedback.style.color = "#ef4444";
-
-                state.lives--;
-                updateHUD();
-
-                setTimeout(() => {
-                    if (state.lives <= 0) {
-                        endGame("DATA CORRUPTION");
-                    } else {
-                        state.qIndex++;
-                        resumeMission();
-                    }
-                }, 1500);
+                allBtns.forEach(b => { if (b.innerText === correct) b.classList.add('correct'); });
+                document.getElementById('feedback-text').innerText = "DATA BREACH DETECTED";
+                document.getElementById('feedback-text').style.color = "#ef4444";
+                state.lives--; updateHUD();
+                setTimeout(() => { if (state.lives <= 0) endGame("DATA CORRUPTION"); else { state.qIndex++; resumeMission(); } }, 1500);
             }
         }
 
         function resumeMission() {
             document.getElementById('mcq-modal').classList.add('hidden');
-            document.getElementById('crisis-banner').classList.add('hidden');
-            document.getElementById('feedback-text').innerText = "";
-
-            state.pausedForMCQ = false;
-            state.isCrisis = false;
-
-            if (crisisInterval) {
-                clearInterval(crisisInterval);
-                crisisInterval = null;
-            }
+            state.pausedForMCQ = false; state.isCrisis = false;
         }
 
         function createExplosion(x, y, color) {
             for (let i = 0; i < 15; i++) {
-                effects.push({
-                    x,
-                    y,
-                    vx: (Math.random() - 0.5) * 10,
-                    vy: (Math.random() - 0.5) * 10,
-                    life: 1,
-                    color
-                });
+                effects.push({ x, y, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, life: 1.0, color });
             }
         }
 
         function endGame(reason) {
             state.screen = 'end';
-
-            if (timerInterval) {
-                clearInterval(timerInterval);
-                timerInterval = null;
-            }
-
-            if (crisisInterval) {
-                clearInterval(crisisInterval);
-                crisisInterval = null;
-            }
-
+            if (timerInterval) clearInterval(timerInterval);
             document.getElementById('mcq-modal').classList.add('hidden');
             document.getElementById('end-screen').classList.remove('hidden');
             document.getElementById('end-status').innerText = reason;
