@@ -45,7 +45,6 @@
 
         canvas { display: block; width: 100%; height: 100%; }
 
-        /* Mobile Controls - Landscape Optimized */
         .ctrl-zone {
             position: absolute;
             bottom: calc(1rem + var(--sab));
@@ -75,7 +74,6 @@
         
         .touch-btn:active { background: rgba(255, 255, 255, 0.4); transform: scale(0.9); }
 
-        /* MCQ Modal */
         .option-btn {
             transition: all 0.2s;
             min-height: 3.5rem;
@@ -135,13 +133,12 @@
 </div>
 
 <div id="game-container">
-    <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-[100] bg-slate-950/95 flex flex-col items-center justify-center p-8 text-center">
         <h1 class="text-5xl md:text-7xl font-black text-red-600 loud-font italic mb-2 uppercase">Operation: Cu Chi</h1>
         <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Mastery & Tunnel Evasion Unit</p>
         
         <div id="play-tracker" class="mb-8 opacity-0 transition-opacity">
-            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Mission Deployments</p>
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Global Deployments</p>
             <p id="global-play-count" class="text-3xl font-black text-white">---</p>
         </div>
 
@@ -158,7 +155,6 @@
 
     <canvas id="gameCanvas"></canvas>
 
-    <!-- Quiz Overlay -->
     <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center bg-slate-950/98 p-6 backdrop-blur-md">
         <div class="w-full max-w-2xl bg-slate-900 border-l-[8px] border-red-600 p-8 shadow-2xl rounded-r-xl overflow-y-auto max-h-[90vh]">
             <div class="text-red-500 font-black uppercase tracking-widest text-xs mb-4">DECRYPTION REQUIRED</div>
@@ -168,7 +164,6 @@
         </div>
     </div>
 
-    <!-- Controls -->
     <div class="ctrl-zone">
         <div class="btn-group">
             <div id="btn-left" class="touch-btn">
@@ -191,9 +186,7 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-// Configuration Safety
-let auth, db, appId;
-let firebaseEnabled = false;
+let auth, db, appId, firebaseEnabled = false;
 
 try {
     if (typeof __firebase_config !== 'undefined' && __firebase_config) {
@@ -201,11 +194,11 @@ try {
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
-        appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-revised';
+        appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-rev-final';
         firebaseEnabled = true;
     }
 } catch (e) {
-    console.warn("Firebase config missing or invalid.");
+    console.warn("Cloud features inactive.");
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -228,7 +221,7 @@ let state = {
 };
 
 const player = {
-    x: 100, y: 0, w: 40, h: 60,
+    x: 100, y: 100, w: 40, h: 60,
     vx: 0, vy: 0,
     speed: 7.5, jumpPower: -13.5,
     grounded: false,
@@ -253,15 +246,14 @@ let questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
 function generateWorld() {
     state.groundGaps = [];
     state.intelBlocks = [];
-    for (let i = 1; i < 60; i++) {
-        // Random gaps in ground
+    const unitDist = 550;
+    for (let i = 1; i < 100; i++) {
         if (Math.random() > 0.75) {
-            state.groundGaps.push({ x: i * 550, w: 140 });
+            state.groundGaps.push({ x: i * unitDist, w: 140 });
         }
-        // Intel blocks
         state.intelBlocks.push({
-            x: i * 450 + Math.random() * 200,
-            y: state.viewportH - 240 - Math.random() * 120,
+            x: i * (unitDist * 0.8) + Math.random() * 200,
+            y: state.viewportH - 250 - Math.random() * 100,
             w: 55, h: 55, active: true
         });
     }
@@ -277,14 +269,15 @@ async function initTracking() {
         } else {
             await signInAnonymously(auth);
         }
-    } catch (err) { console.warn("Tracking auth failed."); }
+    } catch (err) { }
     
     onAuthStateChanged(auth, (user) => {
         state.user = user;
         if (user) {
             onSnapshot(statsDoc, (snap) => {
                 if (snap.exists()) {
-                    document.getElementById('global-play-count').innerText = (snap.data().playCount || 0).toLocaleString();
+                    const el = document.getElementById('global-play-count');
+                    if (el) el.innerText = (snap.data().playCount || 0).toLocaleString();
                     document.getElementById('play-tracker').style.opacity = '1';
                 } else {
                     setDoc(statsDoc, { playCount: 0 });
@@ -313,16 +306,16 @@ function setupControls() {
     bindTouch('btn-right', 'right');
     bindTouch('btn-jump', 'jump');
     
-    window.onkeydown = (e) => {
+    window.addEventListener('keydown', (e) => {
         if (e.code === 'ArrowLeft') input.left = true;
         if (e.code === 'ArrowRight') input.right = true;
         if (e.code === 'Space' || e.code === 'ArrowUp') input.jump = true;
-    };
-    window.onkeyup = (e) => {
+    });
+    window.addEventListener('keyup', (e) => {
         if (e.code === 'ArrowLeft') input.left = false;
         if (e.code === 'ArrowRight') input.right = false;
         if (e.code === 'Space' || e.code === 'ArrowUp') input.jump = false;
-    };
+    });
 }
 
 function resize() {
@@ -336,6 +329,8 @@ function resize() {
 function triggerQuiz() {
     state.paused = true;
     const q = questionsDeck[0];
+    if (!q) { state.paused = false; return; }
+    
     const overlay = document.getElementById('quiz-overlay');
     const container = document.getElementById('options-container');
     const feedback = document.getElementById('quiz-feedback');
@@ -365,21 +360,20 @@ function triggerQuiz() {
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     state.paused = false;
-                }, 1200);
+                }, 1000);
             } else {
                 btn.classList.add('wrong');
                 btns.forEach(b => { if(b.innerText === q.correct) b.classList.add('correct'); });
                 feedback.innerText = `CORRECT INTEL: ${q.correct}`;
                 feedback.className = "mt-8 text-center font-black uppercase text-red-500 italic";
                 
-                // Reinforcement Logic
                 const missed = questionsDeck.shift();
                 questionsDeck.splice(2, 0, missed);
                 
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     state.paused = false;
-                }, 2800);
+                }, 2500);
             }
         };
         container.appendChild(btn);
@@ -388,43 +382,41 @@ function triggerQuiz() {
 }
 
 function engineLoop(now) {
-    const deltaTime = now - state.lastTime;
+    const dt = now - state.lastTime;
     state.lastTime = now;
 
     if (state.gameStarted && !state.paused) {
-        update(deltaTime);
+        update(dt);
         render();
     }
     requestAnimationFrame(engineLoop);
 }
 
 function update(dt) {
-    // Timer
     state.timer -= dt / 1000;
-    document.getElementById('stats-timer').innerText = Math.max(0, Math.ceil(state.timer)) + "s";
+    const timerEl = document.getElementById('stats-timer');
+    if (timerEl) timerEl.innerText = Math.max(0, Math.ceil(state.timer)) + "s";
+    
     if (state.timer <= 0) {
         state.paused = true;
         alert("Mission Time Expired. Final Intel: " + state.intel);
         location.reload();
+        return;
     }
 
-    // Horizontal Movement
     if (input.left) { player.vx = -player.speed; player.facingRight = false; }
     else if (input.right) { player.vx = player.speed; player.facingRight = true; }
     else { player.vx *= 0.85; }
 
-    // Jump
     if (input.jump && player.grounded) {
         player.vy = player.jumpPower;
         player.grounded = false;
     }
 
-    // Physics
-    player.vy += 0.65; // Gravity
+    player.vy += 0.65; 
     player.x += player.vx;
     player.y += player.vy;
 
-    // Ground Logic
     const groundLevel = state.viewportH - 80;
     let overGap = false;
     state.groundGaps.forEach(gap => {
@@ -439,19 +431,19 @@ function update(dt) {
         player.grounded = false;
     }
 
-    // Transition to Tunnel
     if (player.y > state.viewportH + 50) {
         state.inTunnel = !state.inTunnel;
         player.y = -60;
         player.vx = 0;
-        document.getElementById('stats-sector').innerText = state.inTunnel ? "Sector: Cu Chi Tunnels" : "Sector: Jungle Surface";
-        document.getElementById('stats-sector').style.color = state.inTunnel ? "#ef4444" : "#60a5fa";
+        const sectorEl = document.getElementById('stats-sector');
+        if (sectorEl) {
+            sectorEl.innerText = state.inTunnel ? "Sector: Cu Chi Tunnels" : "Sector: Jungle Surface";
+            sectorEl.style.color = state.inTunnel ? "#ef4444" : "#60a5fa";
+        }
     }
 
-    // Camera
     state.scrollX = -player.x + (state.viewportW * 0.2);
 
-    // Intel Collisions
     state.intelBlocks.forEach(b => {
         if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
             b.active = false;
@@ -464,7 +456,6 @@ function render() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, state.viewportW, state.viewportH);
     
-    // Sector Background
     const grad = ctx.createLinearGradient(0, 0, 0, state.viewportH);
     if (state.inTunnel) {
         grad.addColorStop(0, '#451a03'); grad.addColorStop(1, '#1c1917');
@@ -476,7 +467,6 @@ function render() {
 
     ctx.translate(state.scrollX, 0);
 
-    // Draw Ground
     ctx.fillStyle = state.inTunnel ? '#78350f' : '#14532d';
     const groundRepeat = 2000;
     const startX = Math.floor(-state.scrollX / groundRepeat) * groundRepeat - groundRepeat;
@@ -484,7 +474,6 @@ function render() {
         ctx.fillRect(startX + i * groundRepeat, state.viewportH - 80, groundRepeat, 80);
     }
     
-    // Draw Gaps
     ctx.fillStyle = '#020617';
     state.groundGaps.forEach(gap => {
         ctx.fillRect(gap.x, state.viewportH - 80, gap.w, 80);
@@ -496,7 +485,6 @@ function render() {
         ctx.stroke();
     });
 
-    // Intel Blocks
     state.intelBlocks.forEach(b => {
         if (!b.active) return;
         ctx.fillStyle = '#3b82f6';
@@ -510,23 +498,21 @@ function render() {
         ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10);
     });
 
-    // Player (Tactical Icon)
     ctx.fillStyle = state.facingRight ? '#ef4444' : '#dc2626';
     ctx.fillRect(player.x, player.y, player.w, player.h);
-    // Soldier Helmet
     ctx.fillStyle = '#064e3b';
     ctx.fillRect(player.x - 4, player.y, player.w + 8, 12);
-    // Backpack
     ctx.fillStyle = '#1c1917';
     const backpackX = state.facingRight ? player.x - 8 : player.x + player.w;
     ctx.fillRect(backpackX, player.y + 15, 8, 30);
 }
 
-// Global Init
-window.addEventListener('resize', resize);
-resize();
-setupControls();
-initTracking();
+const initialize = () => {
+    resize();
+    setupControls();
+    initTracking();
+    requestAnimationFrame(engineLoop);
+};
 
 document.getElementById('btn-start').onclick = () => {
     if (firebaseEnabled) recordDeployment();
@@ -535,7 +521,12 @@ document.getElementById('btn-start').onclick = () => {
     state.lastTime = performance.now();
 };
 
-requestAnimationFrame(engineLoop);
+window.addEventListener('resize', resize);
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initialize);
+} else {
+    initialize();
+}
 </script>
 </body>
 </html>
