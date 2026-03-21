@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Road to War: Strategic Causes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Roboto:wght@400;700;900&display=swap');
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            touch-action: manipulation;
+            overflow: hidden;
+            background-color: #ffffff;
+            color: #1a1a1a;
+        }
+
+        .font-bungee { font-family: 'Bungee', cursive; }
+
+        .game-container {
+            height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            background-color: #ffffff;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 15px;
+            flex-grow: 1;
+            padding: 15px;
+            background: #f0f0f0;
+            position: relative;
+        }
+
+        .hole {
+            background: #d1d1d1;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            border: 4px solid #b1b1b1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 8px 15px rgba(0,0,0,0.2);
+        }
+
+        .mole {
+            width: 95%;
+            height: 95%;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-weight: 900;
+            font-size: 1.2rem;
+            line-height: 1.1;
+            padding: 10px;
+            position: absolute;
+            bottom: -100%;
+            transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            text-transform: uppercase;
+            word-wrap: break-word;
+            background: #334155;
+            border: 4px solid #1e293b;
+            color: #ffffff;
+            box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+        }
+
+        .mole.up { bottom: 5%; }
+
+        .flash-red { animation: flashRed 0.4s; }
+        @keyframes flashRed {
+            0% { background: rgba(239, 68, 68, 0.8); }
+            100% { background: #f0f0f0; }
+        }
+
+        .flash-green { animation: flashGreen 0.4s; }
+        @keyframes flashGreen {
+            0% { background: rgba(34, 197, 94, 0.8); }
+            100% { background: #f0f0f0; }
+        }
+
+        * { -webkit-tap-highlight-color: transparent; user-select: none; }
+
+        .btn-large { font-size: 1.5rem; padding: 1.25rem 2.5rem; }
+    </style>
+</head>
+<body>
+
+<div id="app" class="game-container">
+    <div class="p-4 bg-white border-b-4 border-gray-200 flex justify-between items-center shrink-0">
+        <div>
+            <div class="text-xs uppercase font-bold text-gray-500">Score</div>
+            <div id="score" class="text-3xl font-bungee text-blue-600">0</div>
+        </div>
+        <div class="text-center">
+            <div class="text-xs uppercase font-bold text-gray-500">Time</div>
+            <div id="timer" class="text-3xl font-bungee text-black">03:00</div>
+        </div>
+        <div class="text-right">
+            <div id="boss-timer-display" class="text-xs uppercase font-bold text-red-500 italic">Boss in: 5s</div>
+            <div id="quiz-progress" class="text-2xl font-bold text-green-600">QUIZ</div>
+        </div>
+    </div>
+
+    <div id="board" class="grid-container"></div>
+
+    <div id="start-screen" class="fixed inset-0 bg-white flex flex-col items-center justify-center p-6 z-50 text-center">
+        <h1 class="text-5xl font-bungee text-black mb-8">ROAD TO WAR</h1>
+        <div class="bg-gray-100 p-8 rounded-3xl border-4 border-gray-200 mb-8 max-w-sm w-full">
+            <h2 class="text-2xl font-bungee text-blue-600 mb-6">MISSION INTEL</h2>
+            <div class="space-y-4 text-left">
+                <p class="text-xl font-black"><span class="text-green-600">WHACK:</span> Hitler's Expansion & Rearmament</p>
+                <p class="text-xl font-black"><span class="text-red-600">AVOID:</span> Appeasement & LON Weakness</p>
+                <div class="border-t-2 border-gray-300 pt-4">
+                    <p class="text-md text-gray-600 font-bold italic">
+                        The triggers for global conflict. Whack the aggression, avoid the diplomatic failures!
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div id="countdown-area" class="text-4xl font-bungee text-gray-400 mb-4">PREPARING... <span id="start-timer">5</span></div>
+        <button id="start-button" onclick="startGame()" class="hidden bg-black text-white font-bungee btn-large rounded-full shadow-2xl">BEGIN TEST</button>
+    </div>
+
+    <div id="explanation-modal" class="fixed inset-0 bg-white/95 flex flex-col items-center justify-center p-8 z-[45] text-center hidden">
+        <h2 id="exp-title" class="text-4xl font-bungee mb-4 text-blue-600">REARMAMENT</h2>
+        <p id="exp-text" class="text-3xl font-black text-black mb-10 leading-tight"></p>
+        <button onclick="closeExplanation()" class="bg-black text-white font-bungee px-12 py-5 rounded-full text-2xl shadow-lg transform active:scale-95 transition">CONTINUE</button>
+    </div>
+
+    <div id="quiz-modal" class="fixed inset-0 bg-white flex flex-col items-center justify-center p-6 z-40 hidden">
+        <div id="quiz-content" class="w-full max-w-lg text-center">
+            <div class="text-red-600 font-bungee text-3xl mb-4 animate-pulse">BOSS CHALLENGE</div>
+            <h2 id="question-text" class="text-3xl font-black mb-10 text-black leading-tight"></h2>
+            <div id="options-container" class="space-y-4"></div>
+        </div>
+    </div>
+
+    <div id="end-screen" class="fixed inset-0 bg-white flex flex-col items-center justify-center p-6 z-[60] hidden">
+        <h2 class="text-5xl font-bungee text-black mb-4">FINAL SCORE</h2>
+        <div id="final-score" class="text-8xl font-bungee text-blue-600 mb-12">0</div>
+        <button onclick="location.reload()" class="bg-black text-white font-bungee btn-large rounded-full shadow-xl">PLAY AGAIN</button>
+    </div>
+</div>
+
+<script>
+    const hitTargets = {
+        "Rearmament": "Defied Versailles; prepared Germany's military for invasion.",
+        "Conscription": "Signal of aggression; built an army ready for conquest.",
+        "Luftwaffe": "The forbidden Air Force; gave Hitler power to threaten Europe.",
+        "Wehrmacht": "The unified armed forces rebuilt specifically for expansion.",
+        "Rhineland": "Sending troops to the demilitarized zone broke Locarno/Versailles.",
+        "Remilitarisation": "Proved the League of Nations wouldn't stop armed violations.",
+        "Versailles defiance": "Hitler's core goal to destroy the peace order and start conquest.",
+        "Expansion": "The aggressive push for land that made global war inevitable.",
+        "Lebensraum": "The goal for 'living space' in the East; caused the invasion of neighbors.",
+        "Anschluss": "The 1938 union with Austria; gained resources and broke treaties.",
+        "Sudetenland": "Industrial region of Czechoslovakia taken after the Munich Agreement.",
+        "Czechoslovakia": "March 1939 invasion; proved Hitler's goals were not just ethnic union.",
+        "Blitzkrieg": "The high-speed invasion tactic used to rapidly overwhelm Poland.",
+        "Invasion of Poland": "The final trigger on Sept 1, 1939 that started WWII.",
+        "Nazi-Soviet Pact": "Agreement with Stalin to split Poland and avoid a two-front war.",
+        "War preparation": "Geared the entire German economy toward total conflict.",
+        "Military buildup": "Violated naval and land treaties to ensure German dominance.",
+        "Territorial demands": "Constant pressure for more land pushed Europe into crisis.",
+        "Revision of Treaty": "Replacing the Versailles order with aggressive German expansion.",
+        "Munich Agreement": "Where Hitler secured land through threats, signaling weakness.",
+        "Danzig": "Demands for this city and the Polish Corridor triggered the final crisis."
+    };
+
+    const avoidTargets = [
+        "Appeasement", "Neville Chamberlain", "Weak leadership", "Fear of war", "War weariness", 
+        "Economic problems", "Great Depression", "Unemployment crisis", "Defence cuts", 
+        "Slow rearmament", "Lack of unity", "Political division", "Coalition weakness", 
+        "Public pacifism", "Anti-war sentiment", "League of Nations", "LON weakness", 
+        "No army", "No enforcement", "Failure in Manchuria", "Failure in Abyssinia", 
+        "Collective security failure", "Lack of action", "Diplomacy over force", "Trust in Hitler", 
+        "Underestimation", "Delay in response", "Fear of communism", "Tolerating aggression", 
+        "Munich concession", "No resistance", "Avoiding confrontation", 
+        "Disarmament failure", "Ineffective sanctions"
+    ];
+
+    const questions = [
+        { q: "What was Hitler’s primary motivation for seeking 'Lebensraum'?", a: ["Living space in Eastern Europe", "Joining the League of Nations", "Economic disarmament", "Spreading communism"], c: 0 },
+        { q: "What did Hitler secretly start in 1933 while pretending to disarm?", a: ["Rearmament programme", "League for Peace", "Housing plan", "Alliance with France"], c: 0 },
+        { q: "In March 1936, Hitler took a major risk by sending troops into where?", a: ["The Rhineland", "Austria", "Poland", "London"], c: 0 },
+        { q: "Which 1921 conference successfully limited warship sizes?", a: ["Washington Naval Conference", "Munich Agreement", "Locarno Treaties", "Versailles"], c: 0 },
+        { q: "Why did the 1926 World Disarmament Conference fail?", a: ["Britain and France refused to co-operate", "Germany didn't attend", "USA occupied Berlin", "Italy was neutral"], c: 0 },
+        { q: "The 1935 Anglo-German Naval Agreement broke which treaty?", a: ["Treaty of Versailles", "Locarno Pact", "Kellogg-Briand", "Anti-Comintern"], c: 0 },
+        { q: "What does 'Anschluss' (1938) refer to?", a: ["Union of Germany and Austria", "Invasion of Poland", "Remilitarization", "Pact with Stalin"], c: 0 },
+        { q: "Who were the four nations at the Munich Agreement?", a: ["Britain, France, Italy, Germany", "USA, Britain, France, Germany", "USSR, Poland, Germany, Italy", "Japan, China, Germany, Italy"], c: 0 },
+        { q: "What was the goal of 'Appeasement'?", a: ["Avoid war by making concessions", "Help Hitler conquer Russia", "Rebuild British Empire", "Destroy the League"], c: 0 },
+        { q: "What event in March 1939 proved Hitler’s promises were lies?", a: ["Invasion of Czechoslovakia", "Rhineland march", "Saar Plebiscite", "Night of Long Knives"], c: 0 },
+        { q: "What was a secret part of the Nazi-Soviet Pact?", a: ["Dividing Poland", "Attacking the USA", "Stopping the SS", "Restoring the Kaiser"], c: 0 },
+        { q: "The 1928 Kellogg-Briand Pact failed because:", a: ["No way to enforce it", "Germany didn't sign", "It only applied to ships", "It was written in German"], c: 0 },
+        { q: "On what exact date did Germany invade Poland?", a: ["Sept 1, 1939", "Aug 23, 1939", "Sept 3, 1939", "March 15, 1939"], c: 0 },
+        { q: "Which US policy meant help against Hitler was not an option?", a: ["Isolationism", "Appeasement", "Collective Security", "Expansionism"], c: 0 }
+    ];
+
+    let score = 0;
+    let timeLeft = 180;
+    let bossTimer = 5;
+    let gameActive = false;
+    let timerInterval;
+    let moles = [];
+
+    const board = document.getElementById('board');
+    for (let i = 0; i < 9; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'hole';
+        const mole = document.createElement('div');
+        mole.className = 'mole';
+        mole.addEventListener('touchstart', (e) => { e.preventDefault(); whack(mole); });
+        mole.addEventListener('mousedown', (e) => whack(mole));
+        hole.appendChild(mole);
+        board.appendChild(hole);
+        moles.push(mole);
+    }
+
+    window.onload = () => {
+        let holdTime = 5;
+        const holdTimer = setInterval(() => {
+            holdTime--;
+            document.getElementById('start-timer').innerText = holdTime;
+            if (holdTime <= 0) {
+                clearInterval(holdTimer);
+                document.getElementById('countdown-area').classList.add('hidden');
+                document.getElementById('start-button').classList.remove('hidden');
+            }
+        }, 1000);
+    };
+
+    function startGame() {
+        document.getElementById('start-screen').classList.add('hidden');
+        gameActive = true;
+        updateUI();
+        
+        timerInterval = setInterval(() => {
+            if (!gameActive) return;
+            timeLeft--;
+            bossTimer--;
+            
+            if (bossTimer <= 0) {
+                triggerQuiz();
+                bossTimer = 5;
+            }
+            
+            if (timeLeft <= 0) endGame();
+            updateUI();
+        }, 1000);
+
+        gameLoop();
+    }
+
+    function updateUI() {
+        document.getElementById('score').innerText = score;
+        const mins = Math.floor(timeLeft / 60);
+        const secs = timeLeft % 60;
+        document.getElementById('timer').innerText = `${mins}:${secs.toString().padStart(2, '0')}`;
+        document.getElementById('boss-timer-display').innerText = `Boss in: ${bossTimer}s`;
+    }
+
+    function gameLoop() {
+        if (!gameActive) return;
+        
+        const delay = Math.max(300, 1100 - (score * 2));
+        const moleIndex = Math.floor(Math.random() * moles.length);
+        const mole = moles[moleIndex];
+
+        if (!mole.classList.contains('up')) {
+            const hitList = Object.keys(hitTargets);
+            const isHit = Math.random() > 0.45;
+            const chosenWord = isHit ? hitList[Math.floor(Math.random() * hitList.length)] : avoidTargets[Math.floor(Math.random() * avoidTargets.length)];
+            
+            mole.innerText = chosenWord;
+            mole.className = `mole up`;
+            mole.dataset.type = isHit ? 'hit' : 'avoid';
+            mole.dataset.word = chosenWord;
+
+            setTimeout(() => { mole.classList.remove('up'); }, delay + 900);
+        }
+
+        setTimeout(gameLoop, delay);
+    }
+
+    function whack(mole) {
+        if (!mole.classList.contains('up')) return;
+        const wordKey = mole.dataset.word;
+        const type = mole.dataset.type;
+        mole.classList.remove('up');
+
+        if (type === 'hit') {
+            score += 10;
+            board.classList.add('flash-green');
+            setTimeout(() => board.classList.remove('flash-green'), 300);
+            showExplanation(wordKey, hitTargets[wordKey]);
+        } else {
+            score = Math.max(0, score - 20);
+            board.classList.add('flash-red');
+            setTimeout(() => board.classList.remove('flash-red'), 300);
+        }
+        updateUI();
+    }
+
+    function showExplanation(title, text) {
+        gameActive = false;
+        document.getElementById('exp-title').innerText = title;
+        document.getElementById('exp-text').innerText = text || "Directly contributed to the outbreak of global conflict.";
+        document.getElementById('explanation-modal').classList.remove('hidden');
+    }
+
+    function closeExplanation() {
+        document.getElementById('explanation-modal').classList.add('hidden');
+        gameActive = true;
+        gameLoop();
+    }
+
+    function triggerQuiz() {
+        gameActive = false;
+        const q = questions[Math.floor(Math.random() * questions.length)];
+        const modal = document.getElementById('quiz-modal');
+        const qText = document.getElementById('question-text');
+        const options = document.getElementById('options-container');
+
+        qText.innerText = q.q;
+        options.innerHTML = '';
+        
+        q.a.forEach((opt, idx) => {
+            const btn = document.createElement('button');
+            btn.className = "w-full p-6 bg-gray-100 rounded-2xl text-left border-4 border-gray-200 active:bg-blue-600 active:text-white transition text-2xl font-bold";
+            btn.innerText = opt;
+            btn.onclick = () => {
+                if (idx === q.c) {
+                    score += 100;
+                } else {
+                    score = Math.max(0, score - 50);
+                }
+                modal.classList.add('hidden');
+                gameActive = true;
+                bossTimer = 5;
+                gameLoop();
+                updateUI();
+            };
+            options.appendChild(btn);
+        });
+
+        modal.classList.remove('hidden');
+    }
+
+    function endGame() {
+        gameActive = false;
+        clearInterval(timerInterval);
+        document.getElementById('end-screen').classList.remove('hidden');
+        document.getElementById('final-score').innerText = score;
+    }
+</script>
+</body>
+</html>

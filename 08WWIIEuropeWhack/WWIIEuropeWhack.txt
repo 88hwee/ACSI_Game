@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Ambition Whacker: Road to WWII</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body { 
+            margin: 0; 
+            background: #0f172a; 
+            font-family: 'Inter', sans-serif; 
+            overflow: hidden; 
+            color: white; 
+            touch-action: none; 
+            height: 100vh;
+            width: 100vw;
+        }
+
+        .loud-font { font-family: 'Black Ops One', cursive; }
+        
+        #game-container { 
+            position: relative; 
+            width: 100%; 
+            height: 100%; 
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+        }
+
+        /* Landscape Stats Sidebar/Top */
+        #hud {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px;
+            background: rgba(0,0,0,0.5);
+            border-bottom: 2px solid #334155;
+            z-index: 50;
+        }
+
+        .stat-item {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .stat-label { font-size: 10px; text-transform: uppercase; color: #94a3b8; font-weight: 900; }
+        .stat-value { font-size: 18px; font-weight: 900; color: #fbbf24; }
+
+        /* Whack-a-Mole Grid */
+        #grid {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 10px;
+            padding: 10px;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .hole {
+            position: relative;
+            background: #334155;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: inset 0 5px 15px rgba(0,0,0,0.5);
+            border: 2px solid #475569;
+        }
+
+        .target {
+            position: absolute;
+            left: 5%;
+            right: 5%;
+            bottom: -100%;
+            height: 90%;
+            background: #1e293b;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 5px;
+            transition: bottom 0.15s ease-out;
+            border: 2px solid #64748b;
+        }
+
+        .target.show { bottom: 0; }
+
+        .target-text {
+            font-size: 11px;
+            font-weight: 900;
+            line-height: 1.1;
+            text-transform: uppercase;
+            word-wrap: break-word;
+        }
+
+        .target.ambition { border-color: #ef4444; background: linear-gradient(to top, #7f1d1d, #b91c1c); }
+        .target.weakness { border-color: #3b82f6; background: linear-gradient(to top, #1e3a8a, #2563eb); }
+
+        /* MCQ Modal */
+        #quiz-overlay {
+            position: absolute;
+            inset: 0;
+            z-index: 200;
+            background: rgba(15, 23, 42, 0.98);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .quiz-card {
+            background: #1e293b;
+            border: 3px solid #ef4444;
+            border-radius: 20px;
+            width: 100%;
+            max-width: 600px;
+            padding: 20px;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+
+        .option-btn {
+            background: #334155;
+            border: 1px solid #475569;
+            padding: 12px;
+            margin: 5px 0;
+            width: 100%;
+            text-align: left;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        .option-btn:active { background: #475569; }
+        .correct { background: #16a34a !important; border-color: #22c55e !important; }
+        .wrong { background: #991b1b !important; border-color: #ef4444 !important; }
+
+        #start-screen {
+            position: absolute;
+            inset: 0;
+            z-index: 300;
+            background: #0f172a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 20px;
+        }
+
+        @media (orientation: portrait) {
+            #portrait-warning { display: flex !important; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+    <div class="animate-bounce mb-4 text-red-500">
+        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    </div>
+    <h2 class="text-2xl loud-font text-red-400 mb-2 uppercase">Switch to Landscape</h2>
+    <p class="text-slate-500 text-sm">Best played in landscape for 3x3 grid access.</p>
+</div>
+
+<div id="game-container">
+    <div id="start-screen">
+        <h1 class="text-4xl md:text-6xl loud-font text-red-600 mb-2 italic">AMBITION WHACKER</h1>
+        <p class="text-blue-400 font-bold text-xs tracking-widest mb-6 uppercase">Road to World War II Revision</p>
+        <div class="mb-8 text-slate-400 text-sm max-w-md">
+            Whack <span class="text-red-500 font-black">HITLER'S AMBITIONS</span>.<br>
+            Avoid <span class="text-blue-500 font-black">INTERNATIONAL WEAKNESSES</span>.<br>
+            Every 5 hits triggers a Boss Question.
+        </div>
+        <div id="play-tracker" class="mb-6 opacity-0 transition-opacity">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Global Deployments</p>
+            <p id="global-play-count" class="text-2xl font-black text-white">---</p>
+        </div>
+        <button id="btn-start" class="px-12 py-5 bg-red-700 text-white loud-font rounded-lg uppercase tracking-widest text-xl shadow-2xl border-b-4 border-red-900 active:transform active:translate-y-1">
+            Start Mission
+        </button>
+    </div>
+
+    <div id="hud">
+        <div class="stat-item">
+            <div class="stat-label">Score</div>
+            <div id="stat-score" class="stat-value">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Timer</div>
+            <div id="stat-timer" class="stat-value">60</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Combo</div>
+            <div id="stat-combo" class="stat-value">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-label">Lives</div>
+            <div id="stat-lives" class="stat-value">3</div>
+        </div>
+    </div>
+
+    <div id="grid">
+        <!-- 9 Holes Generated by JS -->
+    </div>
+
+    <div id="quiz-overlay">
+        <div class="quiz-card">
+            <div class="text-red-500 font-black text-[10px] tracking-widest mb-2 uppercase">BOSS LEVEL INTELLIGENCE</div>
+            <h3 id="question-text" class="text-lg md:text-xl font-black text-white mb-6 leading-tight uppercase"></h3>
+            <div id="options-container"></div>
+            <div id="feedback-text" class="mt-4 text-center font-bold text-sm italic h-6 uppercase"></div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'ambition-whacker-revision';
+
+const ambitions = ["Rearmament", "Conscription", "Luftwaffe", "Wehrmacht", "Rhineland", "Remilitarisation", "Versailles defiance", "Expansion", "Lebensraum", "Anschluss", "Austria", "Sudetenland", "Czechoslovakia", "Munich Agreement", "Nazi ideology", "Aryan supremacy", "Anti-communism", "Anti-Semitism", "Propaganda", "Hitler Youth", "Dictatorship", "One-party state", "Enabling Act", "Night of Long Knives", "SS", "Gestapo", "Blitzkrieg", "Aggression", "Invasion of Poland", "Nazi-Soviet Pact", "Pact with Stalin", "War preparation", "Military buildup", "Territorial demands", "Revision of Treaty"];
+const weaknesses = ["Appeasement", "Neville Chamberlain", "Weak leadership", "Fear of war", "War weariness", "Economic problems", "Great Depression", "Unemployment crisis", "Defence cuts", "Slow rearmament", "Lack of unity", "Political division", "Coalition weakness", "Public pacifism", "Anti-war sentiment", "League of Nations", "LON weakness", "No army", "No enforcement", "Failure in Manchuria", "Failure in Abyssinia", "Collective security failure", "Lack of action", "Diplomacy over force", "Trust in Hitler", "Underestimation", "Delay in response", "Fear of communism", "Tolerating aggression", "Munich concession", "Giving Sudetenland", "No resistance", "Avoiding confrontation", "Disarmament failure", "Ineffective sanctions"];
+
+const bossQuestions = [
+    { q: "What was Hitler’s primary motivation for seeking 'Lebensraum'?", a: "To carve out living space for Germans in Eastern Europe", o: ["To join the League of Nations", "To carve out living space for Germans in Eastern Europe", "To support the spread of communism", "To promote international disarmament"] },
+    { q: "In what year did the Nazi Party officially take power in Germany?", a: "1933", o: ["1929", "1932", "1933", "1935"] },
+    { q: "Which 1921 conference is cited as a success in limiting the size and number of warships?", a: "Washington Naval Conference", o: ["Locarno Treaties", "Washington Naval Conference", "Munich Agreement", "World Disarmament Conference"] },
+    { q: "What did Hitler secretly start in 1933, despite pretending to engage in disarmament talks?", a: "A rearmament programme", o: ["A housing program", "A rearmament programme", "An alliance with France", "A new league for peace"] },
+    { q: "Why did the League Commission’s preparation for the 1926 World Disarmament Conference fail?", a: "Britain and France refused to co-operate", o: ["Germany refused to attend", "Britain and France refused to co-operate", "The USA occupied the Rhineland", "Italy invaded Abyssinia"] },
+    { q: "What justification did Hitler use to pull Germany out of the League of Nations in 1933?", a: "The refusal of other powers to disarm to Germany's level", o: ["Britain and France declared war", "The refusal of other powers to disarm to Germany's level", "He wanted to join the USSR", "He was forced out by the USA"] },
+    { q: "The World Disarmament Conference (1932–1934) specifically struggled to agree on the definition of:", a: "Offensive weapons like bombers and tanks", o: ["National borders", "Economic sanctions", "Offensive weapons like bombers and tanks", "Naval trade routes"] },
+    { q: "In March 1936, Hitler took a major risk by sending troops into which area?", a: "The Rhineland", o: ["Austria", "The Rhineland", "Sudetenland", "Danzig"] },
+    { q: "How did the failure of the League of Nations in the Abyssinian Crisis affect Hitler's outlook?", a: "He was convinced the League could not hinder his plans for expansion", o: ["He became more cautious", "He was convinced the League could not hinder his plans for expansion", "He applied for permanent membership", "He disbanded the Nazi Party"] },
+    { q: "The 1935 Anglo-German Naval Agreement was significant because it allowed Germany to build a navy:", a: "Up to 35% the size of the British navy, breaking the Treaty of Versailles", o: ["Up to 35% the size of the British navy, breaking the Treaty of Versailles", "Larger than the US navy", "Entirely composed of submarines", "Under the supervision of the League"] },
+    { q: "Why did some British politicians sympathise with Hitler’s reclamation of the Saar and Rhineland?", a: "They felt the Treaty of Versailles was unfair and too harsh", o: ["They supported Nazi ideology", "They felt the Treaty of Versailles was unfair and too harsh", "They wanted to annex the territory themselves", "They were bribed by German industry"] },
+    { q: "Which US policy in the 1930s meant that help against Hitler was not an option?", a: "Isolationism", o: ["Appeasement", "Isolationism", "Collective Security", "Expansionism"] },
+    { q: "What does the term 'Anschluss' (1938) refer to?", a: "The union of Germany and Austria", o: ["The invasion of Poland", "The union of Germany and Austria", "The rearmament of the Rhineland", "The signing of a pact with Stalin"] },
+    { q: "What was a major consequence of the Anschluss for Germany's stature?", a: "It gained access to Austria's gold reserves, industry, and population", o: ["It lost access to the sea", "It gained access to Austria's gold reserves, industry, and population", "It was expelled from the League of Nations", "It signed a peace treaty with the USA"] },
+    { q: "Why did Hitler target the Sudetenland region of Czechoslovakia?", a: "It was largely populated by Germans", o: ["It contained the country's capital", "It was largely populated by Germans", "It was a desert with no resources", "It was a gift from Britain"] },
+    { q: "Who were the four nations that signed the Munich Agreement in September 1938?", a: "Britain, France, Italy, and Germany", o: ["Britain, France, USA, and Germany", "Britain, France, Italy, and Germany", "Germany, USSR, Poland, and Italy", "Britain, France, Czechoslovakia, and USSR"] },
+    { q: "What was the primary goal of Neville Chamberlain’s policy of 'Appeasement'?", a: "To avoid the horrors of war by making concessions", o: ["To help Hitler conquer the USSR", "To avoid the horrors of war by making concessions", "To rebuild the British Empire", "To destroy the League of Nations"] },
+    { q: "How did Winston Churchill describe the policy of appeasement in 1938?", a: "Cynical encouragement to Nazi aggression", o: ["Peace for our time", "Cynical encouragement to Nazi aggression", "A masterstroke of diplomacy", "A necessary evil for trade"] },
+    { q: "What action by Hitler in March 1939 finally proved that his promises at Munich were lies?", a: "The invasion of the rest of Czechoslovakia", o: ["The remilitarization of the Rhineland", "The invasion of the rest of Czechoslovakia", "The signing of the Anti-Comintern Pact", "The annexation of the Saar"] },
+    { q: "Why did Hitler want to reclaim the 'Polish Corridor' and Danzig?", a: "To link East Prussia with the rest of Germany", o: ["To build a new league headquarters", "To link East Prussia with the rest of Germany", "To establish a communist state", "To provide a buffer against Italy"] },
+    { q: "In what month and year was the Nazi-Soviet Non-Aggression Pact signed?", a: "August 1939", o: ["March 1939", "August 1939", "September 1939", "October 1938"] },
+    { q: "What was a 'secret' agreement within the Nazi-Soviet Pact?", a: "To divide Poland between Germany and the USSR", o: ["To attack the United States", "To divide Poland between Germany and the USSR", "To restore the Treaty of Versailles", "To exchange nuclear technology"] },
+    { q: "Why did Stalin agree to a pact with Hitler despite their ideological differences?", a: "He felt Britain and France were allowing Hitler to take over Eastern Europe", o: ["He believed Hitler was a man of peace", "He felt Britain and France were allowing Hitler to take over Eastern Europe", "He wanted to join the Axis alliance", "He was forced by the League of Nations"] },
+    { q: "On what date did Germany invade Poland, triggering World War II?", a: "September 1, 1939", o: ["August 23, 1939", "September 1, 1939", "September 3, 1939", "March 15, 1939"] },
+    { q: "What was the immediate response of Britain and France to the invasion of Poland?", a: "They declared war on Germany", o: ["They signed a new peace treaty", "They declared war on Germany", "They appealed to the USA for troops", "They surrendered immediately"] },
+    { q: "The 1928 Kellogg-Briand Pact failed primarily because:", a: "There was no clear way to enforce the agreement against force", o: ["Germany refused to sign", "There was no clear way to enforce the agreement against force", "It only applied to naval ships", "It was written in German"] },
+    { q: "Which agreement declared hostility between Germany and Japan toward the Communist International?", a: "Anti-Comintern Pact", o: ["Munich Agreement", "Anti-Comintern Pact", "Nazi-Soviet Pact", "Locarno Treaties"] },
+    { q: "According to historian Robert Parker, Chamberlain made a mistake because he:", a: "Succumbed to Hitler’s appeal to his vanity and misjudged him", o: ["Succumbed to Hitler’s appeal to his vanity and misjudged him", "Was too aggressive toward Germany", "Supported the USSR too strongly", "Refused to speak to Hitler"] },
+    { q: "The 1925 Locarno Treaties were considered a 'partial success' because:", a: "Germany accepted its western borders and the demilitarization of the Rhineland", o: ["Germany invaded France immediately", "Germany accepted its western borders and the demilitarization of the Rhineland", "They abolished all tanks in Europe", "The USA joined the League of Nations"] },
+    { q: "Which document is often classified as a 'long-term' cause of the war that Hitler aimed to destroy?", a: "The Treaty of Versailles", o: ["The Nazi-Soviet Pact", "The Treaty of Versailles", "The Munich Agreement", "The Anti-Comintern Pact"] }
+];
+
+let state = {
+    score: 0,
+    timer: 60,
+    combo: 0,
+    lives: 3,
+    active: false,
+    bossActive: false,
+    user: null,
+    lastSpawn: 0
+};
+
+const grid = document.getElementById('grid');
+
+function initGrid() {
+    grid.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+        const hole = document.createElement('div');
+        hole.className = 'hole';
+        hole.innerHTML = `<div class="target" id="target-${i}" onclick="whack(${i})"><span class="target-text"></span></div>`;
+        grid.appendChild(hole);
+    }
+}
+
+async function initTracking() {
+    const statsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
+    if (typeof __initial_auth_token !== 'undefined') {
+        await signInWithCustomToken(auth, __initial_auth_token).catch(() => signInAnonymously(auth));
+    } else {
+        await signInAnonymously(auth);
+    }
+    
+    onAuthStateChanged(auth, (user) => {
+        state.user = user;
+        if (user) {
+            onSnapshot(statsDoc, (snap) => {
+                if (snap.exists()) {
+                    document.getElementById('global-play-count').innerText = (snap.data().playCount || 0).toLocaleString();
+                    document.getElementById('play-tracker').style.opacity = '1';
+                } else {
+                    setDoc(statsDoc, { playCount: 0 });
+                }
+            });
+        }
+    });
+}
+
+async function recordPlay() {
+    if (!state.user) return;
+    const statsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
+    try { await updateDoc(statsDoc, { playCount: increment(1) }); }
+    catch { await setDoc(statsDoc, { playCount: 1 }, { merge: true }); }
+}
+
+window.whack = (idx) => {
+    if (!state.active || state.bossActive) return;
+    const target = document.getElementById(`target-${idx}`);
+    if (!target.classList.contains('show')) return;
+
+    const isAmbition = target.classList.contains('ambition');
+    target.classList.remove('show');
+
+    if (isAmbition) {
+        state.score += 10;
+        state.combo += 1;
+        updateHUD();
+        if (state.combo > 0 && state.combo % 5 === 0) {
+            triggerBoss();
+        }
+    } else {
+        state.lives--;
+        state.combo = 0;
+        updateHUD();
+        if (state.lives <= 0) endGame("DEFEATED");
+    }
+};
+
+function triggerBoss() {
+    state.bossActive = true;
+    const q = bossQuestions[Math.floor(Math.random() * bossQuestions.length)];
+    const overlay = document.getElementById('quiz-overlay');
+    const qText = document.getElementById('question-text');
+    const container = document.getElementById('options-container');
+    const feedback = document.getElementById('feedback-text');
+
+    qText.innerText = q.q;
+    container.innerHTML = '';
+    feedback.innerText = '';
+    
+    q.o.sort(() => Math.random() - 0.5).forEach(opt => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = opt;
+        btn.onclick = () => {
+            const btns = Array.from(container.children);
+            btns.forEach(b => b.disabled = true);
+            if (opt === q.a) {
+                btn.classList.add('correct');
+                feedback.innerText = "ACCURATE INTELLIGENCE!";
+                feedback.style.color = "#22c55e";
+                state.score += 50;
+                updateHUD();
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    state.bossActive = false;
+                }, 1500);
+            } else {
+                btn.classList.add('wrong');
+                btns.forEach(b => { if(b.innerText === q.a) b.classList.add('correct'); });
+                feedback.innerText = "INTEL COMPROMISED";
+                feedback.style.color = "#ef4444";
+                state.lives--;
+                updateHUD();
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                    state.bossActive = false;
+                    if (state.lives <= 0) endGame("DEFEATED");
+                }, 2500);
+            }
+        };
+        container.appendChild(btn);
+    });
+
+    overlay.style.display = 'flex';
+}
+
+function updateHUD() {
+    document.getElementById('stat-score').innerText = state.score;
+    document.getElementById('stat-timer').innerText = Math.ceil(state.timer);
+    document.getElementById('stat-combo').innerText = state.combo;
+    document.getElementById('stat-lives').innerText = state.lives;
+}
+
+function spawn() {
+    if (!state.active || state.bossActive) return;
+    const idx = Math.floor(Math.random() * 9);
+    const target = document.getElementById(`target-${idx}`);
+    if (target.classList.contains('show')) return;
+
+    const isAmbition = Math.random() > 0.4;
+    const list = isAmbition ? ambitions : weaknesses;
+    const text = list[Math.floor(Math.random() * list.length)];
+
+    target.className = `target show ${isAmbition ? 'ambition' : 'weakness'}`;
+    target.querySelector('.target-text').innerText = text;
+
+    setTimeout(() => {
+        target.classList.remove('show');
+    }, 1500 + Math.random() * 1000);
+}
+
+function gameLoop(now) {
+    if (state.active && !state.bossActive) {
+        state.timer -= 0.016;
+        if (now - state.lastSpawn > 800) {
+            spawn();
+            state.lastSpawn = now;
+        }
+        updateHUD();
+        if (state.timer <= 0) endGame("TIME EXPIRED");
+    }
+    requestAnimationFrame(gameLoop);
+}
+
+function endGame(reason) {
+    state.active = false;
+    alert(`${reason}! FINAL SCORE: ${state.score}`);
+    location.reload();
+}
+
+document.getElementById('btn-start').onclick = () => {
+    recordPlay();
+    document.getElementById('start-screen').style.display = 'none';
+    state.active = true;
+    state.lastSpawn = performance.now();
+};
+
+initGrid();
+initTracking();
+requestAnimationFrame(gameLoop);
+
+</script>
+</body>
+</html>
