@@ -60,11 +60,11 @@
         .btn-group { display: flex; gap: 1.5rem; pointer-events: auto; }
         
         .touch-btn {
-            width: 85px;
-            height: 85px;
+            width: 80px;
+            height: 80px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
             border-radius: 50%;
             display: flex;
             align-items: center;
@@ -109,13 +109,14 @@
         }
 
         .hud-item {
-            background: rgba(0,0,0,0.5);
-            padding: 0.4rem 1rem;
+            background: rgba(0,0,0,0.6);
+            padding: 0.5rem 1.2rem;
             border-radius: 99px;
             border: 1px solid rgba(255,255,255,0.2);
             font-weight: 900;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             letter-spacing: 0.1em;
+            backdrop-filter: blur(4px);
         }
 
         @media (orientation: portrait) {
@@ -130,14 +131,14 @@
         <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
     </div>
     <h2 class="text-2xl loud-font text-red-400 mb-2 uppercase">Switch to Landscape</h2>
-    <p class="text-slate-500 text-sm">Operation Cu Chi requires a wide field of vision.</p>
+    <p class="text-slate-500 text-sm">Operation Cu Chi requires a wide field of vision for tactical evasion.</p>
 </div>
 
 <div id="game-container">
     <!-- Start Screen -->
     <div id="start-screen" class="absolute inset-0 z-[100] bg-slate-950/95 flex flex-col items-center justify-center p-8 text-center">
         <h1 class="text-5xl md:text-7xl font-black text-red-600 loud-font italic mb-2 uppercase">Operation: Cu Chi</h1>
-        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Mastery & Tunnel Evasion</p>
+        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Mastery & Tunnel Evasion Unit</p>
         
         <div id="play-tracker" class="mb-8 opacity-0 transition-opacity">
             <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Mission Deployments</p>
@@ -171,15 +172,15 @@
     <div class="ctrl-zone">
         <div class="btn-group">
             <div id="btn-left" class="touch-btn">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
             </div>
             <div id="btn-right" class="touch-btn">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
         <div class="btn-group">
             <div id="btn-jump" class="touch-btn bg-red-600/20 border-red-600/40">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"/></svg>
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 15l7-7 7 7"/></svg>
             </div>
         </div>
     </div>
@@ -187,15 +188,25 @@
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
-import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-// Configuration
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-revision';
+// Configuration Safety
+let auth, db, appId;
+let firebaseEnabled = false;
+
+try {
+    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-revised';
+        firebaseEnabled = true;
+    }
+} catch (e) {
+    console.warn("Firebase config missing or invalid.");
+}
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -212,28 +223,29 @@ let state = {
     user: null,
     scrollX: 0,
     groundGaps: [],
-    intelBlocks: []
+    intelBlocks: [],
+    lastTime: performance.now()
 };
 
 const player = {
     x: 100, y: 0, w: 40, h: 60,
     vx: 0, vy: 0,
-    speed: 7, jumpPower: -12,
+    speed: 7.5, jumpPower: -13.5,
     grounded: false,
     facingRight: true
 };
 
 const masterDeck = [
-    { q: "What was the duration of the Korean War?", a: ["1945–1948", "1950–1953", "1954–1957", "1960–1963"], correct: "1950–1953" },
-    { q: "Which battle led to the French withdrawal from Indochina in May 1954?", a: ["Dien Bien Phu", "Saigon", "Hue", "Ia Drang"], correct: "Dien Bien Phu" },
-    { q: "What agreement partitioned Vietnam into North and South in July 1954?", a: ["Paris Accords", "Geneva Accords", "SEATO Treaty", "Tonkin Resolution"], correct: "Geneva Accords" },
-    { q: "Along which parallel was Vietnam divided after the 1954 conference?", a: "The 17th Parallel", o: ["38th Parallel", "17th Parallel", "20th Parallel", "10th Parallel"], correct: "17th Parallel" },
-    { q: "What programme relocated peasants into fortifications?", a: ["Search and Destroy", "Strategic Hamlet", "Containment", "Village Liberation"], correct: "Strategic Hamlet" },
-    { q: "In what year was the Ho Chi Minh Trail established?", a: "1959", o: ["1954", "1956", "1959", "1965"], correct: "1959" },
-    { q: "What was the formal name of the Viet Cong?", a: "National Liberation Front", o: ["Viet Minh", "National Liberation Front", "Red Army", "People's Army"], correct: "National Liberation Front" },
-    { q: "What does guerrilla mean in Spanish?", a: "Little war", o: ["Hidden hunter", "Jungle trap", "Little war", "Sudden death"], correct: "Little war" },
-    { q: "Approximately how long were the VC tunnel systems?", a: "More than 300km", o: ["50km", "150km", "300km+", "1000km"], correct: "300km+" },
-    { q: "What event in August 1964 increased US involvement?", a: "Gulf of Tonkin incident", o: ["Tet Offensive", "Gulf of Tonkin incident", "Dien Bien Phu", "Ia Drang"], correct: "Gulf of Tonkin incident" }
+    { q: "What was the duration of the Korean War?", options: ["1945–1948", "1950–1953", "1954–1957", "1960–1963"], correct: "1950–1953" },
+    { q: "Which battle led to the French withdrawal from Indochina in May 1954?", options: ["Dien Bien Phu", "Saigon", "Hue", "Ia Drang"], correct: "Dien Bien Phu" },
+    { q: "What agreement partitioned Vietnam into North and South in July 1954?", options: ["Paris Accords", "Geneva Accords", "SEATO Treaty", "Tonkin Resolution"], correct: "Geneva Accords" },
+    { q: "Along which parallel was Vietnam divided after the 1954 conference?", options: ["38th Parallel", "17th Parallel", "20th Parallel", "15th Parallel"], correct: "17th Parallel" },
+    { q: "What programme relocated peasants into fortifications?", options: ["Search and Destroy", "Strategic Hamlet", "Containment", "Village Liberation"], correct: "Strategic Hamlet" },
+    { q: "In what year was the Ho Chi Minh Trail established?", options: ["1954", "1956", "1959", "1965"], correct: "1959" },
+    { q: "What was the formal name of the Viet Cong?", options: ["Viet Minh", "National Liberation Front", "Red Army", "People's Army"], correct: "National Liberation Front" },
+    { q: "What does guerrilla mean in Spanish?", options: ["Hidden hunter", "Jungle trap", "Little war", "Sudden death"], correct: "Little war" },
+    { q: "Approximately how long were the VC tunnel systems?", options: ["50km", "150km", "300km+", "1000km"], correct: "300km+" },
+    { q: "What event in August 1964 increased US involvement?", options: ["Tet Offensive", "Gulf of Tonkin incident", "Dien Bien Phu", "Ia Drang"], correct: "Gulf of Tonkin incident" }
 ];
 
 let questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
@@ -241,32 +253,41 @@ let questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
 function generateWorld() {
     state.groundGaps = [];
     state.intelBlocks = [];
-    for (let i = 1; i < 50; i++) {
+    for (let i = 1; i < 60; i++) {
         // Random gaps in ground
-        if (Math.random() > 0.8) {
-            state.groundGaps.push({ x: i * 500, w: 150 });
+        if (Math.random() > 0.75) {
+            state.groundGaps.push({ x: i * 550, w: 140 });
         }
-        // Floating intel blocks
+        // Intel blocks
         state.intelBlocks.push({
-            x: i * 400 + Math.random() * 200,
-            y: state.viewportH - 220 - Math.random() * 100,
-            w: 50, h: 50, active: true
+            x: i * 450 + Math.random() * 200,
+            y: state.viewportH - 240 - Math.random() * 120,
+            w: 55, h: 55, active: true
         });
     }
 }
 
 async function initTracking() {
-    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
-    await signInAnonymously(auth).catch(() => {});
+    if (!firebaseEnabled) return;
+    const statsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
+    
+    try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+            await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+            await signInAnonymously(auth);
+        }
+    } catch (err) { console.warn("Tracking auth failed."); }
+    
     onAuthStateChanged(auth, (user) => {
         state.user = user;
         if (user) {
-            onSnapshot(analyticsDoc, (snap) => {
+            onSnapshot(statsDoc, (snap) => {
                 if (snap.exists()) {
                     document.getElementById('global-play-count').innerText = (snap.data().playCount || 0).toLocaleString();
                     document.getElementById('play-tracker').style.opacity = '1';
                 } else {
-                    setDoc(analyticsDoc, { playCount: 0 });
+                    setDoc(statsDoc, { playCount: 0 });
                 }
             });
         }
@@ -274,32 +295,33 @@ async function initTracking() {
 }
 
 async function recordDeployment() {
-    if (!state.user) return;
-    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
-    try { await updateDoc(analyticsDoc, { playCount: increment(1) }); }
-    catch { await setDoc(analyticsDoc, { playCount: 1 }, { merge: true }); }
+    if (!firebaseEnabled || !state.user) return;
+    const statsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
+    try { await updateDoc(statsDoc, { playCount: increment(1) }); }
+    catch { await setDoc(statsDoc, { playCount: 1 }, { merge: true }); }
 }
 
 const input = { left: false, right: false, jump: false };
 function setupControls() {
-    const bind = (id, key) => {
+    const bindTouch = (id, key) => {
         const el = document.getElementById(id);
-        el.onmousedown = el.ontouchstart = (e) => { e.preventDefault(); input[key] = true; };
-        el.onmouseup = el.onmouseleave = el.ontouchend = (e) => { e.preventDefault(); input[key] = false; };
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); input[key] = true; }, { passive: false });
+        el.addEventListener('touchend', (e) => { e.preventDefault(); input[key] = false; }, { passive: false });
+        el.addEventListener('touchcancel', (e) => { e.preventDefault(); input[key] = false; }, { passive: false });
     };
-    bind('btn-left', 'left');
-    bind('btn-right', 'right');
-    bind('btn-jump', 'jump');
+    bindTouch('btn-left', 'left');
+    bindTouch('btn-right', 'right');
+    bindTouch('btn-jump', 'jump');
     
     window.onkeydown = (e) => {
         if (e.code === 'ArrowLeft') input.left = true;
         if (e.code === 'ArrowRight') input.right = true;
-        if (e.code === 'Space') input.jump = true;
+        if (e.code === 'Space' || e.code === 'ArrowUp') input.jump = true;
     };
     window.onkeyup = (e) => {
         if (e.code === 'ArrowLeft') input.left = false;
         if (e.code === 'ArrowRight') input.right = false;
-        if (e.code === 'Space') input.jump = false;
+        if (e.code === 'Space' || e.code === 'ArrowUp') input.jump = false;
     };
 }
 
@@ -308,7 +330,7 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    generateWorld();
+    if (!state.gameStarted) generateWorld();
 }
 
 function triggerQuiz() {
@@ -322,9 +344,9 @@ function triggerQuiz() {
     container.innerHTML = '';
     feedback.innerText = '';
     
-    const options = (q.o || q.a).sort(() => Math.random() - 0.5);
+    const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
     
-    options.forEach(opt => {
+    shuffledOptions.forEach(opt => {
         const btn = document.createElement('button');
         btn.className = 'option-btn';
         btn.innerText = opt;
@@ -339,25 +361,25 @@ function triggerQuiz() {
                 feedback.innerText = "Intel Decrypted Successfully";
                 feedback.className = "mt-8 text-center font-black uppercase text-green-500 italic";
                 questionsDeck.shift();
-                if (questionsDeck.length === 0) questionsDeck = [...masterDeck];
+                if (questionsDeck.length === 0) questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     state.paused = false;
-                }, 1000);
+                }, 1200);
             } else {
                 btn.classList.add('wrong');
                 btns.forEach(b => { if(b.innerText === q.correct) b.classList.add('correct'); });
                 feedback.innerText = `CORRECT INTEL: ${q.correct}`;
                 feedback.className = "mt-8 text-center font-black uppercase text-red-500 italic";
                 
-                // Spaced Repetition Logic
+                // Reinforcement Logic
                 const missed = questionsDeck.shift();
-                questionsDeck.splice(3, 0, missed);
+                questionsDeck.splice(2, 0, missed);
                 
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     state.paused = false;
-                }, 2500);
+                }, 2800);
             }
         };
         container.appendChild(btn);
@@ -365,99 +387,109 @@ function triggerQuiz() {
     overlay.classList.remove('hidden');
 }
 
-function update() {
-    if (!state.gameStarted || state.paused) return requestAnimationFrame(update);
+function engineLoop(now) {
+    const deltaTime = now - state.lastTime;
+    state.lastTime = now;
 
+    if (state.gameStarted && !state.paused) {
+        update(deltaTime);
+        render();
+    }
+    requestAnimationFrame(engineLoop);
+}
+
+function update(dt) {
     // Timer
-    if (Date.now() % 1000 < 20) {
-        state.timer -= 0.02;
-        document.getElementById('stats-timer').innerText = Math.ceil(state.timer) + "s";
+    state.timer -= dt / 1000;
+    document.getElementById('stats-timer').innerText = Math.max(0, Math.ceil(state.timer)) + "s";
+    if (state.timer <= 0) {
+        state.paused = true;
+        alert("Mission Time Expired. Final Intel: " + state.intel);
+        location.reload();
     }
 
-    // Physics
+    // Horizontal Movement
     if (input.left) { player.vx = -player.speed; player.facingRight = false; }
     else if (input.right) { player.vx = player.speed; player.facingRight = true; }
-    else { player.vx *= 0.8; }
+    else { player.vx *= 0.85; }
 
+    // Jump
     if (input.jump && player.grounded) {
         player.vy = player.jumpPower;
         player.grounded = false;
     }
 
-    player.vy += 0.6; // Gravity
+    // Physics
+    player.vy += 0.65; // Gravity
     player.x += player.vx;
     player.y += player.vy;
 
     // Ground Logic
     const groundLevel = state.viewportH - 80;
-    let onGround = false;
-    
-    // Check if player is over a "Hole"
     let overGap = false;
     state.groundGaps.forEach(gap => {
-        if (player.x > gap.x && player.x < gap.x + gap.w) overGap = true;
+        if (player.x + player.w/2 > gap.x && player.x + player.w/2 < gap.x + gap.w) overGap = true;
     });
 
     if (!overGap && player.y + player.h > groundLevel) {
         player.y = groundLevel - player.h;
         player.vy = 0;
-        onGround = true;
+        player.grounded = true;
+    } else if (overGap && player.y + player.h > groundLevel) {
+        player.grounded = false;
     }
-    player.grounded = onGround;
 
-    // Transition to Tunnel if falling through hole
-    if (player.y > state.viewportH + 100) {
+    // Transition to Tunnel
+    if (player.y > state.viewportH + 50) {
         state.inTunnel = !state.inTunnel;
-        player.y = -50;
+        player.y = -60;
         player.vx = 0;
         document.getElementById('stats-sector').innerText = state.inTunnel ? "Sector: Cu Chi Tunnels" : "Sector: Jungle Surface";
         document.getElementById('stats-sector').style.color = state.inTunnel ? "#ef4444" : "#60a5fa";
     }
 
-    // Scroll
-    state.scrollX = -player.x + 100;
+    // Camera
+    state.scrollX = -player.x + (state.viewportW * 0.2);
 
-    // Collisions
+    // Intel Collisions
     state.intelBlocks.forEach(b => {
         if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
             b.active = false;
             triggerQuiz();
         }
     });
-
-    draw();
-    requestAnimationFrame(update);
 }
 
-function draw() {
+function render() {
     ctx.setTransform(1, 0, 0, 1, 0, 0);
     ctx.clearRect(0, 0, state.viewportW, state.viewportH);
     
-    // Background gradient shift for tunnels
-    const grad = ctx.createLinearGradient(0,0,0,state.viewportH);
+    // Sector Background
+    const grad = ctx.createLinearGradient(0, 0, 0, state.viewportH);
     if (state.inTunnel) {
         grad.addColorStop(0, '#451a03'); grad.addColorStop(1, '#1c1917');
     } else {
         grad.addColorStop(0, '#064e3b'); grad.addColorStop(1, '#022c22');
     }
     ctx.fillStyle = grad;
-    ctx.fillRect(0,0,state.viewportW, state.viewportH);
+    ctx.fillRect(0, 0, state.viewportW, state.viewportH);
 
     ctx.translate(state.scrollX, 0);
 
-    // Ground
+    // Draw Ground
     ctx.fillStyle = state.inTunnel ? '#78350f' : '#14532d';
-    let gX = Math.floor(-state.scrollX / 1000) * 1000 - 1000;
-    for(let i=0; i<5; i++) {
-        ctx.fillRect(gX + i*1000, state.viewportH - 80, 1000, 80);
+    const groundRepeat = 2000;
+    const startX = Math.floor(-state.scrollX / groundRepeat) * groundRepeat - groundRepeat;
+    for(let i=0; i<6; i++) {
+        ctx.fillRect(startX + i * groundRepeat, state.viewportH - 80, groundRepeat, 80);
     }
     
-    // Gaps (Holes)
+    // Draw Gaps
     ctx.fillStyle = '#020617';
     state.groundGaps.forEach(gap => {
         ctx.fillRect(gap.x, state.viewportH - 80, gap.w, 80);
-        // Shaft lines
-        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
         ctx.moveTo(gap.x, state.viewportH - 80); ctx.lineTo(gap.x, state.viewportH);
         ctx.moveTo(gap.x + gap.w, state.viewportH - 80); ctx.lineTo(gap.x + gap.w, state.viewportH);
@@ -470,39 +502,40 @@ function draw() {
         ctx.fillStyle = '#3b82f6';
         ctx.fillRect(b.x, b.y, b.w, b.h);
         ctx.strokeStyle = 'white';
-        ctx.lineWidth = 2;
+        ctx.lineWidth = 3;
         ctx.strokeRect(b.x, b.y, b.w, b.h);
         ctx.fillStyle = 'white';
-        ctx.font = 'bold 24px Inter';
+        ctx.font = '900 28px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText('?', b.x + 25, b.y + 35);
+        ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10);
     });
 
-    // Player
-    ctx.fillStyle = state.facingRight ? '#ef4444' : '#f87171';
+    // Player (Tactical Icon)
+    ctx.fillStyle = state.facingRight ? '#ef4444' : '#dc2626';
     ctx.fillRect(player.x, player.y, player.w, player.h);
     // Soldier Helmet
     ctx.fillStyle = '#064e3b';
-    ctx.fillRect(player.x - 5, player.y, player.w + 10, 15);
-
-    requestAnimationFrame(() => {});
+    ctx.fillRect(player.x - 4, player.y, player.w + 8, 12);
+    // Backpack
+    ctx.fillStyle = '#1c1917';
+    const backpackX = state.facingRight ? player.x - 8 : player.x + player.w;
+    ctx.fillRect(backpackX, player.y + 15, 8, 30);
 }
 
-window.onload = () => {
-    resize();
-    setupControls();
-    initTracking();
-    
-    document.getElementById('btn-start').onclick = () => {
-        recordDeployment();
-        document.getElementById('start-screen').classList.add('hidden');
-        state.gameStarted = true;
-        state.gameActive = true;
-        update();
-    };
+// Global Init
+window.addEventListener('resize', resize);
+resize();
+setupControls();
+initTracking();
+
+document.getElementById('btn-start').onclick = () => {
+    if (firebaseEnabled) recordDeployment();
+    document.getElementById('start-screen').classList.add('hidden');
+    state.gameStarted = true;
+    state.lastTime = performance.now();
 };
 
-window.addEventListener('resize', resize);
+requestAnimationFrame(engineLoop);
 </script>
 </body>
 </html>
