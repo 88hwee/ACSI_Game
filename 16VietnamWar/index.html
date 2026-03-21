@@ -529,7 +529,7 @@ setupControls();
 initTracking();
 
 document.getElementById('btn-start').onclick = () => {
-    recordDeployment();
+    if (firebaseEnabled) recordDeployment();
     document.getElementById('start-screen').classList.add('hidden');
     state.gameStarted = true;
     state.lastTime = performance.now();
