@@ -27,18 +27,19 @@
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            grid-template-rows: repeat(3, 1fr);
-            gap: 6px;
+            /* Single column, 7 rows for maximum word visibility */
+            grid-template-columns: repeat(1, 1fr);
+            grid-template-rows: repeat(7, 1fr);
+            gap: 8px;
             flex-grow: 1;
-            padding: 8px;
+            padding: 10px;
             background: #f0f0f0;
             position: relative;
         }
 
         .hole {
             background: #d1d1d1;
-            border-radius: 8px;
+            border-radius: 12px;
             position: relative;
             overflow: hidden;
             border: 2px solid #b1b1b1;
@@ -49,33 +50,31 @@
         }
 
         .mole {
-            width: 96%;
-            height: 94%;
-            border-radius: 6px;
+            width: 98%;
+            height: 90%;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             font-weight: 900;
-            /* Ultra-responsive font size for mobile */
-            font-size: clamp(0.65rem, 2.5vw, 1rem); 
-            line-height: 1;
-            padding: 2px;
+            /* Larger font size enabled by single-column width */
+            font-size: clamp(1.1rem, 5vw, 1.6rem); 
+            line-height: 1.1;
+            padding: 10px;
             position: absolute;
-            bottom: -110%;
+            bottom: -120%;
             transition: bottom 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-transform: uppercase;
-            /* Force break and wrap for long words like Versailles */
-            word-break: break-word;
+            word-break: normal;
             overflow-wrap: break-word;
-            hyphens: auto;
             background: #334155;
-            border: 2px solid #1e293b;
+            border: 3px solid #1e293b;
             color: #ffffff;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
 
-        .mole.up { bottom: 3%; }
+        .mole.up { bottom: 5%; }
 
         .flash-red { animation: flashRed 0.4s; }
         @keyframes flashRed {
@@ -121,7 +120,7 @@
                 <p class="text-lg font-black"><span class="text-red-600">AVOID:</span> Weakness & Appeasement</p>
                 <div class="border-t-2 border-gray-300 pt-3">
                     <p class="text-sm text-gray-600 font-bold italic">
-                        Boss pops every 5s! Learning pops after hits. Optimized for Mobile.
+                        Single Column: Maximum word visibility. Boss pops every 5s!
                     </p>
                 </div>
             </div>
@@ -131,8 +130,8 @@
     </div>
 
     <div id="explanation-modal" class="fixed inset-0 bg-white/95 flex flex-col items-center justify-center p-6 z-[45] text-center hidden">
-        <h2 id="exp-title" class="text-3xl font-bungee mb-4 text-blue-600">REARMAMENT</h2>
-        <p id="exp-text" class="text-xl font-black text-black mb-8 leading-tight px-4"></p>
+        <h2 id="exp-title" class="text-3xl font-bungee mb-4 text-blue-600">TITLE</h2>
+        <p id="exp-text" class="text-2xl font-black text-black mb-8 leading-tight px-4"></p>
         <button onclick="closeExplanation()" class="bg-black text-white font-bungee px-10 py-4 rounded-full text-xl shadow-lg active:scale-95 transition">CONTINUE</button>
     </div>
 
@@ -213,7 +212,8 @@
     let moles = [];
 
     const board = document.getElementById('board');
-    for (let i = 0; i < 9; i++) {
+    // Changed loop from 9 to 7 for the 1x7 grid
+    for (let i = 0; i < 7; i++) {
         const hole = document.createElement('div');
         hole.className = 'hole';
         const mole = document.createElement('div');
