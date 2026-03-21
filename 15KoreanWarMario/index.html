@@ -139,7 +139,7 @@
 
     <!-- MCQ Modal -->
     <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-md">
-        <div class="w-full max-lg bg-slate-900 border-t-[8px] border-green-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
+        <div class="w-full max-w-lg bg-slate-900 border-t-[8px] border-green-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
                 <div class="text-green-500 font-black uppercase tracking-[0.2em] text-[10px]">Intelligence Data Entry</div>
                 <div id="stats-q-remaining" class="text-slate-500 text-[10px] font-bold"></div>
@@ -183,12 +183,22 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-// Configuration
-const firebaseConfig = JSON.parse(__firebase_config);
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-const appId = typeof __app_id !== 'undefined' ? __app_id : 'korean-war-mastery-rev';
+// Configuration check
+let auth, db, appId;
+let firebaseEnabled = false;
+
+try {
+    if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        auth = getAuth(app);
+        db = getFirestore(app);
+        appId = typeof __app_id !== 'undefined' ? __app_id : 'korean-war-mastery-rev';
+        firebaseEnabled = true;
+    }
+} catch (e) {
+    console.error("Cloud storage disabled:", e);
+}
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -267,9 +277,10 @@ function resize() {
 const touchInput = { left: false, right: false };
 
 async function initTracking() {
-    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage');
+    if (!firebaseEnabled) return;
+    // FIXED: Segment segment count must be even. path: artifacts/id/public/data/usage/stats
+    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
     
-    // Auth Sequence
     try {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             await signInWithCustomToken(auth, __initial_auth_token);
@@ -291,14 +302,14 @@ async function initTracking() {
                 } else {
                     setDoc(analyticsDoc, { playCount: 0 });
                 }
-            }, (err) => console.log("Tracker silent"));
+            }, (err) => console.log("Tracking restricted"));
         }
     });
 }
 
 async function recordDeployment() {
-    if (!state.user) return;
-    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage');
+    if (!firebaseEnabled || !state.user) return;
+    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
     try {
         await updateDoc(analyticsDoc, { playCount: increment(1) });
     } catch (e) {
@@ -307,15 +318,13 @@ async function recordDeployment() {
 }
 
 function init() {
-    window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
     resize();
     initTracking();
     
     currentSessionDeck = shuffle([...questionsDeckRaw]);
 
     document.getElementById('btn-start').onclick = () => {
-        recordDeployment();
+        if (firebaseEnabled) recordDeployment();
         document.getElementById('start-screen').classList.add('hidden');
         state.gameStarted = true; 
         state.gameActive = true;
@@ -325,8 +334,14 @@ function init() {
 
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
-        el.addEventListener('touchstart', (e) => { e.preventDefault(); touchInput[key] = true; }, { passive: false });
-        el.addEventListener('touchend', (e) => { e.preventDefault(); touchInput[key] = false; }, { passive: false });
+        el.addEventListener('touchstart', (e) => { 
+            e.preventDefault(); 
+            touchInput[key] = true; 
+        }, { passive: false });
+        el.addEventListener('touchend', (e) => { 
+            e.preventDefault(); 
+            touchInput[key] = false; 
+        }, { passive: false });
     };
     setupTouch('ctrl-left', 'left');
     setupTouch('ctrl-right', 'right');
@@ -381,7 +396,7 @@ function updateHUD() {
 function triggerQuiz() {
     if (state.paused) return; 
     state.paused = true;
-    state.hitOccurred = false; // Reset hit flag
+    state.hitOccurred = false;
     
     const q = currentSessionDeck[0];
     const modal = document.getElementById('quiz-overlay');
@@ -489,7 +504,8 @@ function gameLoop(now) {
                 const dx = b.x - en.x;
                 const dy = b.y - en.y;
                 const distSq = dx * dx + dy * dy;
-                if (distSq < (en.r + 20) * (en.r + 20)) {
+                // bullet hit detection
+                if (distSq < (en.r + 15) * (en.r + 15)) {
                     state.bullets.splice(j, 1);
                     state.enemies.splice(i, 1);
                     state.hitOccurred = true;
@@ -533,11 +549,13 @@ function render() {
         ctx.fillRect(s.x, s.y, s.size, s.size);
     });
 
+    // Unit
     ctx.fillStyle = "#16a34a";
     ctx.fillRect(player.x, state.viewportH - 160, player.w, 45);
     ctx.fillStyle = "#15803d";
     ctx.fillRect(player.x + (player.w * 0.25), state.viewportH - 185, player.w * 0.5, 25);
 
+    // Targets
     ctx.font = "900 24px Inter";
     ctx.textAlign = "center";
     state.enemies.forEach(en => {
@@ -552,11 +570,13 @@ function render() {
         ctx.fillText("?", en.x, en.y + 8);
     });
 
+    // Bullets
     ctx.fillStyle = "#fbbf24";
     state.bullets.forEach(b => {
         ctx.fillRect(b.x, b.y, 8, 22);
     });
 
+    // FX
     state.particles.forEach(p => {
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
@@ -576,7 +596,12 @@ function endGame(victory) {
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-window.onload = init;
+// Safer initialization for Module scripts
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+    init();
+} else {
+    window.addEventListener('load', init);
+}
 </script>
 </body>
 </html>
