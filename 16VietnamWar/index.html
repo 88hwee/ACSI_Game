@@ -2,10 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Operation: Cu Chi Mastery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
+
+        :root {
+            --sat: env(safe-area-inset-top);
+            --sab: env(safe-area-inset-bottom);
+            --sal: env(safe-area-inset-left);
+            --sar: env(safe-area-inset-right);
+        }
+
+        * {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
 
         body { 
             margin: 0; 
@@ -13,467 +28,481 @@
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             color: white; 
+            touch-action: none; 
+            height: 100vh;
+            width: 100vw;
         }
 
-        #game-container {
+        .loud-font { font-family: 'Black Ops One', cursive; }
+        
+        #game-container { 
             position: relative; 
-            width: 100vw; 
-            height: 100vh; 
-            background: linear-gradient(to bottom, #064e3b, #022c22); 
+            width: 100%; 
+            height: 100%; 
+            background: linear-gradient(to bottom, #064e3b, #022c22);
             overflow: hidden;
         }
 
-        canvas { display: block; }
+        canvas { display: block; width: 100%; height: 100%; }
 
-        #start-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 200;
+        /* Mobile Controls - Landscape Optimized */
+        .ctrl-zone {
+            position: absolute;
+            bottom: calc(1rem + var(--sab));
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            padding: 0 2rem;
+            pointer-events: none;
+            z-index: 50;
         }
 
-        #btn-start {
-            padding: 20px 40px; font-size: 24px; font-weight: 900; color: #fff;
-            background: #b91c1c; border: 4px solid #3b82f6; border-radius: 0; cursor: pointer; 
-            transition: all 0.2s; text-transform: uppercase; font-family: 'Black Ops One';
+        .btn-group { display: flex; gap: 1.5rem; pointer-events: auto; }
+        
+        .touch-btn {
+            width: 85px;
+            height: 85px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            pointer-events: auto;
         }
+        
+        .touch-btn:active { background: rgba(255, 255, 255, 0.4); transform: scale(0.9); }
 
-        #btn-start:hover { transform: scale(1.1); background: #3b82f6; box-shadow: 0 0 30px #ef4444; }
-
-        #ui-layer { 
-            position: absolute; top: 20px; left: 30px; right: 30px; 
-            pointer-events: none; display: flex; justify-content: space-between; 
-            font-weight: 900; text-shadow: 2px 2px #000; font-size: 24px; z-index: 10; 
-        }
-
-        #stats-coins { color: #facc15; }
-        #stats-mode { color: #3b82f6; text-transform: uppercase; font-size: 14px; letter-spacing: 0.2em; }
-
-        #quiz-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(2, 6, 23, 0.98); display: none; flex-direction: column;
-            justify-content: center; align-items: center; text-align: center; padding: 40px; z-index: 100;
-        }
-
-        .option-btn { 
-            background: #1e293b; color: #fff; border: 2px solid #3b82f6; 
-            padding: 15px; margin: 8px; cursor: pointer; width: 100%; max-width: 800px; 
-            border-radius: 4px; font-size: 18px; font-weight: bold; transition: 0.2s;
+        /* MCQ Modal */
+        .option-btn {
+            transition: all 0.2s;
+            min-height: 3.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
             text-align: left;
+            padding: 0.8rem 1.2rem;
+            width: 100%;
+            border-radius: 8px;
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: #1e293b;
+            border: 2px solid #334155;
+            color: #fff;
+            text-transform: uppercase;
         }
-
-        .option-btn:hover:not(:disabled) { background: #b91c1c; border-color: #ef4444; transform: translateX(10px); }
+        
         .correct { background: #16a34a !important; border-color: #22c55e !important; }
         .wrong { background: #991b1b !important; border-color: #ef4444 !important; }
 
-        #message { 
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); 
-            font-size: 80px; display: none; text-align: center; 
-            text-shadow: 6px 6px 0px #000; z-index: 110; font-weight: 900; color: #ef4444; width: 100%; 
+        #hud {
+            position: absolute;
+            top: calc(0.5rem + var(--sat));
+            left: 1rem;
+            right: 1rem;
+            display: flex;
+            justify-content: space-between;
+            pointer-events: none;
+            z-index: 40;
         }
 
-        .feedback-text { font-size: 24px; font-weight: 900; margin-top: 20px; text-transform: uppercase; font-style: italic; }
+        .hud-item {
+            background: rgba(0,0,0,0.5);
+            padding: 0.4rem 1rem;
+            border-radius: 99px;
+            border: 1px solid rgba(255,255,255,0.2);
+            font-weight: 900;
+            font-size: 0.8rem;
+            letter-spacing: 0.1em;
+        }
+
+        @media (orientation: portrait) {
+            #portrait-warning { display: flex !important; }
+        }
     </style>
 </head>
 <body>
 
+<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+    <div class="animate-bounce mb-4 text-red-500">
+        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+    </div>
+    <h2 class="text-2xl loud-font text-red-400 mb-2 uppercase">Switch to Landscape</h2>
+    <p class="text-slate-500 text-sm">Operation Cu Chi requires a wide field of vision.</p>
+</div>
+
 <div id="game-container">
-    <div id="start-screen">
-        <h1 style="color: #ef4444; font-size: 64px; margin-bottom: 10px; font-family: 'Black Ops One';">OPERATION: CU CHI</h1>
-        <p style="margin-bottom: 30px; font-weight: bold; color: #3b82f6; letter-spacing: 0.1em;">80 INTEL TARGETS • VERTICAL SHAFT TRANSITION • CRAWL TO ESCAPE</p>
-        <button id="btn-start">DEPLOY MISSION</button>
+    <!-- Start Screen -->
+    <div id="start-screen" class="absolute inset-0 z-[100] bg-slate-950/95 flex flex-col items-center justify-center p-8 text-center">
+        <h1 class="text-5xl md:text-7xl font-black text-red-600 loud-font italic mb-2 uppercase">Operation: Cu Chi</h1>
+        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">Intelligence Mastery & Tunnel Evasion</p>
+        
+        <div id="play-tracker" class="mb-8 opacity-0 transition-opacity">
+            <p class="text-[10px] text-slate-500 font-bold uppercase mb-1">Total Mission Deployments</p>
+            <p id="global-play-count" class="text-3xl font-black text-white">---</p>
+        </div>
+
+        <button id="btn-start" class="px-16 py-6 bg-red-700 text-white loud-font rounded-lg shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-all border-b-4 border-red-900">
+            Deploy Mission
+        </button>
     </div>
 
-    <div id="ui-layer">
-        <div id="stats-mode">SECTOR: JUNGLE SURFACE</div>
-        <div id="stats-coins">GOLD: 0</div>
-        <div id="stats-timer">180s</div>
+    <div id="hud">
+        <div id="stats-sector" class="hud-item text-blue-400 uppercase">Sector: Jungle Surface</div>
+        <div id="stats-timer" class="hud-item text-white">180s</div>
+        <div id="stats-intel" class="hud-item text-yellow-400 uppercase">Intel: 0</div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <div id="quiz-overlay">
-        <div id="sector-indicator" style="color: #3b82f6; font-size: 14px; font-weight: 900; letter-spacing: 0.2em; margin-bottom: 10px;">DECRYPTION INTERFACE</div>
-        <div id="question-text" style="color: #fff; font-size: 26px; font-weight: 900; margin-bottom: 30px; max-width: 900px; line-height: 1.2;"></div>
-        <div id="options-container" style="width:100%; display: flex; flex-direction: column; align-items: center;"></div>
-        <div id="quiz-feedback" class="feedback-text"></div>
+    <!-- Quiz Overlay -->
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center bg-slate-950/98 p-6 backdrop-blur-md">
+        <div class="w-full max-w-2xl bg-slate-900 border-l-[8px] border-red-600 p-8 shadow-2xl rounded-r-xl overflow-y-auto max-h-[90vh]">
+            <div class="text-red-500 font-black uppercase tracking-widest text-xs mb-4">DECRYPTION REQUIRED</div>
+            <h3 id="question-text" class="text-xl md:text-2xl font-black italic uppercase mb-8 text-white leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <div id="quiz-feedback" class="mt-8 text-center font-black uppercase italic text-lg h-8"></div>
+        </div>
     </div>
 
-    <div id="message"></div>
+    <!-- Controls -->
+    <div class="ctrl-zone">
+        <div class="btn-group">
+            <div id="btn-left" class="touch-btn">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+            </div>
+            <div id="btn-right" class="touch-btn">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </div>
+        <div class="btn-group">
+            <div id="btn-jump" class="touch-btn bg-red-600/20 border-red-600/40">
+                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 15l7-7 7 7"/></svg>
+            </div>
+        </div>
+    </div>
 </div>
 
-<script>
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+import { getAuth, signInAnonymously, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
+import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+
+// Configuration
+const firebaseConfig = JSON.parse(__firebase_config);
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-revision';
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let gameStarted = false, gameActive = false, inTunnel = false, isFallingToTunnel = false;
-let timer = 180, coins = 0;
-const gravity = 0.45;
-
-const player = { 
-    x: 100, y: 200, w: 50, h: 65, vx: 0, vy: 0, 
-    speed: 7, jumpPower: -13, grounded: false, 
-    facingRight: true, jumpsLeft: 3 
+let state = {
+    gameStarted: false,
+    gameActive: false,
+    paused: false,
+    inTunnel: false,
+    timer: 180,
+    intel: 0,
+    viewportW: window.innerWidth,
+    viewportH: window.innerHeight,
+    user: null,
+    scrollX: 0,
+    groundGaps: [],
+    intelBlocks: []
 };
 
-let spaceReleased = true;
-let particles = [];
-
-function shuffle(array) {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
+const player = {
+    x: 100, y: 0, w: 40, h: 60,
+    vx: 0, vy: 0,
+    speed: 7, jumpPower: -12,
+    grounded: false,
+    facingRight: true
+};
 
 const masterDeck = [
-    { q: "What was the duration of the Korean War?", a: ["1945–1948 conflict lasting three years", "1950–1953 conflict lasting three years", "1954–1957 conflict lasting three years", "1960–1963 conflict lasting three years"], correct: "1950–1953 conflict lasting three years" },
-    { q: "Which battle led to the French withdrawal from Indochina in May 1954?", a: ["The decisive Battle of Dien Bien Phu", "The prolonged Battle of Saigon", "The defensive Battle of Hue", "The early Battle of Ia Drang"], correct: "The decisive Battle of Dien Bien Phu" },
-    { q: "What agreement partitioned Vietnam into North and South in July 1954?", a: ["The Paris Peace settlement agreement", "The Geneva international peace accords", "The SEATO regional defence treaty", "The Gulf of Tonkin resolution"], correct: "The Geneva international peace accords" },
-    { q: "Along which parallel was Vietnam divided after the 1954 conference?", a: ["Division along the thirty-eighth parallel", "Division along the seventeenth parallel", "Division along the twentieth parallel", "Division along the fifteenth parallel"], correct: "Division along the seventeenth parallel" },
-    { q: "Who became the leader of South Vietnam after 1954?", a: ["Ho Chi Minh, communist revolutionary leader", "Ngo Dinh Diem, anti-communist prime minister", "Nguyen Van Thieu, later military president", "Vo Nguyen Giap, communist military commander"], correct: "Ngo Dinh Diem, anti-communist prime minister" },
-    { q: "Why did France lose interest in retaining Vietnam by 1954?", a: ["The war became financially costly and unpopular", "The United States demanded immediate withdrawal", "The colony became economically unproductive", "The French army completely defeated insurgents"], correct: "The war became financially costly and unpopular" },
-    { q: "What was the purpose of the 1956 elections scheduled by the Geneva Accords?", a: ["To elect a new colonial governor for Vietnam", "To reunify Vietnam under a single government", "To determine borders with Laos and Cambodia", "To approve international economic assistance"], correct: "To reunify Vietnam under a single government" },
-    { q: "What happened to the Viet Minh after the 1954 withdrawal?", a: ["Most forces regrouped in the North under communism", "The organisation dissolved and ended military activity", "Many members joined the South Vietnamese government", "Forces relocated mainly to neighbouring Laos"], correct: "Most forces regrouped in the North under communism" },
-    { q: "Which powers attended the 1954 Geneva Conference?", a: ["France, Viet Minh, USSR, China, USA and Britain", "France, the USA and Britain only", "The USSR, China and North Vietnam only", "France and China without other powers"], correct: "France, Viet Minh, USSR, China, USA and Britain" },
-    { q: "Did the 1954 partition bring long-term stability?", a: ["Yes, it permanently ended armed conflict", "Yes, both sides fully supported the agreement", "No, neither side accepted the division peacefully", "No, because France returned to rule Vietnam"], correct: "No, neither side accepted the division peacefully" },
-    { q: "In what year was the Ho Chi Minh Trail established?", a: ["1954 during the Geneva settlement", "1956 following cancelled national elections", "1959 during rising communist insurgency", "1960 when the Viet Cong were formed"], correct: "1959 during rising communist insurgency" },
-    { q: "What was the formal name of the Viet Cong?", a: ["Vietnamese Army of National Liberation", "National Liberation Front of South Vietnam", "Indochinese Communist Revolutionary Party", "Vietnamese People’s Liberation Army"], correct: "National Liberation Front of South Vietnam" },
-    { q: "Which unit organised transport on the Ho Chi Minh Trail?", a: ["Group 559 logistics support unit", "Division 304 combat infantry force", "Hanoi Pathfinder reconnaissance corps", "Mekong transport security command"], correct: "Group 559 logistics support unit" },
-    { q: "How many assassinations occurred between 1957 and 1960?", a: ["Around five hundred government officials", "Around one thousand government officials", "Around one hundred seventy officials", "Around two thousand five hundred officials"], correct: "Around one thousand seven hundred officials" },
-    { q: "How did President Diem respond to the insurgency?", a: ["He began negotiations with communist rebels", "He used harsh repression and public executions", "He resigned and called new elections", "He invited Viet Cong leaders into government"], correct: "He used harsh repression and public executions" },
-    { q: "Why was the South Vietnamese regime considered weak?", a: ["It lacked money to fund government programs", "It failed to stop communist insurgency in rural areas", "It had no trained army units available", "It depended completely on Chinese leadership"], correct: "It failed to stop communist insurgency in rural areas" },
-    { q: "What did former Viet Minh in the South do after 1956?", a: ["They withdrew completely from political activities", "They began low-level attacks and sabotage campaigns", "They relocated to France with colonial officials", "They joined the administration of Ngo Dinh Diem"], correct: "They began low-level attacks and sabotage campaigns" },
-    { q: "Who authorised the creation of Group 559 in 1959?", a: ["The United States defence department", "The North Vietnamese Communist Party leadership", "The French colonial administration", "The United Nations peace commission"], correct: "The North Vietnamese Communist Party leadership" },
-    { q: "What were common targets of VC attacks (1957-1960)?", a: ["Police officers, courts and local officials", "Foreign tourists travelling through villages", "Religious temples and cultural monuments", "International trade offices in major cities"], correct: "Police officers, courts and local officials" },
-    { q: "By 1960, from whom did the VC receive direction?", a: ["The United States military command", "Ho Chi Minh and North Vietnamese leadership", "The French colonial authorities", "The United Nations security council"], correct: "Ho Chi Minh and North Vietnamese leadership" },
-    { q: "What programme relocated peasants into fortifications?", a: ["Search and Destroy military programme", "Strategic Hamlet rural security programme", "Containment defence planning initiative", "Village Liberation development programme"], correct: "Strategic Hamlet rural security programme" },
-    { q: "What was the main goal of the Strategic Hamlet programme?", a: ["To isolate peasants from Viet Cong influence", "To modernise farming equipment in villages", "To recruit villagers into the national army", "To construct a defensive border barrier"], correct: "To isolate peasants from Viet Cong influence" },
-    { q: "How did the VC respond to government control of cities?", a: ["They surrendered to government authorities", "They expanded guerrilla warfare in the countryside", "They relocated operations into China", "They created independent urban governments"], correct: "They expanded guerrilla warfare in the countryside" },
-    { q: "How many North Vietnamese troops arrived between 1961-1963?", a: ["Around five thousand additional soldiers", "Around ten thousand additional soldiers", "Around forty thousand additional soldiers", "Around one hundred thousand soldiers"], correct: "Around forty thousand additional soldiers" },
-    { q: "Which analogy described the relationship of army and people?", a: ["Hammer and anvil working together", "Fish swimming naturally in water", "Sun and moon moving across the sky", "Tiger and dragon sharing territory"], correct: "Fish swimming naturally in water" },
-    { q: "What was a consequence of the Strategic Hamlet programme?", a: ["Many peasants became resentful due to relocation", "Villagers gained new farmland and better equipment", "Communities became economically independent", "Farmers voluntarily moved to urban areas"], correct: "Many peasants became resentful due to relocation" },
-    { q: "What did the VC often attack in the early 1960s?", a: ["Government offices, officials and military bases", "International hotels built during colonial rule", "Foreign trade buildings in coastal cities", "Religious institutions used by villagers"], correct: "Government offices, officials and military bases" },
-    { q: "In what year was President Ngo Dinh Diem assassinated?", a: ["1960 during rising political protests", "1961 during military instability", "1963 during a military coup", "1964 during communist uprising"], correct: "1963 during a military coup" },
-    { q: "What event in August 1964 increased US involvement?", a: ["The Tet Offensive surprise attacks", "The Gulf of Tonkin naval incident", "The fall of Dien Bien Phu fortress", "The bombing of Hanoi airfields"], correct: "The Gulf of Tonkin naval incident" },
-    { q: "How did Vietnam become part of the Cold War rivalry?", a: ["Through direct involvement of global superpowers", "Through Vietnam developing nuclear weapons", "Through United Nations military intervention", "Through France returning to control Vietnam"], correct: "Through direct involvement of global superpowers" },
-    { q: "What development worsened Sino-Soviet relations in the 1950s?", a: ["Disagreements during the Vietnam War", "The ideological Sino-Soviet split", "Conflicts following the Korean War", "Tensions after the Cuban Missile Crisis"], correct: "The ideological Sino-Soviet split" },
-    { q: "Why did North Vietnam maintain a balancing foreign policy?", a: ["To avoid war with neighbouring Cambodia", "To obtain aid from both China and the USSR", "To obey the conditions of the Geneva Accords", "To prevent direct US intervention"], correct: "To obtain aid from both China and the USSR" },
-    { q: "What military support did the USSR provide to North Vietnam?", a: ["Aircraft and missile systems for air defence", "Warships and submarines for coastal defence", "Infantry divisions to fight ground battles", "Chemical weapons used to clear vegetation"], correct: "Aircraft and missile systems for air defence" },
-    { q: "What theory suggested communism would spread like dominoes?", a: ["The containment strategy theory", "The domino spread theory", "The iron curtain doctrine", "The proxy war hypothesis"], correct: "The domino spread theory" },
-    { q: "Who was the US Defence Secretary explaining policy in 1964?", a: ["Secretary of State Dean Rusk", "Defence Secretary Robert McNamara", "General William Westmoreland", "Diplomat Henry Kissinger"], correct: "Defence Secretary Robert McNamara" },
-    { q: "What policy aimed to prevent the spread of communism?", a: ["Isolationism foreign policy doctrine", "Containment strategic policy", "Expansionist intervention policy", "Neutralist diplomatic strategy"], correct: "Containment strategic policy" },
-    { q: "Who overthrew the Cuban government in 1959?", a: ["Revolutionary leader Che Guevara", "Revolutionary leader Fidel Castro", "Military ruler Fulgencio Batista", "Chilean leader Augusto Pinochet"], correct: "Revolutionary leader Fidel Castro" },
-    { q: "When did the Cuban Missile Crisis occur?", a: ["1959 during Cuban revolution", "1961 during Bay of Pigs", "1962 during nuclear confrontation", "1964 during Cold War escalation"], correct: "1962 during nuclear confrontation" },
-    { q: "Which US President took office in 1961?", a: ["Lyndon Johnson as new president", "John Kennedy as new president", "Richard Nixon as new president", "Harry Truman as new president"], correct: "John Kennedy as new president" },
-    { q: "What organisation coordinated US support to South Vietnam?", a: ["SEATO regional defence organisation", "Military Assistance Command Vietnam", "Central Intelligence Agency command", "North Atlantic Treaty Organisation"], correct: "Military Assistance Command Vietnam" },
-    { q: "Why was President Kennedy cautious about entering the war?", a: ["He supported communist governments in Asia", "He feared entering a conflict without clear goals", "He believed the US military was too weak", "He wanted to prioritise European security"], correct: "He feared entering a conflict without clear goals" },
-    { q: "Which US President expanded the war significantly?", a: ["Dwight Eisenhower administration", "Lyndon Johnson administration", "Richard Nixon administration", "John Kennedy administration"], correct: "Lyndon Johnson administration" },
-    { q: "When did Operation Rolling Thunder begin?", a: ["August 1964 during naval tensions", "March 1965 sustained bombing campaign", "January 1968 during Tet Offensive", "April 1969 during troop withdrawal"], correct: "March 1965 sustained bombing campaign" },
-    { q: "Where did the first major US–PAVN battle occur in 1965?", a: ["Mekong Delta river region", "Ia Drang Valley battle area", "Saigon capital city outskirts", "Hue imperial city district"], correct: "Ia Drang Valley battle area" },
-    { q: "Approximately how many PAVN soldiers died at Ia Drang?", a: ["About one hundred soldiers killed", "About five hundred soldiers killed", "About fifteen hundred to two thousand soldiers", "About five thousand soldiers killed"], correct: "About fifteen hundred to two thousand soldiers" },
-    { q: "By end of 1967, how was the military situation described?", a: ["A clear American military victory", "A total North Vietnamese defeat", "A prolonged military stalemate", "A negotiated peace settlement"], correct: "A prolonged military stalemate" },
-    { q: "Where did US forces mainly control territory in 1966?", a: ["Tunnel networks across Vietnam", "Major cities and military bases", "Supply routes along Ho Chi Minh Trail", "Northern capital city of Hanoi"], correct: "Major cities and military bases" },
-    { q: "During which presidency did US troops reach their peak?", a: ["Dwight Eisenhower administration", "Lyndon Johnson administration", "Richard Nixon administration", "John Kennedy administration"], correct: "Lyndon Johnson administration" },
-    { q: "What cost was North Vietnam willing to accept for liberation?", a: ["Paying financial reparations to the US", "Sustaining extremely high military casualties", "Abandoning claims to South Vietnam", "Ending alliances with communist China"], correct: "Sustaining extremely high military casualties" },
-    { q: "What goal did North Vietnam value above military losses?", a: ["Achieving financial independence from allies", "Forcing the United States to withdraw", "Restoring colonial ties with France", "Gaining leadership within the United Nations"], correct: "Forcing the United States to withdraw" },
-    { q: "What does the word guerrilla mean in Spanish?", a: ["A forest-based fighter", "A small or little war", "A hidden jungle trap", "A sudden lightning attack"], correct: "A small or little war" },
-    { q: "Approximately how long were the VC tunnel systems?", a: ["Around fifty kilometres in total", "Around one hundred fifty kilometres", "More than three hundred kilometres", "Nearly one thousand kilometres"], correct: "More than three hundred kilometres" },
-    { q: "What was the purpose of Agent Orange?", a: ["Supplying food for American soldiers", "Destroying jungle cover hiding guerrillas", "Marking bombing targets at night", "Purifying water supplies in camps"], correct: "Destroying jungle cover hiding guerrillas" },
-    { q: "What was napalm used for during the war?", a: ["Thickened incendiary fuel producing intense fire", "Smoke weapon used for battlefield concealment", "Guided missile designed for tank destruction", "Poison gas developed for jungle warfare"], correct: "Thickened incendiary fuel producing intense fire" },
-    { q: "Which missions caused civilian casualties and criticism?", a: ["Operation Peacekeeper security missions", "Search and Destroy combat missions", "Strategic Hamlet relocation programme", "Red Cross medical evacuation missions"], correct: "Search and Destroy combat missions" },
-    { q: "Why did morale among US troops decline?", a: ["Soldiers received insufficient military salaries", "Many were young conscripts unsure of the purpose", "Troops lacked modern military equipment", "Soldiers believed victory was too easy"], correct: "Many were young conscripts unsure of the purpose" },
-    { q: "How did media coverage influence troop morale?", a: ["It strengthened morale through positive reporting", "It weakened morale by portraying the war negatively", "It had no noticeable effect on soldiers", "It focused mainly on weather conditions"], correct: "It weakened morale by portraying the war negatively" },
-    { q: "Why did the VC rely heavily on guerrilla warfare?", a: ["Tropical climate made conventional battles difficult", "They lacked heavy weapons compared with US forces", "The United Nations required unconventional warfare", "Tunnel systems demanded small tactical units"], correct: "They lacked heavy weapons compared with US forces" },
-    { q: "How many civilians were killed by the VC from 1966-1971?", a: ["About five thousand civilian casualties", "Around ten thousand civilian casualties", "Approximately twenty-seven thousand civilians", "Nearly one hundred thousand civilians"], correct: "Approximately twenty-seven thousand civilians" },
-    { q: "During which period was Agent Orange widely used?", a: ["1950 to 1953 during Korean War", "1961 to 1971 during Vietnam conflict", "1973 to 1975 during final fighting", "1980 to 1990 after the war"], correct: "1961 to 1971 during Vietnam conflict" },
-    { q: "When did the Tet Offensive begin?", a: ["November 1967 major attacks", "January 1968 nationwide offensive", "March 1969 urban attacks", "May 1970 border offensives"], correct: "January 1968 nationwide offensive" },
-    { q: "What was the US official view before the Tet Offensive?", a: ["The war situation was deteriorating rapidly", "The war appeared to be progressing favourably", "Victory was expected within a few weeks", "Immediate withdrawal was being considered"], correct: "The war appeared to be progressing favourably" },
-    { q: "How did US commanders measure progress during the war?", a: ["Territory captured during operations", "Enemy killed measured through body count", "Local population supporting the government", "Distance of tunnels destroyed"], correct: "Enemy killed measured through body count" },
-    { q: "How many cities and targets were attacked during Tet?", a: ["About ten urban targets attacked", "About fifty urban targets attacked", "More than one hundred targets attacked", "About five hundred targets attacked"], correct: "More than one hundred targets attacked" },
-    { q: "Why was the Tet Offensive a turning point?", a: ["The United States army was destroyed", "It undermined confidence in US progress claims", "North Vietnam surrendered after heavy losses", "China entered the conflict directly"], correct: "It undermined confidence in US progress claims" },
-    { q: "What policy gradually withdrew US troops?", a: ["Containment strategic doctrine", "Vietnamisation military policy", "Detente diplomatic approach", "Great Society domestic programme"], correct: "Vietnamisation military policy" },
-    { q: "When did the Vietnam War spread into Cambodia?", a: ["1968 during Tet Offensive", "1969 during bombing campaign", "1970 during cross-border invasion", "1971 during troop withdrawal"], correct: "1970 during cross-border invasion" },
-    { q: "When were the Paris Peace Accords signed?", a: ["1970 during negotiations", "1972 final agreement talks", "1973 formal peace settlement", "1975 after Saigon collapse"], correct: "1973 formal peace settlement" },
-    { q: "When did Saigon fall to communist forces?", a: ["January 1973 during ceasefire", "April 1975 final collapse", "November 1976 national elections", "May 1980 regional conflict"], correct: "April 1975 final collapse" },
-    { q: "What was Vietnam’s outcome after 1975?", a: ["Continued division between north and south", "Unification under communist government", "Transformation into a US protectorate", "Restoration of French colonial rule"], correct: "Unification under communist government" },
-    { q: "Which neighbours also became communist by 1975?", a: ["Thailand and Malaysia", "Laos and Cambodia", "Indonesia and Singapore", "Japan and South Korea"], correct: "Laos and Cambodia" },
-    { q: "What law limited US presidential war powers in 1973?", a: ["Vietnam conflict legislative act", "War Powers congressional act", "Containment amendment law", "International peace agreement act"], correct: "War Powers congressional act" },
-    { q: "When was ASEAN formed?", a: ["1954 early regional cooperation", "1960 economic alliance creation", "1967 Southeast Asian association", "1975 post-war organisation"], correct: "1967 Southeast Asian association" },
-    { q: "What did ASEAN declare Southeast Asia to be in 1971?", a: ["Official regional war zone", "Zone of Peace Freedom and Neutrality", "Communist regional federation", "American strategic defence region"], correct: "Zone of Peace Freedom and Neutrality" },
-    { q: "What policy described improved US–communist relations?", a: ["Escalation military strategy", "Detente diplomatic policy", "Confrontation ideological doctrine", "Isolationist foreign policy"], correct: "Detente diplomatic policy" },
-    { q: "Which later invasion was compared to Vietnam?", a: ["United States invasion of Iraq", "Soviet invasion of Afghanistan", "Chinese invasion of Tibet", "French invasion of Algeria"], correct: "Soviet invasion of Afghanistan" },
-    { q: "What lesson did Vietnam demonstrate about resistance?", a: ["Governments survive through financial support", "Determined resistance prevents imposed ideologies", "Superpowers always defeat weaker countries", "All governments eventually gain popular support"], correct: "Determined resistance prevents imposed ideologies" },
-    { q: "How many were affected by Agent Orange per Vietnam?", a: ["About one hundred thousand people", "About five hundred thousand people", "Around three to four million people", "Nearly ten million people"], correct: "Around three to four million people" },
-    { q: "What media portrayal reduced US troop morale?", a: ["Reports describing rapid military victory", "Coverage portraying the war as unjust", "Broadcasts discussing domestic politics", "News focusing mainly on battlefield weather"], correct: "Coverage portraying the war as unjust" },
-    { q: "What was a consequence of the war for US reputation?", a: ["It enabled US expansion across Asia", "It damaged prestige and increased self-doubt", "It proved the Domino Theory entirely false", "It caused the United States to leave the UN"], correct: "It damaged prestige and increased self-doubt" }
+    { q: "What was the duration of the Korean War?", a: ["1945–1948", "1950–1953", "1954–1957", "1960–1963"], correct: "1950–1953" },
+    { q: "Which battle led to the French withdrawal from Indochina in May 1954?", a: ["Dien Bien Phu", "Saigon", "Hue", "Ia Drang"], correct: "Dien Bien Phu" },
+    { q: "What agreement partitioned Vietnam into North and South in July 1954?", a: ["Paris Accords", "Geneva Accords", "SEATO Treaty", "Tonkin Resolution"], correct: "Geneva Accords" },
+    { q: "Along which parallel was Vietnam divided after the 1954 conference?", a: "The 17th Parallel", o: ["38th Parallel", "17th Parallel", "20th Parallel", "10th Parallel"], correct: "17th Parallel" },
+    { q: "What programme relocated peasants into fortifications?", a: ["Search and Destroy", "Strategic Hamlet", "Containment", "Village Liberation"], correct: "Strategic Hamlet" },
+    { q: "In what year was the Ho Chi Minh Trail established?", a: "1959", o: ["1954", "1956", "1959", "1965"], correct: "1959" },
+    { q: "What was the formal name of the Viet Cong?", a: "National Liberation Front", o: ["Viet Minh", "National Liberation Front", "Red Army", "People's Army"], correct: "National Liberation Front" },
+    { q: "What does guerrilla mean in Spanish?", a: "Little war", o: ["Hidden hunter", "Jungle trap", "Little war", "Sudden death"], correct: "Little war" },
+    { q: "Approximately how long were the VC tunnel systems?", a: "More than 300km", o: ["50km", "150km", "300km+", "1000km"], correct: "300km+" },
+    { q: "What event in August 1964 increased US involvement?", a: "Gulf of Tonkin incident", o: ["Tet Offensive", "Gulf of Tonkin incident", "Dien Bien Phu", "Ia Drang"], correct: "Gulf of Tonkin incident" }
 ];
 
-let questionsDeck = shuffle([...masterDeck]);
+let questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
 
-let blocks = [];
-function generateBlocks() {
-    const groundY = canvas.height - 80;
-    blocks = Array.from({length: 60}, (_, i) => ({ 
-        x: 600 + (i * 350), 
-        y: inTunnel ? (canvas.height - 180) : groundY - (130 + (Math.random() * 220)), 
-        w: 60, h: 60, active: true 
-    }));
-}
-
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    generateBlocks();
-}
-window.addEventListener('resize', resize);
-resize();
-
-document.getElementById('btn-start').onclick = () => {
-    document.getElementById('start-screen').style.display = 'none';
-    gameStarted = true; gameActive = true;
-};
-
-const keys = {};
-window.onkeydown = e => keys[e.code] = true;
-window.onkeyup = e => {
-    keys[e.code] = false;
-    if (e.code === 'Space') spaceReleased = true;
-};
-
-function createFireworks(x, y) {
-    for (let i = 0; i < 40; i++) {
-        particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 12,
-            vy: (Math.random() - 0.5) * 12,
-            life: 1.0,
-            color: `hsl(${Math.random() * 360}, 100%, 50%)`
+function generateWorld() {
+    state.groundGaps = [];
+    state.intelBlocks = [];
+    for (let i = 1; i < 50; i++) {
+        // Random gaps in ground
+        if (Math.random() > 0.8) {
+            state.groundGaps.push({ x: i * 500, w: 150 });
+        }
+        // Floating intel blocks
+        state.intelBlocks.push({
+            x: i * 400 + Math.random() * 200,
+            y: state.viewportH - 220 - Math.random() * 100,
+            w: 50, h: 50, active: true
         });
     }
 }
 
-function drawPlayer() {
-    ctx.save();
-    ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
-    if (!player.facingRight) ctx.scale(-1, 1);
-    
-    // Player Color Scheme
-    ctx.fillStyle = inTunnel ? "#7c2d12" : (player.facingRight ? "#3b82f6" : "#ef4444"); 
+async function initTracking() {
+    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
+    await signInAnonymously(auth).catch(() => {});
+    onAuthStateChanged(auth, (user) => {
+        state.user = user;
+        if (user) {
+            onSnapshot(analyticsDoc, (snap) => {
+                if (snap.exists()) {
+                    document.getElementById('global-play-count').innerText = (snap.data().playCount || 0).toLocaleString();
+                    document.getElementById('play-tracker').style.opacity = '1';
+                } else {
+                    setDoc(analyticsDoc, { playCount: 0 });
+                }
+            });
+        }
+    });
+}
 
-    if (inTunnel) {
-        // CRAWL STANCE
-        ctx.fillRect(-25, 10, 50, 20); 
-        ctx.fillStyle = "#ffdbac";
-        ctx.fillRect(20, 10, 15, 15);
-    } else {
-        // STAND STANCE
-        ctx.fillRect(-15, -30, 30, 50);
-        ctx.fillStyle = "#ffdbac"; 
-        ctx.fillRect(-12, -45, 24, 20);
-        ctx.fillStyle = "#1e3a8a"; 
-        ctx.fillRect(-15, -50, 30, 10);
-    }
-    ctx.restore();
+async function recordDeployment() {
+    if (!state.user) return;
+    const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
+    try { await updateDoc(analyticsDoc, { playCount: increment(1) }); }
+    catch { await setDoc(analyticsDoc, { playCount: 1 }, { merge: true }); }
+}
+
+const input = { left: false, right: false, jump: false };
+function setupControls() {
+    const bind = (id, key) => {
+        const el = document.getElementById(id);
+        el.onmousedown = el.ontouchstart = (e) => { e.preventDefault(); input[key] = true; };
+        el.onmouseup = el.onmouseleave = el.ontouchend = (e) => { e.preventDefault(); input[key] = false; };
+    };
+    bind('btn-left', 'left');
+    bind('btn-right', 'right');
+    bind('btn-jump', 'jump');
+    
+    window.onkeydown = (e) => {
+        if (e.code === 'ArrowLeft') input.left = true;
+        if (e.code === 'ArrowRight') input.right = true;
+        if (e.code === 'Space') input.jump = true;
+    };
+    window.onkeyup = (e) => {
+        if (e.code === 'ArrowLeft') input.left = false;
+        if (e.code === 'ArrowRight') input.right = false;
+        if (e.code === 'Space') input.jump = false;
+    };
+}
+
+function resize() {
+    state.viewportW = window.innerWidth;
+    state.viewportH = window.innerHeight;
+    canvas.width = state.viewportW;
+    canvas.height = state.viewportH;
+    generateWorld();
 }
 
 function triggerQuiz() {
-    gameActive = false;
-    const currentQ = questionsDeck[0];
+    state.paused = true;
+    const q = questionsDeck[0];
     const overlay = document.getElementById('quiz-overlay');
-    const qText = document.getElementById('question-text');
-    const feedback = document.getElementById('quiz-feedback');
     const container = document.getElementById('options-container');
-
-    qText.innerText = currentQ.q;
-    feedback.innerText = "";
+    const feedback = document.getElementById('quiz-feedback');
+    
+    document.getElementById('question-text').innerText = q.q;
     container.innerHTML = '';
-
-    let opts = shuffle([...currentQ.a]);
-
-    opts.forEach(opt => {
+    feedback.innerText = '';
+    
+    const options = (q.o || q.a).sort(() => Math.random() - 0.5);
+    
+    options.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn'; 
+        btn.className = 'option-btn';
         btn.innerText = opt;
         btn.onclick = () => {
             const btns = container.querySelectorAll('button');
             btns.forEach(b => b.disabled = true);
-
-            if (opt === currentQ.correct) {
+            
+            if (opt === q.correct) {
                 btn.classList.add('correct');
-                coins += 50;
-                document.getElementById('stats-coins').innerText = `GOLD: ${coins}`;
-                feedback.innerText = "INTEL SECURED!";
-                feedback.style.color = "#22c55e";
-                createFireworks(canvas.width/2, canvas.height/2);
-                
+                state.intel += 1;
+                document.getElementById('stats-intel').innerText = `INTEL: ${state.intel}`;
+                feedback.innerText = "Intel Decrypted Successfully";
+                feedback.className = "mt-8 text-center font-black uppercase text-green-500 italic";
+                questionsDeck.shift();
+                if (questionsDeck.length === 0) questionsDeck = [...masterDeck];
                 setTimeout(() => {
-                    overlay.style.display = 'none';
-                    questionsDeck.shift(); 
-                    if (inTunnel) exitTunnel();
-                    gameActive = (timer > 0);
-                }, 1200);
+                    overlay.classList.add('hidden');
+                    state.paused = false;
+                }, 1000);
             } else {
                 btn.classList.add('wrong');
-                feedback.innerText = "WRONG! CORRECT ANSWER: " + currentQ.correct;
-                feedback.style.color = "#ef4444";
+                btns.forEach(b => { if(b.innerText === q.correct) b.classList.add('correct'); });
+                feedback.innerText = `CORRECT INTEL: ${q.correct}`;
+                feedback.className = "mt-8 text-center font-black uppercase text-red-500 italic";
+                
+                // Spaced Repetition Logic
+                const missed = questionsDeck.shift();
+                questionsDeck.splice(3, 0, missed);
                 
                 setTimeout(() => {
-                    overlay.style.display = 'none';
-                    const missed = questionsDeck.shift();
-                    // Repeat 3 questions later
-                    questionsDeck.splice(3, 0, missed);
-                    initTunnelFall();
-                }, 3000);
+                    overlay.classList.add('hidden');
+                    state.paused = false;
+                }, 2500);
             }
         };
         container.appendChild(btn);
     });
-    overlay.style.display = 'flex';
-}
-
-function initTunnelFall() {
-    isFallingToTunnel = true;
-    gameActive = true;
-    player.grounded = false;
-    // Disable ground on surface momentarily
-}
-
-function enterTunnel() {
-    inTunnel = true;
-    isFallingToTunnel = false;
-    document.getElementById('stats-mode').innerText = "SECTOR: CU CHI TUNNELS";
-    document.getElementById('stats-mode').style.color = "#ef4444";
-    player.w = 50;
-    player.h = 30; // Reduce physics height for crawl
-    player.vy = 0;
-    player.y = -50; // Fall in from top
-    generateBlocks();
-}
-
-function exitTunnel() {
-    inTunnel = false;
-    document.getElementById('stats-mode').innerText = "SECTOR: JUNGLE SURFACE";
-    document.getElementById('stats-mode').style.color = "#3b82f6";
-    player.w = 50;
-    player.h = 65; // Reset physics height
-    player.y = -100; // Drop from sky for variety
-    generateBlocks();
+    overlay.classList.remove('hidden');
 }
 
 function update() {
-    if (!gameStarted) { requestAnimationFrame(update); return; }
+    if (!state.gameStarted || state.paused) return requestAnimationFrame(update);
+
+    // Timer
+    if (Date.now() % 1000 < 20) {
+        state.timer -= 0.02;
+        document.getElementById('stats-timer').innerText = Math.ceil(state.timer) + "s";
+    }
+
+    // Physics
+    if (input.left) { player.vx = -player.speed; player.facingRight = false; }
+    else if (input.right) { player.vx = player.speed; player.facingRight = true; }
+    else { player.vx *= 0.8; }
+
+    if (input.jump && player.grounded) {
+        player.vy = player.jumpPower;
+        player.grounded = false;
+    }
+
+    player.vy += 0.6; // Gravity
+    player.x += player.vx;
+    player.y += player.vy;
+
+    // Ground Logic
+    const groundLevel = state.viewportH - 80;
+    let onGround = false;
     
-    if (timer <= 0 && gameActive) {
-        gameActive = false;
-        document.getElementById('message').style.display = 'block';
-        document.getElementById('message').innerText = "TIME EXPIRED";
-    }
-
-    if (gameActive) {
-        // MOVEMENT
-        if (keys['ArrowRight']) { player.vx = player.speed; player.facingRight = true; }
-        else if (keys['ArrowLeft']) { player.vx = -player.speed; player.facingRight = false; }
-        else player.vx *= 0.8;
-
-        // JUMP (Surface only)
-        if (!inTunnel && !isFallingToTunnel && keys['Space'] && player.jumpsLeft > 0 && spaceReleased) { 
-            player.vy = player.jumpPower; 
-            player.jumpsLeft--;
-            player.grounded = false; 
-            spaceReleased = false;
-        }
-
-        player.vy += gravity; 
-        player.x += player.vx; 
-        player.y += player.vy;
-
-        // PHYSICS & COLLISION
-        if (isFallingToTunnel) {
-            // Player is falling off bottom of jungle
-            if (player.y > canvas.height + 100) {
-                enterTunnel();
-            }
-        } else {
-            const groundY = inTunnel ? (canvas.height - 100) : (canvas.height - 80);
-            if (player.y + player.h > groundY) { 
-                player.y = groundY - player.h; 
-                player.vy = 0; 
-                player.grounded = true; 
-                player.jumpsLeft = 3; 
-            }
-        }
-
-        // BLOCK COLLISION
-        blocks.forEach((b) => {
-            if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
-                const trigger = inTunnel ? true : (player.vy < 0 && (player.y + player.h / 2) > (b.y + b.h / 2));
-                if (trigger) {
-                    b.active = false; 
-                    if (!inTunnel) player.vy = 4;
-                    if (questionsDeck.length > 0) triggerQuiz();
-                }
-            }
-        });
-    }
-
-    // PARTICLES
-    particles.forEach((p, i) => {
-        p.x += p.vx; p.y += p.vy; p.life -= 0.02;
-        if (p.life <= 0) particles.splice(i, 1);
+    // Check if player is over a "Hole"
+    let overGap = false;
+    state.groundGaps.forEach(gap => {
+        if (player.x > gap.x && player.x < gap.x + gap.w) overGap = true;
     });
 
-    // DRAWING
-    ctx.setTransform(1,0,0,1,0,0); 
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    
-    let camX = -player.x + canvas.width / 4; 
-    if (camX > 0) camX = 0;
-    ctx.translate(camX, 0);
+    if (!overGap && player.y + player.h > groundLevel) {
+        player.y = groundLevel - player.h;
+        player.vy = 0;
+        onGround = true;
+    }
+    player.grounded = onGround;
 
-    // BACKGROUNDS
-    if (inTunnel) {
-        ctx.fillStyle = '#451a03'; ctx.fillRect(-2000, 0, 20000, canvas.height);
-        ctx.fillStyle = '#78350f'; ctx.fillRect(-2000, canvas.height - 150, 20000, 150);
-    } else if (isFallingToTunnel) {
-        // Show a "shaft" background
-        ctx.fillStyle = '#064e3b'; ctx.fillRect(-2000, -2000, 20000, 2080);
-        ctx.fillStyle = '#222'; ctx.fillRect(player.x - 50, -5000, 150, 10000);
-    } else {
-        ctx.fillStyle = '#064e3b'; ctx.fillRect(-2000, canvas.height - 80, 20000, 80);
+    // Transition to Tunnel if falling through hole
+    if (player.y > state.viewportH + 100) {
+        state.inTunnel = !state.inTunnel;
+        player.y = -50;
+        player.vx = 0;
+        document.getElementById('stats-sector').innerText = state.inTunnel ? "Sector: Cu Chi Tunnels" : "Sector: Jungle Surface";
+        document.getElementById('stats-sector').style.color = state.inTunnel ? "#ef4444" : "#60a5fa";
     }
 
-    // BLOCKS
-    blocks.forEach(b => {
-        if (b.active) {
-            ctx.fillStyle = inTunnel ? '#ef4444' : '#3b82f6'; 
-            ctx.fillRect(b.x, b.y, b.w, b.h);
-            ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.strokeRect(b.x, b.y, b.w, b.h);
-            ctx.fillStyle = 'white'; ctx.font = 'bold 30px Inter'; ctx.textAlign = 'center';
-            ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10);
+    // Scroll
+    state.scrollX = -player.x + 100;
+
+    // Collisions
+    state.intelBlocks.forEach(b => {
+        if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
+            b.active = false;
+            triggerQuiz();
         }
     });
 
-    // RENDER FIREWORKS
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.beginPath(); ctx.arc(p.x, p.y, 4, 0, Math.PI*2); ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-
-    drawPlayer();
+    draw();
     requestAnimationFrame(update);
 }
 
-setInterval(() => {
-    if (gameActive && timer > 0) {
-        timer--;
-        document.getElementById('stats-timer').innerText = timer + "s";
+function draw() {
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, state.viewportW, state.viewportH);
+    
+    // Background gradient shift for tunnels
+    const grad = ctx.createLinearGradient(0,0,0,state.viewportH);
+    if (state.inTunnel) {
+        grad.addColorStop(0, '#451a03'); grad.addColorStop(1, '#1c1917');
+    } else {
+        grad.addColorStop(0, '#064e3b'); grad.addColorStop(1, '#022c22');
     }
-}, 1000);
+    ctx.fillStyle = grad;
+    ctx.fillRect(0,0,state.viewportW, state.viewportH);
 
-update();
+    ctx.translate(state.scrollX, 0);
+
+    // Ground
+    ctx.fillStyle = state.inTunnel ? '#78350f' : '#14532d';
+    let gX = Math.floor(-state.scrollX / 1000) * 1000 - 1000;
+    for(let i=0; i<5; i++) {
+        ctx.fillRect(gX + i*1000, state.viewportH - 80, 1000, 80);
+    }
+    
+    // Gaps (Holes)
+    ctx.fillStyle = '#020617';
+    state.groundGaps.forEach(gap => {
+        ctx.fillRect(gap.x, state.viewportH - 80, gap.w, 80);
+        // Shaft lines
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.beginPath();
+        ctx.moveTo(gap.x, state.viewportH - 80); ctx.lineTo(gap.x, state.viewportH);
+        ctx.moveTo(gap.x + gap.w, state.viewportH - 80); ctx.lineTo(gap.x + gap.w, state.viewportH);
+        ctx.stroke();
+    });
+
+    // Intel Blocks
+    state.intelBlocks.forEach(b => {
+        if (!b.active) return;
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.strokeStyle = 'white';
+        ctx.lineWidth = 2;
+        ctx.strokeRect(b.x, b.y, b.w, b.h);
+        ctx.fillStyle = 'white';
+        ctx.font = 'bold 24px Inter';
+        ctx.textAlign = 'center';
+        ctx.fillText('?', b.x + 25, b.y + 35);
+    });
+
+    // Player
+    ctx.fillStyle = state.facingRight ? '#ef4444' : '#f87171';
+    ctx.fillRect(player.x, player.y, player.w, player.h);
+    // Soldier Helmet
+    ctx.fillStyle = '#064e3b';
+    ctx.fillRect(player.x - 5, player.y, player.w + 10, 15);
+
+    requestAnimationFrame(() => {});
+}
+
+window.onload = () => {
+    resize();
+    setupControls();
+    initTracking();
+    
+    document.getElementById('btn-start').onclick = () => {
+        recordDeployment();
+        document.getElementById('start-screen').classList.add('hidden');
+        state.gameStarted = true;
+        state.gameActive = true;
+        update();
+    };
+};
+
+window.addEventListener('resize', resize);
 </script>
 </body>
 </html>
