@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Perfectly Imperfect: A Mindset Journey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            margin: 0;
+            background: #020617;
+            font-family: 'Inter', sans-serif;
+            overflow: hidden;
+            color: white;
+            touch-action: none;
+        }
+
+        #game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(circle at top, #1e3a8a, #020617);
+            overflow: hidden;
+        }
+
+        canvas { display: block; }
+
+        /* Mobile Controls */
+        .ctrl-btn {
+            width: 70px;
+            height: 70px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            user-select: none;
+        }
+        .ctrl-btn:active {
+            background: rgba(59, 130, 246, 0.4);
+            border-color: #3b82f6;
+            transform: scale(0.95);
+        }
+
+        #modal-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(2, 6, 23, 0.98);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            z-index: 100;
+        }
+
+        .option-btn {
+            width: 100%;
+            max-width: 500px;
+            padding: 14px;
+            margin: 6px 0;
+            background: #1e293b;
+            border: 2px solid #334155;
+            border-radius: 12px;
+            text-align: left;
+            font-size: 15px;
+            font-weight: 600;
+            transition: 0.2s;
+        }
+
+        .option-btn:active:not(:disabled) {
+            background: #3b82f6;
+            border-color: #60a5fa;
+        }
+
+        .correct { background: #16a34a !important; border-color: #22c55e !important; }
+        .wrong { background: #991b1b !important; border-color: #ef4444 !important; }
+
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <!-- HUD -->
+    <div class="absolute top-0 left-0 w-full p-4 flex justify-between items-start z-10 pointer-events-none pt-[env(safe-area-inset-top)]">
+        <div class="flex flex-col">
+            <span class="text-red-400 text-[10px] uppercase tracking-widest font-bold">Resilience</span>
+            <div id="lives-display" class="text-xl">❤️❤️❤️❤️❤️</div>
+        </div>
+        <div class="flex flex-col items-center">
+            <span class="text-blue-300 text-[10px] uppercase tracking-widest font-bold" id="sector-label">The Growth Zone</span>
+            <span id="timer-display" class="text-2xl font-black text-white" style="font-family: 'Orbitron';">03:00</span>
+        </div>
+        <div class="flex flex-col items-end">
+            <span class="text-yellow-400 text-[10px] uppercase tracking-widest font-bold">Mindset Score</span>
+            <span id="score-display" class="text-2xl font-black text-white" style="font-family: 'Orbitron';">0000</span>
+        </div>
+    </div>
+
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Mobile Controls -->
+    <div class="absolute bottom-10 left-0 w-full px-8 flex justify-between items-center z-20 pb-[env(safe-area-inset-bottom)]">
+        <div class="flex gap-4">
+            <div id="btn-left" class="ctrl-btn">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M15 18l-6-6 6-6"/></svg>
+            </div>
+            <div id="btn-right" class="ctrl-btn">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+        </div>
+        <div id="btn-fire" class="ctrl-btn w-20 h-20 border-blue-500/50 bg-blue-500/10">
+            <div class="w-12 h-12 bg-blue-500 rounded-full shadow-lg shadow-blue-600/50"></div>
+        </div>
+    </div>
+
+    <!-- Quiz Overlay -->
+    <div id="modal-overlay">
+        <div id="quiz-content" class="w-full flex flex-col items-center">
+            <h2 id="modal-type" class="text-blue-400 text-xs tracking-widest uppercase mb-2 font-bold">Self-Reflection Phase</h2>
+            <p id="question-text" class="text-lg font-bold text-center mb-6 leading-tight max-w-lg"></p>
+            <div id="options-container" class="w-full flex flex-col items-center"></div>
+            <p id="feedback-text" class="mt-4 font-bold text-center italic"></p>
+        </div>
+        <div id="fact-content" class="hidden w-full flex flex-col items-center">
+            <h2 class="text-yellow-400 text-xs tracking-widest uppercase mb-2 font-bold">Mindset Insight</h2>
+            <div class="bg-blue-900/20 border border-blue-500/30 p-8 rounded-3xl text-center italic mb-8 max-w-md">
+                <p id="fact-text" class="text-lg font-bold leading-relaxed"></p>
+            </div>
+            <button onclick="resumeGame()" class="px-12 py-4 bg-blue-600 rounded-full font-bold uppercase tracking-widest text-sm shadow-xl shadow-blue-600/30">Continue Journey</button>
+        </div>
+    </div>
+
+    <!-- Start/End Screens -->
+    <div id="start-screen" class="absolute inset-0 z-[110] flex flex-col items-center justify-center bg-black/95 p-8 text-center">
+        <h1 class="text-5xl font-black mb-2 italic tracking-tighter uppercase text-blue-500" style="font-family: 'Orbitron';">Perfectly Imperfect</h1>
+        <p class="text-white text-sm tracking-widest uppercase mb-10 font-bold opacity-80">A Journey of Self-Compassion</p>
+        <div class="space-y-4 mb-12 text-gray-400 text-sm max-w-xs text-left">
+            <p>🔵 Shoot **Fixed Thoughts** to trigger MCQs.</p>
+            <p>⭐ Shoot **Growth Stars** for well-being facts.</p>
+            <p>⚠️ Wrong answers = Lose 1 Heart + Tunnel Fall.</p>
+            <p>💔 Losing all hearts = Mission Ends.</p>
+        </div>
+        <button id="start-btn" class="px-14 py-5 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-full transition-all uppercase tracking-widest shadow-2xl shadow-blue-900/40">Enter Mindscape</button>
+    </div>
+
+    <div id="end-screen" class="hidden absolute inset-0 z-[120] flex flex-col items-center justify-center bg-black/95 p-8 text-center">
+        <h1 id="end-title" class="text-4xl font-black mb-4 uppercase text-blue-400" style="font-family: 'Orbitron';">Journey Complete</h1>
+        <p id="end-reason" class="text-red-400 mb-4 font-bold uppercase tracking-widest text-xs"></p>
+        <div class="text-7xl font-black text-yellow-500 mb-2" id="final-score">0000</div>
+        <p class="text-gray-400 mb-10 uppercase tracking-widest text-xs">You have nurtured your mindset</p>
+        <button onclick="location.reload()" class="px-12 py-4 bg-white text-black font-bold rounded-full uppercase tracking-widest shadow-xl">New Path</button>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+    
+    let state = {
+        active: false,
+        score: 0,
+        lives: 5,
+        timeLeft: 180,
+        paused: false,
+        inTunnel: false,
+        isFalling: false,
+        lastSpawn: 0,
+        lastStar: 0,
+        qIndex: 0
+    };
+
+    const player = {
+        x: 0, y: 0, w: 50, h: 60,
+        vx: 0, vy: 0,
+        speed: 8,
+        movingLeft: false,
+        movingRight: false,
+        facingRight: true
+    };
+
+    let bullets = [];
+    let enemies = [];
+    let stars = [];
+    let particles = [];
+
+    // --- Provided 30 MCQ Dataset ---
+    const MCQS = [
+        { q: "What best describes unhealthy perfectionism?", a: "Setting unrealistic goals and criticising oneself harshly", o: ["Setting high goals and improving steadily", "Setting unrealistic goals and criticising oneself harshly", "Trying hard and accepting mistakes calmly", "Learning from errors and adjusting expectations"] },
+        { q: "Which behaviour reflects unhealthy perfectionism?", a: "Giving up quickly after making one mistake", o: ["Trying again after making a mistake", "Reflecting on errors and improving gradually", "Giving up quickly after making one mistake", "Asking others for help when struggling"] },
+        { q: "A student judges self-worth based on “likes”. This shows:", a: "Dependence on external approval for self-worth", o: ["Strong internal confidence in personal abilities", "Dependence on external approval for self-worth", "Healthy reflection on personal achievements", "Balanced thinking about success and failure"] },
+        { q: "What best defines a growth mindset?", a: "Improving abilities through effort and learning", o: ["Avoiding failure to maintain confidence", "Improving abilities through effort and learning", "Competing with others to achieve success", "Focusing only on results and outcomes"] },
+        { q: "Which student response shows a growth mindset?", a: "“I failed, but I can improve next time”", o: ["“I failed, so I will stop trying again”", "“I failed, but I can improve next time”", "“Others are better, so I should quit”", "“I must be perfect in every task”"] },
+        { q: "What is “all-or-nothing thinking”?", a: "Believing only perfect results are acceptable", o: ["Accepting effort even if results are imperfect", "Believing only perfect results are acceptable", "Trying different strategies after failing once", "Reflecting calmly on mistakes and learning"] },
+        { q: "Which is a sign of emotional distress?", a: "Withdrawing from friends and social interactions", o: ["Participating actively in group discussions", "Maintaining regular sleep and daily routines", "Withdrawing from friends and social interactions", "Sharing feelings openly with trusted peers"] },
+        { q: "What does self-compassion involve?", a: "Being kind to oneself during difficult situations", o: ["Ignoring mistakes and avoiding responsibility", "Being kind to oneself during difficult situations", "Comparing oneself constantly with others", "Setting extremely high expectations always"] },
+        { q: "Which factor is within a student’s control?", a: "Effort put into completing current work", o: ["Opinions that others have about them", "Past mistakes made in previous tasks", "Effort put into completing current work", "Future outcomes of their final results"] },
+        { q: "Which factor is outside a student’s control?", a: "Responses and reactions from other people", o: ["Personal effort during preparation time", "Individual attitude towards difficult tasks", "Responses and reactions from other people", "Choices made when facing challenges"] },
+        { q: "Why is it important to recognise distress early?", a: "To seek support before issues become worse", o: ["To avoid thinking about problems entirely", "To seek support before issues become worse", "To compare oneself with others more often", "To focus only on academic performance"] },
+        { q: "Which statement reflects negative self-talk?", a: "“I am completely useless and cannot succeed”", o: ["“I can learn and improve with more practice”", "“I am completely useless and cannot succeed”", "“I will take small steps to improve gradually”", "“I can ask for help when I need support”"] },
+        { q: "What does rationalising involve?", a: "Checking whether thoughts are realistic and helpful", o: ["Ignoring thoughts that cause discomfort", "Checking whether thoughts are realistic and helpful", "Blaming others for negative outcomes", "Avoiding difficult situations completely"] },
+        { q: "Which is a healthy expectation of oneself?", a: "Doing one’s best and improving over time", o: ["Always achieving perfect results in every task", "Never making any mistakes at all times", "Doing one’s best and improving over time", "Being better than everyone in the class"] },
+        { q: "What most influences emotions and behaviour?", a: "Expectations about oneself and others", o: ["Physical appearance and personal style", "Expectations about oneself and others", "School rules and classroom environment", "Amount of homework given daily"] },
+        { q: "A student says, “If I fail once, I am useless.” This shows:", a: "Catastrophic thinking based on one mistake", o: ["Balanced thinking about success and failure", "Catastrophic thinking based on one mistake", "Growth mindset towards learning challenges", "Realistic reflection on personal ability"] },
+        { q: "A student retries after failing a task. This shows:", a: "Growth mindset towards improvement", o: ["Avoidance of responsibility for mistakes", "Growth mindset towards improvement", "Fear of failure in difficult situations", "Dependence on others for success"] },
+        { q: "A student blames others for poor results. This reflects:", a: "Avoiding responsibility for personal outcomes", o: ["Taking responsibility for personal actions", "Avoiding responsibility for personal outcomes", "Reflecting honestly on personal mistakes", "Seeking help to improve performance"] },
+        { q: "“I will take small steps to improve gradually” shows:", a: "Growth mindset towards learning progress", o: ["Fear of failure in difficult situations", "Growth mindset towards learning progress", "Avoidance of challenging academic tasks", "Dependence on others for success"] },
+        { q: "A student withdraws from social interaction. This may indicate:", a: "Emotional distress and possible low self-esteem", o: ["Strong confidence in personal abilities", "Emotional distress and possible low self-esteem", "High motivation to achieve success", "Balanced thinking about personal challenges"] },
+        { q: "Which statement shows self-compassion?", a: "“I tried my best and will improve next time”", o: ["“I must be perfect in everything I do”", "“I tried my best and will improve next time”", "“Others are better, so I should give up”", "“I cannot succeed no matter what I do”"] },
+        { q: "Which is a rational thought?", a: "“Some people may not like my work”", o: ["“Everyone dislikes me because I failed once”", "“Some people may not like my work”", "“I always fail in everything I attempt”", "“I am completely useless as a person”"] },
+        { q: "Which reflects unhealthy expectations?", a: "Expecting perfection in every task completed", o: ["Trying consistently and improving gradually", "Accepting mistakes as part of learning", "Expecting perfection in every task completed", "Seeking feedback to improve performance"] },
+        { q: "What is the best response to failure?", a: "Reflect, learn, and attempt the task again", o: ["Avoid trying similar tasks in the future", "Blame others for the negative outcome", "Reflect, learn, and attempt the task again", "Compare oneself with more successful peers"] },
+        { q: "Which behaviour does NOT reflect self-compassion?", a: "Criticising oneself harshly after failure", o: ["Being kind to oneself after making mistakes", "Accepting difficult emotions as normal", "Criticising oneself harshly after failure", "Learning from experiences to improve"] },
+        { q: "“My worth depends on social media likes” shows:", a: "Dependence on external validation", o: ["Strong internal confidence in self-worth", "Dependence on external validation", "Balanced reflection on personal identity", "Growth mindset towards self-improvement"] },
+        { q: "Which is a realistic expectation?", a: "Improving steadily through effort and practice", o: ["Achieving perfect results in every situation", "Never experiencing failure in any task", "Improving steadily through effort and practice", "Being better than all classmates always"] },
+        { q: "Which behaviour supports well-being?", a: "Seeking help and support when needed", o: ["Isolating oneself from friends and family", "Thinking negatively about every mistake", "Seeking help and support when needed", "Blaming others for personal failures"] },
+        { q: "Which action is within personal control?", a: "Personal reactions to difficult situations", o: ["Opinions and judgments from other people", "Personal reactions to difficult situations", "Events that happened in the past", "Outcomes that will happen in future"] },
+        { q: "What is the main lesson of the topic?", a: "Managing expectations improves well-being", o: ["Achieving perfection should be the main goal", "Avoiding failure leads to greater success", "Managing expectations improves well-being", "Competing with others ensures achievement"] }
+    ];
+
+    // --- Provided 30 Fact Dataset ---
+    const FACTS = [
+        "Unhealthy perfectionism involves setting unrealistic standards and harsh self-criticism.",
+        "Perfectionists often link their self-worth to results or achievements.",
+        "Fear of failure can stop individuals from trying new things.",
+        "Procrastination is a common behaviour in perfectionists.",
+        "“All-or-nothing thinking” means only perfect outcomes are accepted.",
+        "Catastrophic thinking exaggerates the consequences of failure.",
+        "Some individuals blame others to avoid responsibility.",
+        "Unrealistic expectations can negatively affect mental well-being.",
+        "Negative self-talk lowers self-esteem.",
+        "Social media can influence self-perception and self-worth.",
+        "Comparing oneself to others increases feelings of inadequacy.",
+        "Withdrawal from social interaction can be a sign of distress.",
+        "Difficulty sleeping may indicate emotional stress.",
+        "Reduced online activity can signal emotional struggles.",
+        "Recognising distress early allows individuals to seek help sooner.",
+        "Growth mindset involves learning from mistakes and improving.",
+        "Individuals with growth mindset see failure as part of learning.",
+        "Trying again after failure shows resilience.",
+        "Healthy expectations focus on effort rather than perfection.",
+        "Self-compassion involves being kind and understanding to oneself.",
+        "Self-compassion helps reduce negative emotions.",
+        "Rational thinking involves checking whether thoughts are realistic.",
+        "The “Rationalise and Replace” model helps challenge negative thoughts.",
+        "Self-worth is not determined by others’ opinions or “likes”.",
+        "Individuals cannot control others’ actions or expectations.",
+        "Individuals can control their own thoughts, effort, and responses.",
+        "Identity and self-perception affect behaviour and choices.",
+        "Expectations influence emotions, thoughts, and actions.",
+        "Seeking help is important when experiencing emotional distress.",
+        "Developing a growth mindset improves resilience and well-being."
+    ];
+
+    let activeDeck = shuffle([...MCQS]);
+
+    function shuffle(array) {
+        let currentIndex = array.length,  randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
+        }
+        return array;
+    }
+
+    // --- Core Logic ---
+    function init() {
+        resize();
+        window.addEventListener('resize', resize);
+        
+        // Mobile Controls
+        const btnL = document.getElementById('btn-left');
+        const btnR = document.getElementById('btn-right');
+        const btnF = document.getElementById('btn-fire');
+
+        btnL.onpointerdown = () => player.movingLeft = true;
+        btnL.onpointerup = btnL.onpointerleave = () => player.movingLeft = false;
+        btnR.onpointerdown = () => player.movingRight = true;
+        btnR.onpointerup = btnR.onpointerleave = () => player.movingRight = false;
+        btnF.onpointerdown = (e) => { fire(); e.preventDefault(); };
+
+        // Keyboard Controls
+        window.addEventListener('keydown', (e) => {
+            if (e.code === 'ArrowLeft') player.movingLeft = true;
+            if (e.code === 'ArrowRight') player.movingRight = true;
+            if (e.code === 'Space') { fire(); e.preventDefault(); }
+        });
+        window.addEventListener('keyup', (e) => {
+            if (e.code === 'ArrowLeft') player.movingLeft = false;
+            if (e.code === 'ArrowRight') player.movingRight = false;
+        });
+
+        document.getElementById('start-btn').onclick = start;
+        requestAnimationFrame(loop);
+    }
+
+    function resize() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        player.x = canvas.width / 2 - player.w / 2;
+        player.y = canvas.height - 180;
+    }
+
+    function start() {
+        document.getElementById('start-screen').style.display = 'none';
+        state.active = true;
+        startTimer();
+    }
+
+    function startTimer() {
+        const timerInt = setInterval(() => {
+            if (!state.active) {
+                clearInterval(timerInt);
+                return;
+            }
+            if (state.paused) return;
+            state.timeLeft--;
+            const m = Math.floor(state.timeLeft / 60).toString().padStart(2, '0');
+            const s = (state.timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timer-display').innerText = `${m}:${s}`;
+            if (state.timeLeft <= 0) gameOver("TIME EXPIRED");
+        }, 1000);
+    }
+
+    function fire() {
+        if (!state.active || state.paused || state.isFalling) return;
+        bullets.push({ x: player.x + player.w / 2 - 2, y: player.y, w: 4, h: 25 });
+    }
+
+    function spawn() {
+        if (!state.active || state.paused || state.isFalling) return;
+        const now = Date.now();
+        if (now - state.lastSpawn > (state.inTunnel ? 2200 : 1800)) {
+            enemies.push({
+                x: Math.random() * (canvas.width - 50),
+                y: -60, w: 50, h: 50,
+                speed: state.inTunnel ? 1.5 : (2 + Math.random() * 1.5),
+                type: 'thought'
+            });
+            state.lastSpawn = now;
+        }
+        if (!state.inTunnel && now - state.lastStar > 8000) {
+            stars.push({
+                x: Math.random() * (canvas.width - 40),
+                y: -50, w: 40, h: 40, speed: 3.5, type: 'star'
+            });
+            state.lastStar = now;
+        }
+    }
+
+    function update() {
+        if (!state.active || state.paused) return;
+
+        // Apply constant gravity when not on ground
+        if (state.isFalling) {
+            player.vy += 0.5;
+            player.y += player.vy;
+            // Detect bottom of screen transition
+            if (player.y > canvas.height + 100) {
+                enterTunnel();
+            }
+            return;
+        }
+
+        // Movement
+        if (player.movingLeft) player.x -= player.speed;
+        if (player.movingRight) player.x += player.speed;
+        player.x = Math.max(0, Math.min(canvas.width - player.w, player.x));
+
+        // Physics for all states
+        player.vy += 0.5; // Constant gravity
+        player.y += player.vy;
+
+        // Ground detection
+        const groundY = state.inTunnel ? (canvas.height - 120) : (canvas.height - 180 + player.h); 
+        if (player.y + player.h > groundY) {
+            player.y = groundY - player.h;
+            player.vy = 0;
+        }
+
+        bullets.forEach((b, i) => {
+            b.y -= 14;
+            if (b.y < -30) bullets.splice(i, 1);
+        });
+
+        // Object Cleanup & Collisions
+        enemies.forEach((e, i) => {
+            e.y += e.speed;
+            if (e.y > canvas.height) {
+                enemies.splice(i, 1);
+            }
+            bullets.forEach((b, bi) => {
+                if (rectIntersect(b, e)) {
+                    bullets.splice(bi, 1);
+                    enemies.splice(i, 1);
+                    createExplosion(e.x + e.w/2, e.y + e.h/2, '#3b82f6');
+                    triggerQuiz();
+                }
+            });
+        });
+
+        stars.forEach((s, i) => {
+            s.y += s.speed;
+            bullets.forEach((b, bi) => {
+                if (rectIntersect(b, s)) {
+                    bullets.splice(bi, 1);
+                    stars.splice(i, 1);
+                    createExplosion(s.x + s.w/2, s.y + s.h/2, '#fbbf24');
+                    triggerFact();
+                }
+            });
+        });
+
+        particles.forEach((p, i) => {
+            p.x += p.vx; p.y += p.vy; p.life -= 0.02;
+            if (p.life <= 0) particles.splice(i, 1);
+        });
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Backgrounds
+        if (state.isFalling) {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(player.x - 20, -5000, 100, 10000);
+        } else if (state.inTunnel) {
+            ctx.fillStyle = '#1e1b4b';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#020617'; 
+            ctx.fillRect(0, canvas.height - 120, canvas.width, 120);
+        }
+
+        // Bullets
+        ctx.fillStyle = '#60a5fa';
+        bullets.forEach(b => ctx.fillRect(b.x, b.y, b.w, b.h));
+
+        // Enemies
+        enemies.forEach(e => {
+            ctx.fillStyle = state.inTunnel ? '#ef4444' : '#3b82f6';
+            ctx.beginPath();
+            ctx.moveTo(e.x + e.w/2, e.y);
+            ctx.lineTo(e.x + e.w, e.y + e.h/2);
+            ctx.lineTo(e.x + e.w/2, e.y + e.h);
+            ctx.lineTo(e.x, e.y + e.h/2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        });
+
+        // Growth Stars
+        stars.forEach(s => {
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            for(let i=0; i<5; i++) {
+                ctx.lineTo(Math.cos((18+i*72)/180*Math.PI)*20+s.x+20, Math.sin((18+i*72)/180*Math.PI)*20+s.y+20);
+                ctx.lineTo(Math.cos((54+i*72)/180*Math.PI)*10+s.x+20, Math.sin((54+i*72)/180*Math.PI)*10+s.y+20);
+            }
+            ctx.closePath(); ctx.fill();
+        });
+
+        // Effects
+        particles.forEach(p => {
+            ctx.globalAlpha = p.life;
+            ctx.fillStyle = p.color;
+            ctx.fillRect(p.x, p.y, 4, 4);
+        });
+        ctx.globalAlpha = 1;
+
+        // Player Avatar
+        ctx.save();
+        ctx.translate(player.x + player.w/2, player.y + player.h/2);
+        if (!player.facingRight) ctx.scale(-1, 1);
+        
+        if (state.inTunnel) {
+            ctx.fillStyle = '#7c2d12';
+            ctx.fillRect(-25, 10, 50, 20);
+            ctx.fillStyle = '#ffdbac';
+            ctx.fillRect(20, 5, 15, 15);
+        } else {
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-20, -25, 40, 45);
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(-12, -35, 24, 15);
+            ctx.fillStyle = '#ffdbac';
+            ctx.fillRect(-10, -32, 20, 10);
+        }
+        ctx.restore();
+    }
+
+    function triggerQuiz() {
+        state.paused = true;
+        if (activeDeck.length === 0) activeDeck = shuffle([...MCQS]);
+        const q = activeDeck[0];
+        const modal = document.getElementById('modal-overlay');
+        const feedback = document.getElementById('feedback-text');
+        modal.style.display = 'flex';
+        document.getElementById('quiz-content').classList.remove('hidden');
+        document.getElementById('fact-content').classList.add('hidden');
+        document.getElementById('question-text').innerText = q.q;
+        feedback.innerText = "";
+        
+        const container = document.getElementById('options-container');
+        container.innerHTML = '';
+
+        const shuffledOptions = shuffle([...q.o]);
+
+        shuffledOptions.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => {
+                const btns = container.querySelectorAll('button');
+                btns.forEach(b => b.disabled = true);
+                
+                if (opt === q.a) {
+                    btn.classList.add('correct');
+                    state.score += 100;
+                    document.getElementById('score-display').innerText = state.score.toString().padStart(4, '0');
+                    createFireworks(canvas.width / 2, canvas.height / 2);
+                    feedback.innerText = "Insight Gained! Returning to Growth Zone...";
+                    setTimeout(() => {
+                        activeDeck.shift();
+                        if (activeDeck.length === 0) activeDeck = shuffle([...MCQS]);
+                        if (state.inTunnel) exitTunnel();
+                        resumeGame();
+                    }, 1200);
+                } else {
+                    btn.classList.add('wrong');
+                    feedback.innerText = "Mindset Shift Needed! Truth: " + q.a;
+                    damage(); 
+
+                    setTimeout(() => {
+                        if (!state.active) return; 
+                        const missed = activeDeck.shift();
+                        activeDeck.splice(3, 0, missed);
+                        if (activeDeck.length === 0) activeDeck = shuffle([...MCQS]);
+                        
+                        initTunnelFall();
+                        resumeGame();
+                    }, 2800);
+                }
+            };
+            container.appendChild(btn);
+        });
+    }
+
+    function triggerFact() {
+        state.paused = true;
+        const fact = FACTS[Math.floor(Math.random() * FACTS.length)];
+        document.getElementById('modal-overlay').style.display = 'flex';
+        document.getElementById('quiz-content').classList.add('hidden');
+        document.getElementById('fact-content').classList.remove('hidden');
+        document.getElementById('fact-text').innerText = fact;
+        state.score += 50;
+        document.getElementById('score-display').innerText = state.score.toString().padStart(4, '0');
+    }
+
+    function initTunnelFall() {
+        state.isFalling = true;
+        player.vy = 0;
+    }
+
+    function enterTunnel() {
+        state.inTunnel = true;
+        state.isFalling = false;
+        document.getElementById('sector-label').innerText = "Tunnel of Doubt";
+        document.getElementById('sector-label').style.color = "#ef4444";
+        player.h = 30; 
+        player.vy = 0;
+        player.y = -100; // Start high to fall into view
+        player.x = canvas.width / 2;
+        enemies = [];
+    }
+
+    function exitTunnel() {
+        state.inTunnel = false;
+        document.getElementById('sector-label').innerText = "The Growth Zone";
+        document.getElementById('sector-label').style.color = "#93c5fd";
+        player.h = 60;
+        player.y = -100;
+        player.vy = 0;
+        enemies = [];
+    }
+
+    function resumeGame() {
+        document.getElementById('modal-overlay').style.display = 'none';
+        state.paused = false;
+    }
+
+    function damage() {
+        state.lives--;
+        const hearts = '❤️'.repeat(Math.max(0, state.lives)) + '🖤'.repeat(5 - Math.max(0, state.lives));
+        document.getElementById('lives-display').innerText = hearts;
+        document.getElementById('game-container').classList.add('shake');
+        setTimeout(() => document.getElementById('game-container').classList.remove('shake'), 300);
+        if (state.lives <= 0) gameOver("RESILIENCE DEPLETED");
+    }
+
+    function createExplosion(x, y, color) {
+        for (let i = 0; i < 15; i++) {
+            particles.push({ x, y, vx: (Math.random()-0.5)*8, vy: (Math.random()-0.5)*8, life: 1, color });
+        }
+    }
+
+    function createFireworks(x, y) {
+        for (let i = 0; i < 50; i++) {
+            particles.push({ x, y, vx: (Math.random()-0.5)*18, vy: (Math.random()-0.5)*18, life: 2.2, color: `hsl(${Math.random()*360}, 100%, 70%)` });
+        }
+    }
+
+    function rectIntersect(r1, r2) {
+        return r1.x < r2.x + r2.w && r1.x + r1.w > r2.x && r1.y < r2.y + r2.h && r1.y + r1.h > r2.y;
+    }
+
+    function loop() {
+        spawn();
+        update();
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    function gameOver(reason) {
+        state.active = false;
+        document.getElementById('end-screen').style.display = 'flex';
+        document.getElementById('end-title').innerText = "Journey Ended";
+        document.getElementById('end-reason').innerText = reason;
+        document.getElementById('final-score').innerText = state.score.toString().padStart(4, '0');
+    }
+
+    init();
+</script>
+</body>
+</html>
