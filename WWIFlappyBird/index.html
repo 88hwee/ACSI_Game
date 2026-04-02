@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Revisionist: 3-Minute M.A.I.N. Gauntlet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #0f172a; font-family: 'Inter', sans-serif; color: #f1f5f9; }
+        canvas { display: block; margin: 0 auto; background: #1e293b; border-left: 4px solid #334155; border-right: 4px solid #334155; touch-action: none; cursor: pointer; }
+        .ui-overlay { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; z-index: 50; pointer-events: none; }
+        .btn { pointer-events: auto; background: #dc2626; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s; border: none; box-shadow: 0 4px 0 #991b1b; }
+        .btn:hover { background: #ef4444; transform: translateY(-2px); box-shadow: 0 6px 0 #991b1b; }
+        .btn:active { transform: translateY(2px); box-shadow: 0 0 0 #991b1b; }
+        #quizModal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.98); z-index: 100; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(8px); }
+        .correct { background-color: #059669 !important; border-color: #10b981 !important; transform: scale(1.02); }
+        .wrong { background-color: #dc2626 !important; border-color: #f87171 !important; opacity: 0.7; }
+        .heart { color: #ef4444; font-size: 1.5rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.5); }
+        #timerDisplay { font-variant-numeric: tabular-nums; }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen">
+
+    <div class="w-full max-w-lg px-4 mb-4 flex justify-between items-end">
+        <div>
+            <h1 class="text-xl font-bold text-red-500 tracking-tighter uppercase">3-Min Revision</h1>
+            <div id="livesContainer" class="flex gap-1 mt-1 text-lg">❤️❤️❤️</div>
+        </div>
+        <div class="text-right">
+            <div id="timerDisplay" class="text-3xl font-black text-white">03:00</div>
+            <div id="scoreLabel" class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Mastered: 0 / 25</div>
+        </div>
+    </div>
+
+    <div class="relative shadow-2xl rounded-lg overflow-hidden border-2 border-slate-700">
+        <canvas id="gameCanvas"></canvas>
+        
+        <!-- Start Screen -->
+        <div id="startScreen" class="ui-overlay w-80 bg-slate-800 p-8 rounded-xl border-b-4 border-red-700 pointer-events-auto">
+            <div class="text-6xl mb-4">⏱️</div>
+            <h2 class="text-2xl font-bold text-white mb-2 italic">SMART GAUNTLET</h2>
+            <p class="text-xs text-slate-400 mb-6 leading-relaxed">3 Minutes on the clock.<br>Correct answers are removed.<br>Wrong answers repeat until learned.</p>
+            <button class="btn w-full" onclick="startGame()">START SESSION</button>
+        </div>
+
+        <!-- Death Overlay -->
+        <div id="collisionOverlay" class="ui-overlay hidden w-72 bg-slate-900/90 p-6 rounded-xl border-2 border-red-500 pointer-events-none">
+            <div class="text-3xl mb-2 text-red-500 font-black">CRASHED!</div>
+            <p class="text-sm text-slate-300 animate-pulse">Tap to Respawn</p>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="gameOverScreen" class="ui-overlay hidden w-80 bg-slate-800 p-8 rounded-xl border-b-4 border-red-900 pointer-events-auto">
+            <h2 class="text-2xl font-bold text-red-500 mb-2 uppercase" id="gameOverTitle">Session Ended</h2>
+            <p id="finalMsg" class="text-xs text-slate-400 mb-4"></p>
+            <div class="text-5xl font-black text-white mb-6" id="finalScore">0</div>
+            <button class="btn w-full" onclick="startGame()">RETRY MISSION</button>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div id="quizModal">
+        <div class="bg-slate-800 p-8 rounded-2xl border-t-4 border-red-600 max-w-md w-full shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <span id="quizBadge" class="bg-red-900/50 text-red-400 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest">Active Recall</span>
+                <span id="qRemaining" class="text-slate-500 text-[10px] font-mono"></span>
+            </div>
+            <p id="questionText" class="text-white font-medium mb-8 text-lg leading-snug"></p>
+            <div id="optionsContainer" class="flex flex-col gap-3"></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const startScreen = document.getElementById('startScreen');
+        const collisionOverlay = document.getElementById('collisionOverlay');
+        const gameOverScreen = document.getElementById('gameOverScreen');
+        const quizModal = document.getElementById('quizModal');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const livesContainer = document.getElementById('livesContainer');
+        const scoreLabel = document.getElementById('scoreLabel');
+        const timerDisplay = document.getElementById('timerDisplay');
+
+        // Physics Constants (EASY MODE)
+        const GRAVITY = 0.15;
+        const FLAP = -4.0;
+        const SPAWN_RATE = 110;
+        const PIPE_WIDTH = 65;
+        const PIPE_GAP = 250; 
+        const SPEED = 1.8;
+
+        let bird = { x: 50, y: 250, velocity: 0, width: 34, height: 26 };
+        let pipes = [];
+        let score = 0;
+        let lives = 3;
+        let timeLeft = 180;
+        let frameCount = 0;
+        let gameActive = false;
+        let gameStarted = false;
+        let quizActive = false;
+        let collisionPaused = false;
+        let gameTimer = null;
+
+        const masterQuestions = [
+            { q: "What was a key feature of militarism in Europe?", a: "Building large armies and strong navies", o: ["Expanding overseas trade networks", "Promoting peaceful negotiations", "Reducing military spending"] },
+            { q: "What was a key cause of the arms race?", a: "Countries wanted to match each other’s military strength", o: ["Countries wanted to reduce defence spending", "Countries wanted to avoid conflict", "Countries wanted to weaken their armies"] },
+            { q: "What fear did Britain have about Germany?", a: "That Germany would challenge its naval power", o: ["That Germany would reduce its army size", "That Germany would avoid war", "That Germany would weaken its alliances"] },
+            { q: "What was a key feature of alliances?", a: "Countries promised to support each other in war", o: ["Countries agreed to reduce military forces", "Countries avoided cooperation", "Countries focused only on trade"] },
+            { q: "What was a key cause of alliance formation?", a: "Countries wanted protection from enemies", o: ["Countries wanted to reduce tensions", "Countries wanted to avoid conflict", "Countries wanted to weaken rivals"] },
+            { q: "What fear did Germany have about alliances?", a: "That it was surrounded by enemies", o: ["That it had too many allies", "That alliances would end war", "That alliances would reduce power"] },
+            { q: "What was a key feature of nationalism?", a: "Strong pride in one’s country", o: ["Strong cooperation with other nations", "Strong focus on trade", "Strong support for peace"] },
+            { q: "What was a key cause of nationalist tension?", a: "Rivalries between different nations", o: ["Cooperation between countries", "Economic agreements", "Peaceful diplomacy"] },
+            { q: "What fear did empires have about nationalism?", a: "That people would want independence", o: ["That people would support rulers", "That people would avoid conflict", "That people would reduce tensions"] },
+            { q: "What was a key feature of imperialism?", a: "Expanding control over other territories", o: ["Reducing influence overseas", "Avoiding competition", "Limiting economic growth"] },
+            { q: "What was a key cause of imperial rivalry?", a: "Competition for land and resources", o: ["Cooperation between countries", "Reduction in trade", "Avoidance of conflict"] },
+            { q: "What fear did imperialism create?", a: "That rivals would gain more power", o: ["That rivals would reduce influence", "That rivals would cooperate", "That rivals would avoid conflict"] },
+            { q: "What was a key impact of militarism?", a: "Increased readiness for war", o: ["Increased cooperation", "Reduced tension", "Strengthened diplomacy"] },
+            { q: "What was a key impact of alliances?", a: "Spread of conflict across countries", o: ["Reduction of conflict", "Strengthening of peace", "Limiting war"] },
+            { q: "What was a key impact of nationalism?", a: "Increased conflict between groups", o: ["Increased cooperation", "Reduced tension", "Strengthened empires"] },
+            { q: "What was a key weakness of militarism?", a: "It encouraged leaders to rely on force over diplomacy", o: ["It reduced military readiness during crises", "It weakened army coordination", "It limited national defence"] },
+            { q: "What was a key weakness of alliances?", a: "They forced countries to support allies in conflicts", o: ["They reduced cooperation between countries", "They limited military planning", "They weakened defence systems"] },
+            { q: "What was a key weakness of nationalism?", a: "It intensified rivalry between different ethnic groups", o: ["It reduced national identity within countries", "It weakened political systems", "It discouraged independence movements"] },
+            { q: "What was a key weakness of imperialism?", a: "It increased conflict over competing territories", o: ["It reduced global competition", "It strengthened diplomatic relations", "It limited overseas influence"] },
+            { q: "What was a key cause of escalation during the July Crisis?", a: "Mobilisation decisions by major powers", o: ["Reduction in military readiness", "Decline in alliances", "Increase in diplomacy"] },
+            { q: "What fear influenced Germany’s military decisions?", a: "That delay would weaken its position against enemies", o: ["That diplomacy would succeed", "That alliances would collapse", "That rivals would avoid conflict"] },
+            { q: "What was a key feature of the Schlieffen Plan?", a: "Rapid defeat of France before turning to another front", o: ["Defensive positioning along German borders", "Focus on naval warfare", "Avoidance of multi-front conflict"] },
+            { q: "What was a key weakness of mobilisation?", a: "It increased pressure on other countries to respond quickly", o: ["It reduced military readiness", "It weakened alliances", "It encouraged diplomacy"] },
+            { q: "What was a key impact of the July Crisis?", a: "Transformation of a regional conflict into a general war", o: ["Reduction in tensions across Europe", "Strengthening of diplomatic relations", "Limiting involvement of major powers"] },
+            { q: "What was a key cause linking all MAIN factors?", a: "Increased tension between major powers", o: ["Increased cooperation between countries", "Reduced military competition", "Strengthened diplomatic ties"] }
+        ];
+
+        let activePool = [];
+        let currentQuestion = null;
+
+        function resize() {
+            canvas.width = Math.min(window.innerWidth - 40, 420);
+            canvas.height = 550;
+        }
+
+        window.addEventListener('resize', resize);
+        resize();
+
+        function updateLivesDisplay() {
+            livesContainer.innerHTML = '❤️'.repeat(lives);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60);
+            const secs = timeLeft % 60;
+            timerDisplay.innerText = `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            if (timeLeft <= 30) timerDisplay.classList.add('text-red-500', 'animate-pulse');
+            else timerDisplay.classList.remove('text-red-500', 'animate-pulse');
+        }
+
+        function startGame() {
+            activePool = [...masterQuestions].sort(() => Math.random() - 0.5);
+            bird = { x: 60, y: 250, velocity: 0, width: 34, height: 26 };
+            pipes = [];
+            score = 0;
+            lives = 3;
+            timeLeft = 180;
+            frameCount = 0;
+            gameActive = true;
+            gameStarted = false;
+            quizActive = false;
+            collisionPaused = false;
+            
+            scoreLabel.innerText = `Mastered: 0 / ${masterQuestions.length}`;
+            updateTimerDisplay();
+            updateLivesDisplay();
+            startScreen.classList.add('hidden');
+            collisionOverlay.classList.add('hidden');
+            gameOverScreen.classList.add('hidden');
+            quizModal.style.display = 'none';
+
+            if (gameTimer) clearInterval(gameTimer);
+            gameTimer = setInterval(() => {
+                if (gameActive && gameStarted && !quizActive && !collisionPaused) {
+                    timeLeft--;
+                    updateTimerDisplay();
+                    if (timeLeft <= 0) endGame("Time ran out!");
+                }
+            }, 1000);
+
+            requestAnimationFrame(update);
+        }
+
+        function endGame(msg = "Session Ended") {
+            gameActive = false;
+            clearInterval(gameTimer);
+            const finalScoreEl = document.getElementById('finalScore');
+            finalScoreEl.innerText = score;
+            document.getElementById('finalMsg').innerText = msg;
+            
+            if (score === masterQuestions.length) {
+                document.getElementById('gameOverTitle').innerText = "VICTORY!";
+                document.getElementById('gameOverTitle').classList.replace('text-red-500', 'text-green-500');
+            } else {
+                document.getElementById('gameOverTitle').innerText = "Session Ended";
+                document.getElementById('gameOverTitle').classList.add('text-red-500');
+            }
+            
+            gameOverScreen.classList.remove('hidden');
+        }
+
+        function triggerCollision() {
+            if (collisionPaused) return;
+            collisionPaused = true;
+            collisionOverlay.classList.remove('hidden');
+        }
+
+        function resetAfterCollision() {
+            collisionPaused = false;
+            collisionOverlay.classList.add('hidden');
+            bird.y = 250;
+            bird.velocity = 0;
+            pipes = [];
+            gameStarted = false;
+        }
+
+        function flap() {
+            if (quizActive) return;
+            if (collisionPaused) {
+                resetAfterCollision();
+                return;
+            }
+            if (gameActive) {
+                if (!gameStarted) gameStarted = true;
+                bird.velocity = FLAP;
+            }
+        }
+
+        window.addEventListener('keydown', (e) => { if (e.code === 'Space' || e.code === 'ArrowUp') flap(); });
+        canvas.addEventListener('mousedown', flap);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); flap(); }, {passive: false});
+
+        function showQuiz() {
+            quizActive = true;
+            // Shuffle pool to pick a truly random one
+            activePool.sort(() => Math.random() - 0.5);
+            currentQuestion = activePool[0];
+            
+            questionText.innerText = currentQuestion.q;
+            document.getElementById('qRemaining').innerText = `Learning: ${activePool.length} left`;
+            
+            // Randomize Options
+            let opts = [currentQuestion.a, ...currentQuestion.o].sort(() => Math.random() - 0.5);
+            optionsContainer.innerHTML = '';
+            
+            opts.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = "w-full py-3 px-4 bg-slate-700 hover:bg-slate-600 text-left rounded-lg border border-slate-600 text-sm font-semibold transition-all pointer-events-auto";
+                b.innerText = opt;
+                b.onclick = () => {
+                    const allButtons = optionsContainer.querySelectorAll('button');
+                    allButtons.forEach(btn => btn.disabled = true);
+                    
+                    if (opt === currentQuestion.a) {
+                        b.classList.add('correct');
+                        // REMOVE from pool on correct answer
+                        activePool.shift(); 
+                        score++;
+                        scoreLabel.innerText = `Mastered: ${score} / ${masterQuestions.length}`;
+                        
+                        setTimeout(() => { 
+                            quizActive = false; 
+                            quizModal.style.display = 'none';
+                            if (activePool.length === 0) endGame("You mastered every question!");
+                        }, 800);
+                    } else {
+                        b.classList.add('wrong');
+                        lives--;
+                        updateLivesDisplay();
+                        allButtons.forEach(btn => { if (btn.innerText === currentQuestion.a) btn.classList.add('correct'); });
+                        
+                        // Move to back of pool on wrong answer so it repeats later
+                        activePool.push(activePool.shift());
+
+                        setTimeout(() => {
+                            if (lives <= 0) {
+                                endGame("Out of lives. Keep studying!");
+                                quizModal.style.display = 'none';
+                            } else {
+                                quizActive = false;
+                                quizModal.style.display = 'none';
+                            }
+                        }, 2000);
+                    }
+                };
+                optionsContainer.appendChild(b);
+            });
+            quizModal.style.display = 'flex';
+        }
+
+        function update() {
+            if (!gameActive) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // BG
+            ctx.fillStyle = "#1e293b";
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            if (!quizActive && !collisionPaused) {
+                if (gameStarted) {
+                    bird.velocity += GRAVITY;
+                    bird.y += bird.velocity;
+
+                    if (frameCount % SPAWN_RATE === 0) {
+                        const topH = Math.random() * (canvas.height - PIPE_GAP - 100) + 50;
+                        pipes.push({ x: canvas.width, topH, passed: false });
+                    }
+
+                    for (let i = pipes.length - 1; i >= 0; i--) {
+                        pipes[i].x -= SPEED;
+                        if (bird.x + bird.width > pipes[i].x && bird.x < pipes[i].x + PIPE_WIDTH) {
+                            if (bird.y < pipes[i].topH || bird.y + bird.height > pipes[i].topH + PIPE_GAP) {
+                                triggerCollision();
+                            }
+                        }
+                        if (!pipes[i].passed && pipes[i].x + PIPE_WIDTH < bird.x) {
+                            pipes[i].passed = true;
+                            // Trigger Quiz on every pipe to speed up revision
+                            showQuiz();
+                        }
+                        if (pipes[i].x < -PIPE_WIDTH) pipes.splice(i, 1);
+                    }
+                    frameCount++;
+                } else {
+                    bird.y = 250 + Math.sin(Date.now() / 200) * 10;
+                }
+                if (bird.y + bird.height > canvas.height || bird.y < 0) triggerCollision();
+            }
+
+            // Render Pipes
+            pipes.forEach(pipe => {
+                ctx.fillStyle = "#334155";
+                ctx.fillRect(pipe.x, 0, PIPE_WIDTH, pipe.topH);
+                ctx.fillRect(pipe.x, pipe.topH + PIPE_GAP, PIPE_WIDTH, canvas.height);
+            });
+
+            // Render Bird
+            ctx.save();
+            ctx.translate(bird.x + bird.width/2, bird.y + bird.height/2);
+            ctx.scale(-1, 1);
+            let rotation = Math.max(-0.5, Math.min(0.5, bird.velocity * 0.08));
+            ctx.rotate(-rotation); 
+            ctx.font = "32px serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("🐦", 0, 0);
+            ctx.restore();
+
+            if (!gameStarted && !collisionPaused && !quizActive) {
+                ctx.fillStyle = "rgba(255,255,255,0.6)";
+                ctx.font = "bold 14px sans-serif";
+                ctx.textAlign = "center";
+                ctx.fillText("TAP TO FLY", canvas.width/2, 350);
+            }
+
+            requestAnimationFrame(update);
+        }
+    </script>
+</body>
+</html>
