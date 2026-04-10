@@ -12,7 +12,7 @@
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       overflow: hidden;
       color: white;
-      touch-action: none;
+      touch-action: none; /* Prevents browser pull-to-refresh and zooming */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -104,7 +104,8 @@
     }
 
     /* Quiz Elements */
-    #feedback-text { font-size: 14px; margin-bottom: 10px; font-weight: bold; min-height: 1.5em; max-width: 90%; }
+    #feedback-text { font-size: 14px; margin-bottom: 5px; font-weight: bold; min-height: 1.5em; max-width: 90%; }
+    #snark-text { font-size: 12px; font-style: italic; color: #7FDBFF; margin-bottom: 8px; min-height: 1.2em; }
     #streak-alert { font-size: 14px; color: #FFDC00; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
     #question-text { color: #FFDC00; font-size: 15px; margin-bottom: 8px; max-width: 95%; line-height: 1.3; }
 
@@ -217,6 +218,7 @@
   <!-- Quiz -->
   <div id="quiz-overlay">
     <div id="feedback-text"></div>
+    <div id="snark-text"></div>
     <div id="streak-alert"></div>
     <div id="question-text"></div>
     <div id="options-container" style="width:100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;"></div>
@@ -247,7 +249,7 @@
     { q: "ACS(I) has the following facilities except:", a: ["Rifle range", "Swimming pool", "Adventure course", "Bowling alley"], correct: "Bowling alley" },
     { q: "How many F&B stalls does ACSI have in the Student Activity Centre?", a: ["10", "11", "12", "13"], correct: "12" },
     { q: "Which of the following does ACS(I) possess zero tolerance against?", a: ["Cutting botak", "Bullying", "Forgetting school tie", "Not using fountain pen"], correct: "Bullying" },
-    { q: "Which ACSIANS won the 4X200m free relay in the 2019 SEA Games?", a: ["Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Danny Yeo", "Quah Zheng Wen, Joseph Schooling, Lionel Khoo, Darren Chua", "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Darren Chua", "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Teong Tzen Wei"], correct: "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Darren Chua" },
+    { q: "Which ACSIANS won the 4X200m free relay in the 2019 SEA Games?", a: ["Quah Zheng Wen, Joseph Schooling, Lionel Khoo, Darren Chua", "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Danny Yeo", "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Darren Chua", "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Teong Tzen Wei"], correct: "Quah Zheng Wen, Joseph Schooling, Jonathan Tan, Darren Chua" },
     { q: "What was Jonathan Tan's (Class of 2020) 50m free timing?", a: ["21:00", "22:38", "22:67", "23:14"], correct: "22:38" },
     { q: "Which ACSIAN holds the current Boys U17 1500m national record?", a: ["Gabriel Koo", "Russell Pang", "Ong Jung Yi", "Zachary Ian Tan"], correct: "Russell Pang" },
     { q: "What is the timing of Russell's U17 1500m record?", a: ["15:28.46", "16:43:24", "16:73:24", "17:23:24"], correct: "15:28.46" },
@@ -283,6 +285,20 @@
     "Almost drowned that question.", "False start—back on the blocks.", "That answer needs more oxygen."
   ];
 
+  const CORRECT_SNARK = [
+    "Even the pool tiles are impressed. Don't let it go to your head.",
+    "Look at you, a regular human dolphin. Try not to splash too much ego.",
+    "Is it the chlorine or are you just that bright?",
+    "Check you out, Einstein in a Speedo."
+  ];
+
+  const WRONG_SNARK = [
+    "If thinking were a stroke, you'd be disqualified for sinking.",
+    "That logic has the buoyancy of a lead weights belt.",
+    "Error 404: Goggles not found. Also, that answer was wrong.",
+    "That logic is about as hydrodynamic as a brick."
+  ];
+
   let questionsDeck = [];
   let blocks = [];
 
@@ -299,11 +315,11 @@
     document.getElementById('start-screen').style.display = 'flex';
     const hint = document.getElementById('control-hint');
     if (type === 'phone') {
-      hint.innerHTML = "Use the <b>On-Screen Buttons</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below for trivia.";
+      hint.innerHTML = "Use the <b>Buttons</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below.";
       document.getElementById('mobile-controls').style.display = 'flex';
       player.speed = 4.8;
     } else {
-      hint.innerHTML = "Use <b>ARROW KEYS</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below for trivia.";
+      hint.innerHTML = "Use <b>ARROW KEYS</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below.";
       document.getElementById('mobile-controls').style.display = 'none';
       player.speed = 5.5;
     }
@@ -366,8 +382,9 @@
     player.vx = 0;
     const currentQ = questionsDeck[0];
     const feedback = document.getElementById('feedback-text');
+    const snark = document.getElementById('snark-text');
     const streakAlert = document.getElementById('streak-alert');
-    feedback.innerText = ""; streakAlert.innerText = "";
+    feedback.innerText = ""; snark.innerText = ""; streakAlert.innerText = "";
     document.getElementById('question-text').innerText = currentQ.q;
     const container = document.getElementById('options-container');
     container.innerHTML = '';
@@ -385,6 +402,7 @@
           streakCount++;
           feedback.innerText = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
           feedback.style.color = "#2ecc71";
+          snark.innerText = CORRECT_SNARK[Math.floor(Math.random() * CORRECT_SNARK.length)];
           if (streakCount === 3) streakAlert.innerText = "On fire. World record incoming.";
           if (streakCount === 5) streakAlert.innerText = "You’re breaking records now.";
           coins += 10;
@@ -394,21 +412,22 @@
             questionsDeck.shift();
             if (questionsDeck.length === 0) victory();
             else gameActive = true;
-          }, 1200);
+          }, 1500);
         } else {
           btn.classList.add('btn-wrong');
           streakCount = 0;
           allBtns.forEach(b => { if (b.innerText === currentQ.correct) b.classList.add('btn-correct'); });
           const randomMsg = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
-          feedback.innerHTML = `${randomMsg}<br><small style="color:#bdc3c7">Correct answer revealed. Now prove you learnt it.</small>`;
+          feedback.innerHTML = `${randomMsg}<br><small style="color:#bdc3c7">Correct answer revealed.</small>`;
           feedback.style.color = "#e74c3c";
+          snark.innerText = WRONG_SNARK[Math.floor(Math.random() * WRONG_SNARK.length)];
           setTimeout(() => {
             document.getElementById('quiz-overlay').style.display = 'none';
             isFalling = true;
             const wrongQ = questionsDeck.shift();
             const targetIndex = Math.min(3, questionsDeck.length);
             questionsDeck.splice(targetIndex, 0, wrongQ);
-          }, 2800);
+          }, 3200);
         }
       };
       container.appendChild(btn);
