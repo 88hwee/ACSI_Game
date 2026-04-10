@@ -1,198 +1,245 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ACS(I) Swimming Mastery Quest</title>
-    <style>
-        /* Base styles optimized for full-screen centering */
-        body { 
-            margin: 0; 
-            background: #001f3f; 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
-            overflow: hidden; 
-            color: white; 
-            touch-action: none; /* Prevents browser pull-to-refresh and zooming */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            width: 100vw;
-        }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ACS(I) Swimming Mastery Quest</title>
+  <style>
+    /* Reset and Layout */
+    body {
+      margin: 0;
+      background: #001f3f;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      overflow: hidden;
+      color: white;
+      touch-action: none;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      width: 100vw;
+    }
 
-        #game-container { 
-            position: relative; 
-            width: 100vw; 
-            height: 56.25vw; /* 16:9 Aspect Ratio */
-            max-width: 800px; 
-            max-height: 450px; 
-            background: linear-gradient(to bottom, #0074D9, #7FDBFF); 
-            border: 4px solid #FFDC00; 
-            border-radius: 12px; 
-            overflow: hidden; 
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            user-select: none;
-            -webkit-user-select: none;
-        }
+    #game-container {
+      position: relative;
+      width: 100vw;
+      height: 56.25vw; /* 16:9 Aspect Ratio */
+      max-width: 800px;
+      max-height: 450px;
+      background: linear-gradient(to bottom, #0074D9, #7FDBFF);
+      border: 4px solid #FFDC00;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      user-select: none;
+      -webkit-user-select: none;
+    }
 
-        canvas { 
-            display: block; 
-            width: 100%; 
-            height: 100%; 
-            background: transparent;
-            touch-action: none;
-        }
-        
-        /* Device Selection Screen */
-        #device-screen {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: #001f3f; display: flex; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 300;
-        }
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      touch-action: none;
+    }
 
-        #start-screen, #message {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 31, 63, 0.95); display: none; flex-direction: column;
-            justify-content: center; align-items: center; z-index: 200;
-        }
-        
-        .menu-btn {
-            padding: 12px 35px; font-size: 18px; font-weight: bold; color: #001f3f;
-            background: #FFDC00; border: none; border-radius: 50px; cursor: pointer; transition: 0.3s;
-            box-shadow: 0 4px 0 #b39700; margin: 8px; min-width: 180px;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .menu-btn:hover { transform: translateY(-3px); background: #ffe44d; box-shadow: 0 7px 0 #b39700; }
-        .menu-btn:active { transform: translateY(0); box-shadow: 0 2px 0 #b39700; }
+    /* Overlays */
+    #device-screen, #start-screen, #message, #quiz-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-sizing: border-box;
+    }
 
-        #ui-layer { 
-            position: absolute; top: 10px; left: 15px; right: 15px; 
-            pointer-events: none; display: flex; justify-content: space-between; 
-            font-weight: bold; text-shadow: 2px 2px #000; font-size: clamp(10px, 3vw, 16px); 
-            z-index: 10; 
-        }
-        
-        #stats-coins { color: #FFDC00; }
-        
-        #quiz-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95); display: none; flex-direction: column;
-            justify-content: flex-start; align-items: center; text-align: center; 
-            padding: 10px 15px; z-index: 400;
-            box-sizing: border-box;
-            overflow-y: auto; /* Important for short mobile landscape screens */
-        }
+    #device-screen { background: #001f3f; z-index: 300; }
+    #start-screen, #message { background: rgba(0, 31, 63, 0.95); display: none; z-index: 200; }
+    #quiz-overlay {
+      background: rgba(0, 0, 0, 0.95);
+      display: none;
+      justify-content: flex-start;
+      padding: 10px 15px;
+      z-index: 400;
+      overflow-y: auto;
+    }
 
-        #feedback-text { font-size: 14px; margin-bottom: 10px; font-weight: bold; min-height: 1.5em; max-width: 90%; }
-        #streak-alert { font-size: 14px; color: #FFDC00; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
-        
-        .option-btn { 
-            background: #ecf0f1; color: #2c3e50; border: none; 
-            padding: 10px 15px; margin: 3px; cursor: pointer; width: 95%; 
-            border-radius: 10px; font-size: clamp(10px, 2.5vw, 14px); 
-            font-weight: 600; transition: 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .option-btn:disabled { opacity: 0.8; }
-        .btn-correct { background: #2ecc71 !important; color: white !important; }
-        .btn-wrong { background: #e74c3c !important; color: white !important; }
-        
-        #message-text { 
-            font-size: clamp(18px, 5vw, 32px); font-weight: 900; color: #FFDC00; 
-            text-shadow: 3px 3px 0px #000; line-height: 1.2; margin-bottom: 15px; text-align: center; 
-        }
-        
-        /* Mobile Controls - Enhanced for touch */
-        #mobile-controls {
-            position: absolute; bottom: 15px; left: 15px; right: 15px;
-            display: none; justify-content: space-between; align-items: flex-end;
-            pointer-events: none; z-index: 50;
-        }
-        .touch-btn {
-            width: 65px; height: 65px; background: rgba(255, 255, 255, 0.2);
-            border-radius: 50%; pointer-events: auto; display: flex; justify-content: center; align-items: center;
-            font-size: 24px; color: white; border: 3px solid rgba(255, 255, 255, 0.3);
-            user-select: none; -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            backdrop-filter: blur(2px);
-        }
-        .touch-btn:active { background: rgba(255, 220, 0, 0.5); transform: scale(0.9); border-color: #FFDC00; }
+    /* UI Components */
+    .menu-btn {
+      padding: 12px 35px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #001f3f;
+      background: #FFDC00;
+      border: none;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
+      box-shadow: 0 4px 0 #b39700;
+      margin: 8px;
+      min-width: 180px;
+      -webkit-tap-highlight-color: transparent;
+    }
 
-        .instructions { font-size: 12px; color: #bdc3c7; margin-top: 10px; line-height: 1.4; text-align: center; max-width: 90%; }
-        .school-info { font-size: 10px; color: #7FDBFF; margin-top: 5px; }
+    .menu-btn:hover { transform: translateY(-3px); background: #ffe44d; box-shadow: 0 7px 0 #b39700; }
+    .menu-btn:active { transform: translateY(0); box-shadow: 0 2px 0 #b39700; }
 
-        /* Handling orientation */
-        @media screen and (orientation: portrait) and (max-width: 600px) {
-            #game-container {
-                width: 98vw;
-                height: 55vw;
-            }
-        }
-    </style>
+    #ui-layer {
+      position: absolute;
+      top: 10px;
+      left: 15px;
+      right: 15px;
+      pointer-events: none;
+      display: flex;
+      justify-content: space-between;
+      font-weight: bold;
+      text-shadow: 2px 2px #000;
+      font-size: clamp(10px, 3vw, 16px);
+      z-index: 10;
+    }
+
+    /* Quiz Elements */
+    #feedback-text { font-size: 14px; margin-bottom: 10px; font-weight: bold; min-height: 1.5em; max-width: 90%; }
+    #streak-alert { font-size: 14px; color: #FFDC00; font-weight: 800; margin-bottom: 5px; text-transform: uppercase; }
+    #question-text { color: #FFDC00; font-size: 15px; margin-bottom: 8px; max-width: 95%; line-height: 1.3; }
+
+    .option-btn {
+      background: #ecf0f1;
+      color: #2c3e50;
+      border: none;
+      padding: 10px 15px;
+      margin: 3px;
+      cursor: pointer;
+      width: 95%;
+      border-radius: 10px;
+      font-size: clamp(10px, 2.5vw, 14px);
+      font-weight: 600;
+      transition: 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .option-btn:disabled { opacity: 0.8; }
+    .btn-correct { background: #2ecc71 !important; color: white !important; }
+    .btn-wrong { background: #e74c3c !important; color: white !important; }
+
+    /* End Game */
+    #message-text {
+      font-size: clamp(18px, 5vw, 32px);
+      font-weight: 900;
+      color: #FFDC00;
+      text-shadow: 3px 3px 0px #000;
+      line-height: 1.2;
+      margin-bottom: 15px;
+    }
+
+    /* Controls */
+    #mobile-controls {
+      position: absolute;
+      bottom: 15px;
+      left: 15px;
+      right: 15px;
+      display: none;
+      justify-content: space-between;
+      align-items: flex-end;
+      pointer-events: none;
+      z-index: 50;
+    }
+
+    .touch-btn {
+      width: 65px;
+      height: 65px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      pointer-events: auto;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 24px;
+      color: white;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      user-select: none;
+      backdrop-filter: blur(2px);
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .touch-btn:active { background: rgba(255, 220, 0, 0.5); transform: scale(0.9); border-color: #FFDC00; }
+
+    .instructions { font-size: 12px; color: #bdc3c7; margin-top: 10px; line-height: 1.4; text-align: center; max-width: 90%; }
+    .school-info { font-size: 10px; color: #7FDBFF; margin-top: 5px; }
+
+    @media screen and (orientation: portrait) and (max-width: 600px) {
+      #game-container { width: 98vw; height: 55vw; }
+    }
+  </style>
 </head>
 <body>
 
 <div id="game-container">
-    <!-- Device Selection -->
-    <div id="device-screen">
-        <h2 style="color: #FFDC00; margin-bottom: 15px; font-size: 22px;">CHOOSE YOUR DEVICE</h2>
-        <button class="menu-btn" onclick="selectDevice('laptop')">💻 LAPTOP / PC</button>
-        <button class="menu-btn" onclick="selectDevice('phone')" style="background: #bdc3c7; box-shadow: 0 4px 0 #7f8c8d;">📱 MOBILE / TABLET</button>
-    </div>
+  <!-- Device Selection -->
+  <div id="device-screen">
+    <h2 style="color: #FFDC00; margin-bottom: 15px; font-size: 22px;">CHOOSE YOUR DEVICE</h2>
+    <button class="menu-btn" onclick="selectDevice('laptop')">💻 LAPTOP / PC</button>
+    <button class="menu-btn" onclick="selectDevice('phone')" style="background: #bdc3c7; box-shadow: 0 4px 0 #7f8c8d;">📱 MOBILE / TABLET</button>
+  </div>
 
-    <!-- Start Screen -->
-    <div id="start-screen">
-        <h1 style="color: #FFDC00; margin-bottom: 5px; font-size: 24px;">ACS(I) SWIMMING</h1>
-        <h2 style="color: #ecf0f1; margin-top: 0; font-size: 16px;">Mastery Quest</h2>
-        <div id="control-hint" class="instructions"></div>
-        <button id="btn-start" class="menu-btn">DIVE IN</button>
-        <div class="school-info">Anglo-Chinese School (Independent) Swimming Team</div>
-    </div>
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <h1 style="color: #FFDC00; margin-bottom: 5px; font-size: 24px;">ACS(I) SWIMMING</h1>
+    <h2 style="color: #ecf0f1; margin-top: 0; font-size: 16px;">Mastery Quest</h2>
+    <div id="control-hint" class="instructions"></div>
+    <button id="btn-start" class="menu-btn">DIVE IN</button>
+    <div class="school-info">Anglo-Chinese School (Independent) Swimming Team</div>
+  </div>
 
-    <!-- UI -->
-    <div id="ui-layer">
-        <div id="stats-lives" style="color:#ff4136">Energy: 5</div>
-        <div id="stats-coins">Score: 0</div>
-        <div id="stats-timer">120s</div>
-    </div>
+  <!-- UI -->
+  <div id="ui-layer">
+    <div id="stats-lives" style="color:#ff4136">Energy: 5</div>
+    <div id="stats-coins">Score: 0</div>
+    <div id="stats-timer">120s</div>
+  </div>
 
-    <canvas id="gameCanvas" width="800" height="400"></canvas>
+  <canvas id="gameCanvas" width="800" height="400"></canvas>
 
-    <!-- Mobile Controls -->
-    <div id="mobile-controls">
-        <div style="display: flex; gap: 20px;">
-            <div id="touch-left" class="touch-btn">⬅️</div>
-            <div id="touch-right" class="touch-btn">➡️</div>
-        </div>
-        <div id="touch-jump" class="touch-btn">⬆️</div>
+  <!-- Mobile Controls -->
+  <div id="mobile-controls">
+    <div style="display: flex; gap: 20px;">
+      <div id="touch-left" class="touch-btn">⬅️</div>
+      <div id="touch-right" class="touch-btn">➡️</div>
     </div>
+    <div id="touch-jump" class="touch-btn">⬆️</div>
+  </div>
 
-    <!-- Quiz -->
-    <div id="quiz-overlay">
-        <div id="feedback-text"></div>
-        <div id="streak-alert"></div>
-        <div id="question-text" style="color: #FFDC00; font-size: 15px; margin-bottom: 8px; max-width: 95%; line-height: 1.3;"></div>
-        <div id="options-container" style="width:100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;"></div>
-    </div>
+  <!-- Quiz -->
+  <div id="quiz-overlay">
+    <div id="feedback-text"></div>
+    <div id="streak-alert"></div>
+    <div id="question-text"></div>
+    <div id="options-container" style="width:100%; max-width: 550px; display: flex; flex-direction: column; align-items: center;"></div>
+  </div>
 
-    <!-- End Game -->
-    <div id="message">
-        <div id="message-text"></div>
-        <button class="replay-btn menu-btn" onclick="restartGame()">DIVE AGAIN</button>
-    </div>
+  <!-- End Game -->
+  <div id="message">
+    <div id="message-text"></div>
+    <button class="replay-btn menu-btn" onclick="restartGame()">DIVE AGAIN</button>
+  </div>
 </div>
 
 <script>
-const canvas = document.getElementById('gameCanvas');
-const ctx = canvas.getContext('2d');
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
 
-let gameStarted = false, gameActive = false, isFalling = false;
-let timer = 120, lives = 5, coins = 0, streakCount = 0, deviceType = 'laptop';
-const gravity = 0.5;
+  let gameStarted = false, gameActive = false, isFalling = false;
+  let timer = 120, lives = 5, coins = 0, streakCount = 0, deviceType = 'laptop';
+  const gravity = 0.5;
 
-const player = { x: 100, y: 200, w: 32, h: 45, vx: 0, vy: 0, speed: 5.5, jumpPower: -12, grounded: false, facingRight: true };
+  const player = { x: 100, y: 200, w: 32, h: 45, vx: 0, vy: 0, speed: 5.5, jumpPower: -12, grounded: false, facingRight: true };
 
-const MASTER_QUESTIONS = [
+  const MASTER_QUESTIONS = [
     { q: "What school resides at 121 Dover Road?", a: ["Anglo-Chinese School (Independent)", "Anglo-Chinese School (Barker Road)", "Fairfield Secondary", "Clementi Town Secondary"], correct: "Anglo-Chinese School (Independent)" },
     { q: "What is ACS(I)'s motto?", a: ["Son, Husband, Best Friend Forever", "Protect and Serve", "The best is yet to be", "One person can make a difference"], correct: "The best is yet to be" },
     { q: "How many ACS schools are there altogether? (including Jakarta)", a: ["5", "7", "8", "10"], correct: "8" },
@@ -216,266 +263,225 @@ const MASTER_QUESTIONS = [
     { q: "2025 SEA Games: Which alumnus won gold in the Men’s 50m Butterfly event?", a: ["Teong Tzen Wei", "Mikkel Lee", "Quah Zheng Wen", "Jonathan Tan"], correct: "Teong Tzen Wei" },
     { q: "2025 SEA Games: What did Ashley Lim achieve?", a: ["Silver medal in the Women’s 4x100m Freestyle Relay event", "Gold medal in the Women’s 200m Freestyle individual event", "Bronze medal in the Women’s 10km Open Water event", "Fourth place in the Women’s 50m Butterfly final event"], correct: "Silver medal in the Women’s 4x100m Freestyle Relay event" },
     { q: "2025 SEA Games: How many swimmers did the ACS family contribute?", a: ["Seven swimmers representing ACS in swimming and open water", "Five swimmers representing ACS in swimming and open water", "Nine swimmers representing ACS in swimming and open water", "Six swimmers representing ACS in swimming and open water"], correct: "Seven swimmers representing ACS in swimming and open water" }
-];
+  ];
 
-const CORRECT_MESSAGES = [
+  const CORRECT_MESSAGES = [
     "Smooth stroke, sharp mind.", "Lane dominance unlocked.", "Fast in water, fast in thinking.",
     "Clean answer, cleaner technique.", "That’s a gold-medal brain.", "You’re swimming ahead of the pack.",
     "Precision like a perfect turn.", "Stroke count: efficient. Brain count: elite.",
     "That answer cut through like a dive start.", "Hydrodynamic thinking.",
     "Strong pull, stronger answer.", "Coach approves. No whistle needed.",
     "Championship mindset detected.", "You didn’t just float—you flew.", "SEA Games level response."
-];
+  ];
 
-const WRONG_MESSAGES = [
+  const WRONG_MESSAGES = [
     "That sank faster than a bad dive.", "More splash than speed. Try again.", "Lane violation—reset and go.",
     "That answer needs floaties.", "You’re drifting… refocus.", "Missed the wall—turn again.",
     "Not quite—kick harder next time.", "That was a belly flop of an answer.",
     "Lost your goggles there. Try again.", "Too much drag in that thinking.",
     "You’re swimming against the current.", "Off pace—find your rhythm.",
     "Almost drowned that question.", "False start—back on the blocks.", "That answer needs more oxygen."
-];
+  ];
 
-let questionsDeck = [];
-let blocks = [];
+  let questionsDeck = [];
+  let blocks = [];
 
-function shuffle(arr) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } }
+  function shuffle(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+  }
 
-function selectDevice(type) {
+  function selectDevice(type) {
     deviceType = type;
     document.getElementById('device-screen').style.display = 'none';
     document.getElementById('start-screen').style.display = 'flex';
-    
     const hint = document.getElementById('control-hint');
     if (type === 'phone') {
-        hint.innerHTML = "Use the <b>On-Screen Buttons</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below for trivia.";
-        document.getElementById('mobile-controls').style.display = 'flex';
-        player.speed = 4.8;
+      hint.innerHTML = "Use the <b>On-Screen Buttons</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below for trivia.";
+      document.getElementById('mobile-controls').style.display = 'flex';
+      player.speed = 4.8;
     } else {
-        hint.innerHTML = "Use <b>ARROW KEYS</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below for trivia.";
-        document.getElementById('mobile-controls').style.display = 'none';
-        player.speed = 5.5;
+      hint.innerHTML = "Use <b>ARROW KEYS</b> to Move & Jump.<br>Hit <b>Floating Boards</b> from below for trivia.";
+      document.getElementById('mobile-controls').style.display = 'none';
+      player.speed = 5.5;
     }
-}
+  }
 
-function initGame() {
+  function initGame() {
     questionsDeck = JSON.parse(JSON.stringify(MASTER_QUESTIONS));
     shuffle(questionsDeck);
     timer = 120;
     lives = 5; coins = 0; streakCount = 0;
     player.x = 100; player.y = 200; player.vx = 0; player.vy = 0;
-    
-    blocks = Array.from({length: 120}, (_, i) => ({ 
-        x: 400 + (i * 350), y: 180, w: 60, h: 40, active: true
+    blocks = Array.from({ length: 120 }, (_, i) => ({
+      x: 400 + (i * 350), y: 180, w: 60, h: 40, active: true
     }));
-
     document.getElementById('stats-lives').innerText = `Energy: ${lives}`;
     document.getElementById('stats-coins').innerText = `Score: ${coins}`;
     document.getElementById('stats-timer').innerText = `120s`;
     document.getElementById('message').style.display = 'none';
     document.getElementById('quiz-overlay').style.display = 'none';
-}
+  }
 
-function restartGame() { initGame(); gameStarted = true; gameActive = true; }
+  function restartGame() { initGame(); gameStarted = true; gameActive = true; }
 
-document.getElementById('btn-start').onclick = () => {
+  document.getElementById('btn-start').onclick = () => {
     document.getElementById('start-screen').style.display = 'none';
     restartGame();
-};
+  };
 
-const keys = {};
-window.onkeydown = e => keys[e.code] = true;
-window.onkeyup = e => keys[e.code] = false;
+  const keys = {};
+  window.onkeydown = e => keys[e.code] = true;
+  window.onkeyup = e => keys[e.code] = false;
 
-const touchKeys = { left: false, right: false, jump: false };
-const setupTouch = (id, key) => {
+  const touchKeys = { left: false, right: false, jump: false };
+  const setupTouch = (id, key) => {
     const el = document.getElementById(id);
-    el.addEventListener('touchstart', (e) => { 
-        e.preventDefault(); 
-        touchKeys[key] = true; 
-    }, {passive: false});
-    el.addEventListener('touchend', (e) => { 
-        e.preventDefault(); 
-        touchKeys[key] = false; 
-    }, {passive: false});
-    el.addEventListener('touchcancel', (e) => { 
-        e.preventDefault(); 
-        touchKeys[key] = false; 
-    }, {passive: false});
-};
-setupTouch('touch-left', 'left');
-setupTouch('touch-right', 'right');
-setupTouch('touch-jump', 'jump');
+    el.addEventListener('touchstart', (e) => { e.preventDefault(); touchKeys[key] = true; }, { passive: false });
+    el.addEventListener('touchend', (e) => { e.preventDefault(); touchKeys[key] = false; }, { passive: false });
+    el.addEventListener('touchcancel', (e) => { e.preventDefault(); touchKeys[key] = false; }, { passive: false });
+  };
+  setupTouch('touch-left', 'left'); setupTouch('touch-right', 'right'); setupTouch('touch-jump', 'jump');
 
-function drawPlayer() {
+  function drawPlayer() {
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
-    ctx.fillStyle = "#FFDC00"; 
+    ctx.fillStyle = "#FFDC00";
     ctx.beginPath(); ctx.arc(0, -15, 12, Math.PI, 0); ctx.fill();
     ctx.fillStyle = "#333";
     ctx.fillRect(-8, -14, 6, 4); ctx.fillRect(2, -14, 6, 4);
-    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-10, -15, 20, 12); 
+    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-10, -15, 20, 12);
     ctx.fillStyle = "#001f3f"; ctx.fillRect(-12, -3, 24, 25);
     ctx.fillStyle = "#ffdbac"; ctx.fillRect(-10, 22, 8, 15); ctx.fillRect(2, 22, 8, 15);
     ctx.restore();
-}
+  }
 
-function triggerQuiz() {
+  function triggerQuiz() {
     gameActive = false;
-    // Reset all touch and keyboard inputs to prevent character sliding
     Object.keys(keys).forEach(k => keys[k] = false);
     Object.keys(touchKeys).forEach(k => touchKeys[k] = false);
     player.vx = 0;
-
     const currentQ = questionsDeck[0];
     const feedback = document.getElementById('feedback-text');
     const streakAlert = document.getElementById('streak-alert');
     feedback.innerText = ""; streakAlert.innerText = "";
-    feedback.style.color = "white";
-
     document.getElementById('question-text').innerText = currentQ.q;
     const container = document.getElementById('options-container');
     container.innerHTML = '';
-    
-    let opts = [...currentQ.a]; 
+    let opts = [...currentQ.a];
     shuffle(opts);
-
     opts.forEach(opt => {
-        const btn = document.createElement('button');
-        btn.className = 'option-btn'; 
-        btn.innerText = opt;
-        btn.onclick = () => {
-            const allBtns = container.querySelectorAll('button');
-            allBtns.forEach(b => b.disabled = true);
-
-            if (opt === currentQ.correct) {
-                btn.classList.add('btn-correct');
-                streakCount++;
-                
-                const randomMsg = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
-                feedback.innerText = randomMsg;
-                feedback.style.color = "#2ecc71";
-                
-                if (streakCount === 3) streakAlert.innerText = "On fire. World record incoming.";
-                if (streakCount === 5) streakAlert.innerText = "You’re breaking records now.";
-                
-                coins += 10;
-                document.getElementById('stats-coins').innerText = `Score: ${coins}`;
-                
-                setTimeout(() => {
-                    document.getElementById('quiz-overlay').style.display = 'none';
-                    questionsDeck.shift(); 
-                    if (questionsDeck.length === 0) victory();
-                    else gameActive = true;
-                }, 1200);
-            } else {
-                btn.classList.add('btn-wrong');
-                streakCount = 0; 
-                allBtns.forEach(b => { if (b.innerText === currentQ.correct) b.classList.add('btn-correct'); });
-                
-                const randomMsg = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
-                feedback.innerHTML = `${randomMsg}<br><small style="color:#bdc3c7">Correct answer revealed. Now prove you learnt it.</small>`;
-                feedback.style.color = "#e74c3c";
-
-                setTimeout(() => {
-                    document.getElementById('quiz-overlay').style.display = 'none';
-                    isFalling = true; 
-                    const wrongQ = questionsDeck.shift();
-                    const targetIndex = Math.min(3, questionsDeck.length);
-                    questionsDeck.splice(targetIndex, 0, wrongQ);
-                }, 2800);
-            }
-        };
-        container.appendChild(btn);
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.innerText = opt;
+      btn.onclick = () => {
+        const allBtns = container.querySelectorAll('button');
+        allBtns.forEach(b => b.disabled = true);
+        if (opt === currentQ.correct) {
+          btn.classList.add('btn-correct');
+          streakCount++;
+          feedback.innerText = CORRECT_MESSAGES[Math.floor(Math.random() * CORRECT_MESSAGES.length)];
+          feedback.style.color = "#2ecc71";
+          if (streakCount === 3) streakAlert.innerText = "On fire. World record incoming.";
+          if (streakCount === 5) streakAlert.innerText = "You’re breaking records now.";
+          coins += 10;
+          document.getElementById('stats-coins').innerText = `Score: ${coins}`;
+          setTimeout(() => {
+            document.getElementById('quiz-overlay').style.display = 'none';
+            questionsDeck.shift();
+            if (questionsDeck.length === 0) victory();
+            else gameActive = true;
+          }, 1200);
+        } else {
+          btn.classList.add('btn-wrong');
+          streakCount = 0;
+          allBtns.forEach(b => { if (b.innerText === currentQ.correct) b.classList.add('btn-correct'); });
+          const randomMsg = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
+          feedback.innerHTML = `${randomMsg}<br><small style="color:#bdc3c7">Correct answer revealed. Now prove you learnt it.</small>`;
+          feedback.style.color = "#e74c3c";
+          setTimeout(() => {
+            document.getElementById('quiz-overlay').style.display = 'none';
+            isFalling = true;
+            const wrongQ = questionsDeck.shift();
+            const targetIndex = Math.min(3, questionsDeck.length);
+            questionsDeck.splice(targetIndex, 0, wrongQ);
+          }, 2800);
+        }
+      };
+      container.appendChild(btn);
     });
     document.getElementById('quiz-overlay').style.display = 'flex';
-}
+  }
 
-function victory() {
+  function victory() {
     gameActive = false;
-    const msg = document.getElementById('message');
     document.getElementById('message-text').innerHTML = "To God be the Glory,<br>The Best is Yet to be!";
-    msg.style.display = 'flex';
-}
+    document.getElementById('message').style.display = 'flex';
+  }
 
-function gameOver(reason) {
+  function gameOver(reason) {
     gameActive = false;
-    const msg = document.getElementById('message');
     document.getElementById('message-text').innerText = reason;
-    msg.style.display = 'flex';
-}
+    document.getElementById('message').style.display = 'flex';
+  }
 
-function update() {
+  function update() {
     if (!gameStarted) { requestAnimationFrame(update); return; }
     if (timer <= 0 && gameActive) { gameOver("OUT OF TIME"); }
-    
     if (isFalling) {
-        player.vy += gravity; player.y += player.vy;
-        if (player.y > 600) {
-            lives--; document.getElementById('stats-lives').innerText = `Energy: ${lives}`;
-            if (lives <= 0) { gameOver("ENERGY DRAINED"); } 
-            else { 
-                player.x = Math.max(100, player.x - 300); player.y = 50; player.vy = 0; isFalling = false; 
-                if (timer > 0) gameActive = true; 
-            }
+      player.vy += gravity; player.y += player.vy;
+      if (player.y > 600) {
+        lives--; document.getElementById('stats-lives').innerText = `Energy: ${lives}`;
+        if (lives <= 0) { gameOver("ENERGY DRAINED"); }
+        else {
+          player.x = Math.max(100, player.x - 300); player.y = 50; player.vy = 0; isFalling = false;
+          if (timer > 0) gameActive = true;
         }
+      }
     } else if (gameActive) {
-        const moveRight = keys['ArrowRight'] || touchKeys.right;
-        const moveLeft = keys['ArrowLeft'] || touchKeys.left;
-        const jump = keys['ArrowUp'] || keys['Space'] || touchKeys.jump;
-
-        if (moveRight) { player.vx = player.speed; player.facingRight = true; }
-        else if (moveLeft) { player.vx = -player.speed; player.facingRight = false; }
-        else player.vx *= 0.8;
-        
-        if (jump && player.grounded) { player.vy = player.jumpPower; player.grounded = false; }
-        player.vy += gravity; player.x += player.vx; player.y += player.vy;
-        
-        if (player.y + player.h > 350) { player.y = 350 - player.h; player.vy = 0; player.grounded = true; }
-        
-        blocks.forEach((b) => {
-            if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
-                if (player.vy < 0 && player.y > b.y + b.h - 15) { 
-                    b.active = false; player.vy = 2; 
-                    if(questionsDeck.length > 0) triggerQuiz(); 
-                } 
-                else if (player.vy > 0 && player.y + player.h < b.y + 20) {
-                    player.y = b.y - player.h; player.vy = 0; player.grounded = true;
-                }
-            }
-        });
+      const moveRight = keys['ArrowRight'] || touchKeys.right;
+      const moveLeft = keys['ArrowLeft'] || touchKeys.left;
+      const jump = keys['ArrowUp'] || keys['Space'] || touchKeys.jump;
+      if (moveRight) { player.vx = player.speed; player.facingRight = true; }
+      else if (moveLeft) { player.vx = -player.speed; player.facingRight = false; }
+      else player.vx *= 0.8;
+      if (jump && player.grounded) { player.vy = player.jumpPower; player.grounded = false; }
+      player.vy += gravity; player.x += player.vx; player.y += player.vy;
+      if (player.y + player.h > 350) { player.y = 350 - player.h; player.vy = 0; player.grounded = true; }
+      blocks.forEach((b) => {
+        if (b.active && player.x < b.x + b.w && player.x + player.w > b.x && player.y < b.y + b.h && player.y + player.h > b.y) {
+          if (player.vy < 0 && player.y > b.y + b.h - 15) { b.active = false; player.vy = 2; if (questionsDeck.length > 0) triggerQuiz(); }
+          else if (player.vy > 0 && player.y + player.h < b.y + 20) { player.y = b.y - player.h; player.vy = 0; player.grounded = true; }
+        }
+      });
     }
-    
-    ctx.setTransform(1,0,0,1,0,0);
-    ctx.clearRect(0,0,canvas.width,canvas.height);
-    
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     let camX = -player.x + 200; if (camX > 0) camX = 0;
     ctx.translate(camX, 0);
-    
     ctx.fillStyle = "rgba(255,255,255,0.15)";
-    for(let i=0; i<60; i++) { ctx.beginPath(); ctx.arc((i*300) % 40000, (i*70)%300 + 40, 4, 0, Math.PI*2); ctx.fill(); }
-    
-    ctx.fillStyle = isFalling ? '#001f3f' : '#0074D9'; 
+    for (let i = 0; i < 60; i++) { ctx.beginPath(); ctx.arc((i * 300) % 40000, (i * 70) % 300 + 40, 4, 0, Math.PI * 2); ctx.fill(); }
+    ctx.fillStyle = isFalling ? '#001f3f' : '#0074D9';
     ctx.fillRect(-2000, 350, 50000, 50);
-    ctx.fillStyle = "#FFDC00"; 
-    for(let i=0; i<150; i++) ctx.fillRect(i*400, 350, 180, 5);
-    
-    blocks.forEach(b => { 
-        if (b.active) { 
-            ctx.fillStyle = '#FF851B'; ctx.fillRect(b.x, b.y, b.w, b.h); 
-            ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(b.x+3, b.y+3, b.w-6, b.h-6);
-            ctx.fillStyle = 'white'; ctx.font = 'bold 18px Arial'; ctx.textAlign = 'center';
-            ctx.fillText('?', b.x + b.w/2, b.y + 26); 
-        } 
+    ctx.fillStyle = "#FFDC00";
+    for (let i = 0; i < 150; i++) ctx.fillRect(i * 400, 350, 180, 5);
+    blocks.forEach(b => {
+      if (b.active) {
+        ctx.fillStyle = '#FF851B'; ctx.fillRect(b.x, b.y, b.w, b.h);
+        ctx.strokeStyle = 'white'; ctx.lineWidth = 2; ctx.strokeRect(b.x + 3, b.y + 3, b.w - 6, b.h - 6);
+        ctx.fillStyle = 'white'; ctx.font = 'bold 18px Arial'; ctx.textAlign = 'center';
+        ctx.fillText('?', b.x + b.w / 2, b.y + 26);
+      }
     });
-    
     drawPlayer();
     requestAnimationFrame(update);
-}
+  }
 
-setInterval(() => { if (gameActive && timer > 0) { timer--; document.getElementById('stats-timer').innerText = timer + "s"; } }, 1000);
-update();
+  setInterval(() => { if (gameActive && timer > 0) { timer--; document.getElementById('stats-timer').innerText = timer + "s"; } }, 1000);
+  update();
 </script>
 </body>
 </html>
