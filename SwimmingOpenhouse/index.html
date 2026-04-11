@@ -405,7 +405,10 @@
           snark.innerText = CORRECT_SNARK[Math.floor(Math.random() * CORRECT_SNARK.length)];
           if (streakCount === 3) streakAlert.innerText = "On fire. World record incoming.";
           if (streakCount === 5) streakAlert.innerText = "You’re breaking records now.";
-          coins += 10;
+          
+          // SCORING UPDATE: 5 points for correct
+          coins += 5;
+          
           document.getElementById('stats-coins').innerText = `Score: ${coins}`;
           setTimeout(() => {
             document.getElementById('quiz-overlay').style.display = 'none';
@@ -416,6 +419,11 @@
         } else {
           btn.classList.add('btn-wrong');
           streakCount = 0;
+          
+          // SCORING UPDATE: -1 for wrong
+          coins = Math.max(0, coins - 1); // Prevent score from going below 0 if desired, otherwise just coins -= 1;
+          document.getElementById('stats-coins').innerText = `Score: ${coins}`;
+
           allBtns.forEach(b => { if (b.innerText === currentQ.correct) b.classList.add('btn-correct'); });
           const randomMsg = WRONG_MESSAGES[Math.floor(Math.random() * WRONG_MESSAGES.length)];
           feedback.innerHTML = `${randomMsg}<br><small style="color:#bdc3c7">Correct answer revealed.</small>`;
