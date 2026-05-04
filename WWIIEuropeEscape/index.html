@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Lebensraum: Catch the Mistakes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 850px;
+      margin: 30px auto;
+      padding: 20px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    h1 { color: #8b0000; }
+
+    .paragraph {
+      background: #f7f3e8;
+      padding: 20px;
+      border-radius: 12px;
+      border: 2px solid #c9b27c;
+      font-size: 18px;
+    }
+
+    .clickable {
+      cursor: pointer;
+      padding: 2px 4px;
+      border-radius: 5px;
+    }
+
+    .selected { background: #ffd966; }
+    .correct { background: #b6d7a8; }
+    .wrong { background: #f4cccc; }
+
+    button {
+      margin-top: 20px;
+      padding: 12px 18px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      background: #8b0000;
+      color: white;
+    }
+
+    #feedback {
+      margin-top: 20px;
+      font-weight: bold;
+      font-size: 18px;
+    }
+
+    .answer-box {
+      margin-top: 20px;
+      background: #eef4ff;
+      padding: 15px;
+      border-radius: 10px;
+      display: none;
+    }
+
+    /* 🎆 Fireworks canvas */
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Escape Room: Lebensraum — Catch the Mistakes</h1>
+
+<p>Click on the <b>3 wrong ideas</b>. Then press <b>Check Answer</b>.</p>
+
+<div class="paragraph">
+  Lebensraum made war more likely because it required Germany to expand beyond its borders to gain land and resources, particularly in 
+  <span class="clickable error" onclick="select(this)">Western Europe</span>.
+  This expansion 
+  <span class="clickable error" onclick="select(this)">could be achieved peacefully through agreements and cooperation</span>.
+  As Germany pursued this goal, it mainly 
+  <span class="clickable error" onclick="select(this)">improved relationships with neighbouring nations, reducing tensions</span>.
+  Combined with Hitler’s willingness to use force, lebensraum turned ambition into action, making conflict almost inevitable.
+</div>
+
+<button onclick="checkAnswer()">Check Answer</button>
+<button onclick="resetActivity()">Reset</button>
+
+<div id="feedback"></div>
+
+<div id="answerBox" class="answer-box">
+  <h3>Corrected Version</h3>
+  <p>
+    Lebensraum required expansion into <b>Eastern Europe</b>, could <b>not be achieved peacefully</b>, and <b>increased tensions</b>.
+  </p>
+  <h3>Escape Code: EAST</h3>
+</div>
+
+<canvas id="fireworks"></canvas>
+
+<script>
+function select(el) {
+  el.classList.toggle("selected");
+}
+
+function checkAnswer() {
+  const errors = document.querySelectorAll(".error");
+  const selected = document.querySelectorAll(".selected");
+  const feedback = document.getElementById("feedback");
+
+  let correct = 0;
+
+  errors.forEach(e => {
+    if (e.classList.contains("selected")) {
+      e.classList.remove("selected");
+      e.classList.add("correct");
+      correct++;
+    }
+  });
+
+  if (correct === 3 && selected.length === 3) {
+    feedback.innerHTML = "Correct. All mistakes identified.";
+    feedback.style.color = "green";
+    document.getElementById("answerBox").style.display = "block";
+    launchFireworks(); // 🎆 trigger
+  } else {
+    feedback.innerHTML = "Try again. You need exactly 3.";
+    feedback.style.color = "red";
+  }
+}
+
+function resetActivity() {
+  document.querySelectorAll(".clickable").forEach(e => {
+    e.classList.remove("selected", "correct", "wrong");
+  });
+  document.getElementById("feedback").innerHTML = "";
+  document.getElementById("answerBox").style.display = "none";
+}
+
+/* 🎆 SIMPLE FIREWORKS */
+const canvas = document.getElementById("fireworks");
+const ctx = canvas.getContext("2d");
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+function launchFireworks() {
+  let particles = [];
+
+  for (let i = 0; i < 100; i++) {
+    particles.push({
+      x: canvas.width / 2,
+      y: canvas.height / 2,
+      angle: Math.random() * 2 * Math.PI,
+      speed: Math.random() * 5 + 2,
+      life: 100
+    });
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    particles.forEach(p => {
+      p.x += Math.cos(p.angle) * p.speed;
+      p.y += Math.sin(p.angle) * p.speed;
+      p.life--;
+
+      ctx.fillStyle = `hsl(${Math.random()*360},100%,50%)`;
+      ctx.fillRect(p.x, p.y, 3, 3);
+    });
+
+    particles = particles.filter(p => p.life > 0);
+
+    if (particles.length > 0) {
+      requestAnimationFrame(animate);
+    }
+  }
+
+  animate();
+}
+</script>
+
+</body>
+</html>
