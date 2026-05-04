@@ -11,7 +11,6 @@
       line-height: 1.6;
       overflow-x: hidden;
     }
-
     h1 { color: #8b0000; }
 
     .paragraph {
@@ -57,6 +56,7 @@
       display: none;
     }
 
+    /* 🎆 Fireworks canvas */
     canvas {
       position: fixed;
       top: 0;
@@ -92,8 +92,7 @@
   <p>
     Lebensraum required expansion into <b>Eastern Europe</b>, could <b>not be achieved peacefully</b>, and <b>increased tensions</b>.
   </p>
-
-  <h3>Password for Next Room: <b>DISARMAMENT</b></h3>
+  <h3>Escape Code: EAST</h3>
 </div>
 
 <canvas id="fireworks"></canvas>
@@ -122,7 +121,7 @@ function checkAnswer() {
     feedback.innerHTML = "Correct. All mistakes identified.";
     feedback.style.color = "green";
     document.getElementById("answerBox").style.display = "block";
-    launchFireworks();
+    launchFireworks(); // 🎆 trigger
   } else {
     feedback.innerHTML = "Try again. You need exactly 3.";
     feedback.style.color = "red";
@@ -137,7 +136,7 @@ function resetActivity() {
   document.getElementById("answerBox").style.display = "none";
 }
 
-/* 🎆 Fireworks */
+/* 🎆 SIMPLE FIREWORKS */
 const canvas = document.getElementById("fireworks");
 const ctx = canvas.getContext("2d");
 
@@ -147,12 +146,12 @@ canvas.height = window.innerHeight;
 function launchFireworks() {
   let particles = [];
 
-  for (let i = 0; i < 120; i++) {
+  for (let i = 0; i < 100; i++) {
     particles.push({
       x: canvas.width / 2,
       y: canvas.height / 2,
       angle: Math.random() * 2 * Math.PI,
-      speed: Math.random() * 6 + 2,
+      speed: Math.random() * 5 + 2,
       life: 100
     });
   }
