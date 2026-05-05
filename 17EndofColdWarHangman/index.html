@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>End of Cold War Hangman</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #102542, #7b1e1e);
+  text-align: center;
+  padding: 20px;
+  color: #222;
+}
+.game-box {
+  max-width: 850px;
+  margin: auto;
+  background: white;
+  padding: 22px;
+  border-radius: 18px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+}
+h1 { color: #7b1e1e; }
+#clue {
+  background: #fff3cd;
+  padding: 14px;
+  border-radius: 12px;
+  font-size: 19px;
+  margin: 15px 0;
+}
+#word {
+  font-size: 32px;
+  letter-spacing: 7px;
+  font-weight: bold;
+  margin: 24px 0;
+  word-wrap: break-word;
+}
+#hangman {
+  font-family: monospace;
+  white-space: pre;
+  font-size: 22px;
+  line-height: 1.1;
+}
+.letters button {
+  margin: 4px;
+  padding: 10px 13px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  background: #1f4e79;
+  color: white;
+  cursor: pointer;
+}
+.letters button:disabled {
+  background: #aaa;
+}
+.main-btn {
+  margin-top: 18px;
+  padding: 12px 20px;
+  font-size: 17px;
+  border: none;
+  border-radius: 10px;
+  background: #7b1e1e;
+  color: white;
+  cursor: pointer;
+}
+#status {
+  font-size: 22px;
+  font-weight: bold;
+  margin-top: 15px;
+}
+#score {
+  font-weight: bold;
+  font-size: 18px;
+}
+@media (max-width: 600px) {
+  #word {
+    font-size: 24px;
+    letter-spacing: 4px;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="game-box">
+  <h1>End of Cold War Hangman</h1>
+  <p>Guess the Cold War keyword using the clue.</p>
+
+  <div id="score">Score: 0</div>
+  <div id="clue"></div>
+  <div id="hangman"></div>
+  <div id="word"></div>
+  <div class="letters" id="letters"></div>
+
+  <div id="status"></div>
+  <button class="main-btn" onclick="newGame()">Next Word</button>
+</div>
+
+<script>
+const words = [
+  { word: "DETENTE", clue: "Easing of tension between USA and USSR." },
+  { word: "BREZHNEV", clue: "Soviet leader linked to détente." },
+  { word: "REAGAN", clue: "US president who renewed pressure on USSR." },
+  { word: "SALT", clue: "Arms limitation talks during détente." },
+  { word: "CARTER", clue: "US president who criticised Soviet human rights." },
+  { word: "AFGHANISTAN", clue: "Soviet invasion helped end détente." },
+  { word: "HUMAN RIGHTS", clue: "Carter used this to criticise USSR." },
+  { word: "MARSHALL PLAN", clue: "Helped Western Europe and US-linked economies recover." },
+  { word: "ECONOMIC LIBERALISATION", clue: "Helped USA grow stronger economically." },
+  { word: "ARMS RACE", clue: "Competition to build stronger weapons." },
+
+  { word: "SDI", clue: "US missile defence programme." },
+  { word: "STAR WARS", clue: "Nickname for SDI." },
+  { word: "PERSHING II", clue: "US missiles placed in Europe." },
+  { word: "ABLE ARCHER", clue: "NATO exercise that nearly triggered nuclear fear." },
+  { word: "COMMAND ECONOMY", clue: "Soviet state-controlled economy." },
+  { word: "CONSUMER GOODS", clue: "Items Soviet citizens lacked." },
+  { word: "MILITARY SPENDING", clue: "Heavy defence costs weakened USSR." },
+  { word: "STAGNATION", clue: "Lack of economic growth in USSR." },
+  { word: "STRUCTURAL WEAKNESS", clue: "Deep problem within Soviet economy." },
+  { word: "COMMUNIST BLOC", clue: "Group of Soviet-controlled communist states." },
+
+  { word: "RESISTANCE", clue: "Growing opposition in Eastern Europe." },
+  { word: "GLASNOST", clue: "Openness and freedom of speech." },
+  { word: "PERESTROIKA", clue: "Economic and political restructuring." },
+  { word: "NEW THINKING", clue: "Policy allowing Eastern Europe more freedom." },
+  { word: "FOREIGN POLICY", clue: "Gorbachev changed Soviet approach overseas." },
+  { word: "UN SPEECH", clue: "Gorbachev announced Red Army withdrawal." },
+  { word: "RED ARMY", clue: "Soviet military force withdrawn from Eastern Europe." },
+  { word: "BREZHNEV DOCTRINE", clue: "Policy of Soviet intervention in communist states." },
+  { word: "EASTERN EUROPE", clue: "Region where communist states collapsed." },
+  { word: "SOVIET SUPPORT", clue: "Its removal weakened Eastern European regimes." },
+
+  { word: "DISSIDENTS", clue: "Critics who spoke out against communist rule." },
+  { word: "WESTERN LITERATURE", clue: "Became more accessible under glasnost." },
+  { word: "INDEPENDENCE", clue: "Soviet republics increasingly demanded this." },
+  { word: "OPPOSITION", clue: "Grew against communist governments." },
+  { word: "DISINTEGRATION", clue: "Break-up of the communist bloc." },
+  { word: "CHERNOBYL", clue: "Disaster that damaged trust in Soviet government." },
+  { word: "KATYN MASSACRE", clue: "Hidden Soviet crime revealed under glasnost." },
+  { word: "PUBLIC SKEPTICISM", clue: "People lost trust in Communist Party." },
+  { word: "INFLATION", clue: "Price rises caused by economic reforms." },
+  { word: "MINERS STRIKES", clue: "1989 unrest showing public dissatisfaction." },
+
+  { word: "GDP", clue: "Measure showing US economic superiority." },
+  { word: "ARMS CONTROL", clue: "Negotiations became necessary for USSR." },
+  { word: "NUCLEAR DETERRENT", clue: "Soviet defence threatened by SDI." },
+  { word: "POLAND", clue: "Country where Solidarity challenged communism." },
+  { word: "SOLIDARITY", clue: "Polish movement opposing communist rule." },
+  { word: "BERLIN WALL", clue: "Symbol of Cold War division that fell in 1989." },
+  { word: "AUGUST COUP", clue: "Failed 1991 attempt to stop reforms." },
+  { word: "HARDLINERS", clue: "Communists who opposed Gorbachev’s reforms." },
+  { word: "YELTSIN", clue: "Russian leader who resisted the coup." },
+  { word: "SOVIET UNION", clue: "Collapsed in December 1991." }
+];
+
+const stages = [
+` 
+ +---+
+ |   |
+     |
+     |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+     |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+ |   |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|   |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|\\  |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|\\  |
+/    |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|\\  |
+/ \\  |
+     |
+=========`
+];
+
+let chosenWord = "";
+let guessed = [];
+let wrong = 0;
+let score = 0;
+
+function newGame() {
+  const item = words[Math.floor(Math.random() * words.length)];
+  chosenWord = item.word;
+  guessed = [];
+  wrong = 0;
+
+  document.getElementById("clue").textContent = "Clue: " + item.clue;
+  document.getElementById("status").textContent = "";
+  createButtons();
+  updateDisplay();
+}
+
+function createButtons() {
+  const lettersDiv = document.getElementById("letters");
+  lettersDiv.innerHTML = "";
+
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
+    const btn = document.createElement("button");
+    btn.textContent = letter;
+    btn.onclick = () => guessLetter(letter, btn);
+    lettersDiv.appendChild(btn);
+  });
+}
+
+function guessLetter(letter, btn) {
+  btn.disabled = true;
+  guessed.push(letter);
+
+  if (!chosenWord.includes(letter)) wrong++;
+
+  updateDisplay();
+  checkGame();
+}
+
+function updateDisplay() {
+  document.getElementById("hangman").textContent = stages[wrong];
+
+  const display = chosenWord
+    .split("")
+    .map(char => {
+      if (char === " " || char === "-" || char === "'") return char;
+      if (char >= "0" && char <= "9") return char;
+      return guessed.includes(char) ? char : "_";
+    })
+    .join("");
+
+  document.getElementById("word").textContent = display;
+  document.getElementById("score").textContent = "Score: " + score;
+}
+
+function checkGame() {
+  const won = chosenWord
+    .split("")
+    .every(char =>
+      char === " " ||
+      char === "-" ||
+      char === "'" ||
+      (char >= "0" && char <= "9") ||
+      guessed.includes(char)
+    );
+
+  if (won) {
+    score++;
+    document.getElementById("status").textContent =
+      "Correct! The answer is: " + chosenWord;
+    disableButtons();
+  }
+
+  if (wrong >= stages.length - 1) {
+    document.getElementById("status").textContent =
+      "Game over! The answer was: " + chosenWord;
+    disableButtons();
+  }
+}
+
+function disableButtons() {
+  document.querySelectorAll(".letters button").forEach(btn => btn.disabled = true);
+}
+
+newGame();
+</script>
+</body>
+</html>
