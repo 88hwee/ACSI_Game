@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Vietnam War Hangman</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background: #f4f1e8;
+    text-align: center;
+    padding: 20px;
+    color: #222;
+  }
+
+  h1 {
+    color: #7b1e1e;
+  }
+
+  .box {
+    max-width: 760px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 18px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  }
+
+  #word {
+    font-size: 34px;
+    letter-spacing: 8px;
+    margin: 25px 0;
+    font-weight: bold;
+  }
+
+  #clue {
+    font-size: 20px;
+    background: #fff3cd;
+    padding: 12px;
+    border-radius: 10px;
+    margin: 15px 0;
+  }
+
+  #hangman {
+    font-family: monospace;
+    white-space: pre;
+    font-size: 22px;
+    line-height: 1.1;
+    margin: 20px 0;
+  }
+
+  .letters button {
+    margin: 4px;
+    padding: 10px 13px;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    background: #1f4e79;
+    color: white;
+    cursor: pointer;
+  }
+
+  .letters button:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+
+  #status {
+    font-size: 22px;
+    font-weight: bold;
+    margin-top: 15px;
+  }
+
+  button.main {
+    margin-top: 18px;
+    padding: 12px 20px;
+    font-size: 17px;
+    border: none;
+    border-radius: 10px;
+    background: #7b1e1e;
+    color: white;
+    cursor: pointer;
+  }
+
+  #score {
+    font-weight: bold;
+    margin-top: 10px;
+  }
+</style>
+</head>
+
+<body>
+<div class="box">
+  <h1>Vietnam War Hangman</h1>
+  <p>Guess the key word before the hangman is complete.</p>
+
+  <div id="score">Score: 0</div>
+  <div id="clue"></div>
+  <div id="hangman"></div>
+  <div id="word"></div>
+  <div class="letters" id="letters"></div>
+
+  <div id="status"></div>
+  <button class="main" onclick="newGame()">Next Word</button>
+</div>
+
+<script>
+const words = [
+  { word: "COLD WAR", clue: "Global tension between USA and USSR shaping Vietnam." },
+  { word: "COMMUNISM", clue: "Ideology spreading into Vietnam from China." },
+  { word: "CONTAINMENT", clue: "USA policy to stop the spread of communism." },
+  { word: "DOMINO THEORY", clue: "Fear that one country falling would lead to others." },
+  { word: "HO CHI MINH", clue: "Leader of North Vietnam." },
+  { word: "VIET MINH", clue: "Vietnamese group fighting the French." },
+  { word: "CHINA SUPPORT", clue: "Weapons and aid given to North Vietnam." },
+  { word: "SOVIET UNION", clue: "Communist power the USA assumed controlled Vietnam." },
+  { word: "DECOLONISATION", clue: "Vietnam seeking independence from France." },
+  { word: "FRENCH RULE", clue: "Colonial control before independence." },
+
+  { word: "DIEN BIEN PHU", clue: "Decisive battle that defeated France." },
+  { word: "VALLEY", clue: "Weak geographical position of the French base." },
+  { word: "ENCIRCLEMENT", clue: "Strategy used by the Viet Minh." },
+  { word: "DEMORALISED", clue: "Condition of French soldiers after repeated pressure." },
+  { word: "GIAP", clue: "General who led Vietnamese forces." },
+  { word: "GUERRILLA", clue: "Hit-and-run warfare tactics." },
+  { word: "TRENCHES", clue: "Used by Viet Minh to advance on French positions." },
+  { word: "ARTILLERY", clue: "Heavy weapons dragged into mountains." },
+  { word: "DEFEAT", clue: "Outcome for France at Dien Bien Phu." },
+  { word: "WITHDRAWAL", clue: "France leaving Vietnam." },
+
+  { word: "LAND REFORM", clue: "Redistribution of land in North Vietnam." },
+  { word: "SHOW TRIALS", clue: "Public punishment of landlords." },
+  { word: "FAMINE", clue: "Food shortages in North Vietnam." },
+  { word: "DIEM", clue: "Leader of South Vietnam." },
+  { word: "CORRUPTION", clue: "Weakness of South Vietnamese government." },
+  { word: "NEPOTISM", clue: "Favouring family in leadership." },
+  { word: "RIGGED ELECTION", clue: "Unfair voting in South Vietnam." },
+  { word: "BUDDHIST MONKS", clue: "Protesters against Diem." },
+  { word: "IMMOLATION", clue: "Burning protest by monks." },
+  { word: "UNPOPULAR", clue: "Lack of support for South Vietnam." },
+
+  { word: "VIETCONG", clue: "Communist fighters in South Vietnam." },
+  { word: "HO CHI MINH TRAIL", clue: "Supply route used by North Vietnam to support the Vietcong." },
+  { word: "ASSASSINATION", clue: "Killing of South Vietnamese officials." },
+  { word: "STRATEGIC HAMLETS", clue: "Villages used to isolate the Vietcong." },
+  { word: "INSTABILITY", clue: "Weakness of South Vietnam." },
+  { word: "CIVIL WAR", clue: "Conflict between North and South Vietnam." },
+
+  { word: "SINO SOVIET SPLIT", clue: "Conflict between China and USSR." },
+  { word: "GULF OF TONKIN", clue: "Incident triggering US escalation." },
+  { word: "NAPALM", clue: "Weapon used by USA that damaged civilians and reputation." },
+  { word: "TET OFFENSIVE", clue: "Major communist attack that shocked the USA." }
+];
+
+const stages = [
+` 
+ +---+
+ |   |
+     |
+     |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+     |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+ |   |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|   |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|\\  |
+     |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|\\  |
+/    |
+     |
+=========`,
+`
+ +---+
+ |   |
+ O   |
+/|\\  |
+/ \\  |
+     |
+=========`];
+
+let chosenWord = "";
+let chosenClue = "";
+let guessed = [];
+let wrong = 0;
+let score = 0;
+
+function newGame() {
+  const item = words[Math.floor(Math.random() * words.length)];
+  chosenWord = item.word;
+  chosenClue = item.clue;
+  guessed = [];
+  wrong = 0;
+
+  document.getElementById("clue").textContent = "Clue: " + chosenClue;
+  document.getElementById("status").textContent = "";
+  createButtons();
+  updateDisplay();
+}
+
+function createButtons() {
+  const lettersDiv = document.getElementById("letters");
+  lettersDiv.innerHTML = "";
+
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("").forEach(letter => {
+    const btn = document.createElement("button");
+    btn.textContent = letter;
+    btn.onclick = () => guessLetter(letter, btn);
+    lettersDiv.appendChild(btn);
+  });
+}
+
+function guessLetter(letter, btn) {
+  btn.disabled = true;
+  guessed.push(letter);
+
+  if (!chosenWord.includes(letter)) {
+    wrong++;
+  }
+
+  updateDisplay();
+  checkGame();
+}
+
+function updateDisplay() {
+  document.getElementById("hangman").textContent = stages[wrong];
+
+  let display = chosenWord
+    .split("")
+    .map(char => {
+      if (char === " ") return " ";
+      return guessed.includes(char) ? char : "_";
+    })
+    .join("");
+
+  document.getElementById("word").textContent = display;
+  document.getElementById("score").textContent = "Score: " + score;
+}
+
+function checkGame() {
+  const won = chosenWord
+    .split("")
+    .every(char => char === " " || guessed.includes(char));
+
+  if (won) {
+    score++;
+    document.getElementById("status").textContent = "Correct! The answer is: " + chosenWord;
+    disableButtons();
+  }
+
+  if (wrong >= stages.length - 1) {
+    document.getElementById("status").textContent = "Game over! The answer was: " + chosenWord;
+    disableButtons();
+  }
+}
+
+function disableButtons() {
+  document.querySelectorAll(".letters button").forEach(btn => btn.disabled = true);
+}
+
+newGame();
+</script>
+</body>
+</html>
