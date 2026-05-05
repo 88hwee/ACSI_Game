@@ -11,8 +11,6 @@
         :root {
             --sat: env(safe-area-inset-top);
             --sab: env(safe-area-inset-bottom);
-            --sal: env(safe-area-inset-left);
-            --sar: env(safe-area-inset-right);
         }
 
         * {
@@ -47,7 +45,7 @@
 
         .ctrl-zone {
             position: absolute;
-            bottom: calc(1rem + var(--sab));
+            bottom: calc(1.5rem + var(--sab));
             width: 100%;
             display: flex;
             justify-content: space-between;
@@ -59,8 +57,8 @@
         .btn-group { display: flex; gap: 1.5rem; pointer-events: auto; }
         
         .touch-btn {
-            width: 80px;
-            height: 80px;
+            width: 85px;
+            height: 85px;
             background: rgba(255, 255, 255, 0.1);
             border: 2px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(8px);
@@ -97,7 +95,7 @@
 
         #hud {
             position: absolute;
-            top: calc(0.5rem + var(--sat));
+            top: calc(0.75rem + var(--sat));
             left: 1rem;
             right: 1rem;
             display: flex;
@@ -117,6 +115,7 @@
             backdrop-filter: blur(4px);
         }
 
+        #portrait-warning { display: none; }
         @media (orientation: portrait) {
             #portrait-warning { display: flex !important; }
         }
@@ -124,7 +123,7 @@
 </head>
 <body>
 
-<div id="portrait-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
+<div id="portrait-warning" class="fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
     <div class="animate-bounce mb-4 text-red-500">
         <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
     </div>
@@ -194,7 +193,7 @@ try {
         const app = initializeApp(firebaseConfig);
         auth = getAuth(app);
         db = getFirestore(app);
-        appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-rev-final';
+        appId = typeof __app_id !== 'undefined' ? __app_id : 'cu-chi-mastery-final';
         firebaseEnabled = true;
     }
 } catch (e) {
@@ -206,7 +205,6 @@ const ctx = canvas.getContext('2d');
 
 let state = {
     gameStarted: false,
-    gameActive: false,
     paused: false,
     inTunnel: false,
     timer: 180,
@@ -223,7 +221,7 @@ let state = {
 const player = {
     x: 100, y: 100, w: 40, h: 60,
     vx: 0, vy: 0,
-    speed: 7.5, jumpPower: -13.5,
+    speed: 8, jumpPower: -16, // Increased jump power
     grounded: false,
     facingRight: true
 };
@@ -246,14 +244,15 @@ let questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
 function generateWorld() {
     state.groundGaps = [];
     state.intelBlocks = [];
-    const unitDist = 550;
+    const unitDist = 600;
     for (let i = 1; i < 100; i++) {
-        if (Math.random() > 0.75) {
-            state.groundGaps.push({ x: i * unitDist, w: 140 });
+        if (Math.random() > 0.8) {
+            state.groundGaps.push({ x: i * unitDist, w: 150 });
         }
+        // Blocks are now spawned within reachable height (H-150 to H-250)
         state.intelBlocks.push({
-            x: i * (unitDist * 0.8) + Math.random() * 200,
-            y: state.viewportH - 250 - Math.random() * 100,
+            x: i * (unitDist * 0.8) + Math.random() * 300,
+            y: state.viewportH - 180 - Math.random() * 100, 
             w: 55, h: 55, active: true
         });
     }
@@ -282,7 +281,7 @@ async function initTracking() {
                 } else {
                     setDoc(statsDoc, { playCount: 0 });
                 }
-            });
+            }, (err) => console.warn("Firestore listener error:", err));
         }
     });
 }
@@ -328,8 +327,8 @@ function resize() {
 
 function triggerQuiz() {
     state.paused = true;
+    if (questionsDeck.length === 0) questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
     const q = questionsDeck[0];
-    if (!q) { state.paused = false; return; }
     
     const overlay = document.getElementById('quiz-overlay');
     const container = document.getElementById('options-container');
@@ -356,7 +355,6 @@ function triggerQuiz() {
                 feedback.innerText = "Intel Decrypted Successfully";
                 feedback.className = "mt-8 text-center font-black uppercase text-green-500 italic";
                 questionsDeck.shift();
-                if (questionsDeck.length === 0) questionsDeck = [...masterDeck].sort(() => Math.random() - 0.5);
                 setTimeout(() => {
                     overlay.classList.add('hidden');
                     state.paused = false;
@@ -413,7 +411,7 @@ function update(dt) {
         player.grounded = false;
     }
 
-    player.vy += 0.65; 
+    player.vy += 0.7; // Gravity adjusted for better feel
     player.x += player.vx;
     player.y += player.vy;
 
@@ -431,10 +429,11 @@ function update(dt) {
         player.grounded = false;
     }
 
-    if (player.y > state.viewportH + 50) {
+    if (player.y > state.viewportH + 100) {
         state.inTunnel = !state.inTunnel;
         player.y = -60;
         player.vx = 0;
+        player.vy = 0;
         const sectorEl = document.getElementById('stats-sector');
         if (sectorEl) {
             sectorEl.innerText = state.inTunnel ? "Sector: Cu Chi Tunnels" : "Sector: Jungle Surface";
@@ -467,8 +466,9 @@ function render() {
 
     ctx.translate(state.scrollX, 0);
 
+    // Dynamic ground rendering
     ctx.fillStyle = state.inTunnel ? '#78350f' : '#14532d';
-    const groundRepeat = 2000;
+    const groundRepeat = 3000;
     const startX = Math.floor(-state.scrollX / groundRepeat) * groundRepeat - groundRepeat;
     for(let i=0; i<6; i++) {
         ctx.fillRect(startX + i * groundRepeat, state.viewportH - 80, groundRepeat, 80);
@@ -477,8 +477,8 @@ function render() {
     ctx.fillStyle = '#020617';
     state.groundGaps.forEach(gap => {
         ctx.fillRect(gap.x, state.viewportH - 80, gap.w, 80);
-        ctx.strokeStyle = 'rgba(255,255,255,0.15)';
-        ctx.lineWidth = 2;
+        ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+        ctx.lineWidth = 3;
         ctx.beginPath();
         ctx.moveTo(gap.x, state.viewportH - 80); ctx.lineTo(gap.x, state.viewportH);
         ctx.moveTo(gap.x + gap.w, state.viewportH - 80); ctx.lineTo(gap.x + gap.w, state.viewportH);
@@ -493,18 +493,21 @@ function render() {
         ctx.lineWidth = 3;
         ctx.strokeRect(b.x, b.y, b.w, b.h);
         ctx.fillStyle = 'white';
-        ctx.font = '900 28px Inter';
+        ctx.font = '900 32px Inter';
         ctx.textAlign = 'center';
-        ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10);
+        ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 12);
     });
 
+    // Player
     ctx.fillStyle = state.facingRight ? '#ef4444' : '#dc2626';
     ctx.fillRect(player.x, player.y, player.w, player.h);
-    ctx.fillStyle = '#064e3b';
-    ctx.fillRect(player.x - 4, player.y, player.w + 8, 12);
+    // Detail: Cap/Helmet
+    ctx.fillStyle = '#166534';
+    ctx.fillRect(player.x - 2, player.y, player.w + 4, 10);
+    // Detail: Backpack
     ctx.fillStyle = '#1c1917';
-    const backpackX = state.facingRight ? player.x - 8 : player.x + player.w;
-    ctx.fillRect(backpackX, player.y + 15, 8, 30);
+    const bpX = state.facingRight ? player.x - 10 : player.x + player.w;
+    ctx.fillRect(bpX, player.y + 15, 10, 35);
 }
 
 const initialize = () => {
