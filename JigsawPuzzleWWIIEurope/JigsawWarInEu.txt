@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jigsaw Classroom Hub</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        :root {
+            --primary: #6366f1;
+            --bg: #f8fafc;
+        }
+        body {
+            background-color: var(--bg);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            overflow-x: hidden;
+            overscroll-behavior-y: contain;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        #puzzle-board {
+            position: relative;
+            background: #fff;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            margin: 0 auto;
+            overflow: hidden;
+            touch-action: none;
+        }
+        .puzzle-piece {
+            position: absolute;
+            cursor: grab;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.4);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            z-index: 10;
+            touch-action: none;
+            background-repeat: no-repeat;
+        }
+        .puzzle-piece.snapped {
+            box-shadow: none;
+            border: none;
+            z-index: 1;
+            pointer-events: none;
+            opacity: 1 !important;
+        }
+        .puzzle-piece:active {
+            cursor: grabbing;
+            transform: scale(1.05);
+            z-index: 1000;
+        }
+        #toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 12px 24px;
+            background: #1e293b;
+            color: white;
+            border-radius: 99px;
+            z-index: 5000;
+            display: none;
+            font-weight: 600;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast"></div>
+
+    <div class="flex-1 flex flex-col max-w-5xl mx-auto w-full p-4 sm:p-8 overflow-hidden">
+        
+        <header class="flex justify-between items-center mb-6 shrink-0">
+            <div>
+                <h1 class="text-2xl font-black text-indigo-600 tracking-tight">Classroom Jigsaw</h1>
+                <p class="text-xs text-slate-500 font-medium">Teacher-Managed Learning Hub</p>
+            </div>
+            <div class="flex gap-2">
+                <button id="viewGalleryBtn" onclick="showView('gallery')" class="hidden bg-white border border-slate-200 px-4 py-2 rounded-full text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                    ← Back to Gallery
+                </button>
+                <button onclick="toggleTeacherMode()" class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-full text-xs font-bold hover:bg-indigo-100 transition-colors">
+                    Setup
+                </button>
+            </div>
+        </header>
+
+        <main class="flex-1 relative overflow-hidden flex flex-col">
+            
+            <div id="loading" class="absolute inset-0 flex items-center justify-center bg-white/80 backdrop-blur-sm z-50">
+                <div class="flex flex-col items-center gap-3">
+                    <div class="animate-spin rounded-full h-10 w-10 border-4 border-indigo-600 border-t-transparent"></div>
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-widest">Syncing Class...</span>
+                </div>
+            </div>
+
+            <div id="view-gallery" class="hidden flex-1 overflow-y-auto pb-10">
+                <div id="puzzle-list" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6">
+                    </div>
+                <div id="empty-state" class="hidden text-center py-20 bg-white rounded-3xl border-2 border-dashed border-slate-200">
+                    <div class="text-4xl mb-4">🧩</div>
+                    <p class="text-slate-500 font-bold">Your gallery is empty.</p>
+                    <p class="text-xs text-slate-400">Teacher: Tap 'Setup' to add your images.</p>
+                </div>
+            </div>
+
+            <div id="view-game" class="hidden h-full flex flex-col">
+                <div class="bg-white p-3 rounded-2xl shadow-sm border border-slate-100 mb-4 flex justify-between items-center shrink-0">
+                    <div class="flex flex-col overflow-hidden">
+                        <span id="game-title" class="text-sm font-bold text-slate-800 truncate">Puzzle</span>
+                        <span id="progress-chip" class="text-[10px] font-bold text-indigo-600">0 / 0 Pieces Found</span>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <select id="diffSelect" onchange="changeDifficulty(this.value)" class="bg-slate-100 rounded-xl px-2 py-1.5 text-xs font-bold outline-none">
+                            <option value="10">Easy (10)</option>
+                            <option value="30" selected>Mid (30)</option>
+                            <option value="45">Hard (45)</option>
+                        </select>
+                        <button onclick="shufflePuzzle()" class="bg-indigo-600 text-white px-4 py-1.5 rounded-xl text-xs font-bold active:scale-95 transition-all">Mix</button>
+                    </div>
+                </div>
+                
+                <div id="puzzle-board-container" class="flex-1 flex items-center justify-center relative overflow-hidden bg-slate-100 rounded-3xl border-4 border-white shadow-inner">
+                    <div id="puzzle-board"></div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="teacher-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[2000] hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-md shadow-2xl overflow-hidden">
+            <div class="p-5 bg-indigo-600 text-white flex justify-between items-center">
+                <h3 class="font-bold">Add Puzzles (Max 10)</h3>
+                <button onclick="toggleTeacherMode()" class="p-2">✕</button>
+            </div>
+            <div class="p-6 space-y-4">
+                <input type="text" id="newTitle" placeholder="Topic Name (e.g. Science Diagram)" class="w-full border p-3 rounded-xl outline-none text-sm">
+                <input type="file" id="newFile" accept="image/*" class="w-full text-xs file:bg-indigo-50 file:text-indigo-700 file:border-0 file:rounded-full file:px-4 file:py-2">
+                <button id="addBtn" onclick="addPuzzleToCloud()" class="w-full bg-indigo-600 text-white py-3.5 rounded-2xl font-bold">Add to Class Gallery</button>
+                
+                <div class="pt-4 border-t">
+                    <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Current Library</p>
+                    <div id="teacher-list" class="space-y-2 max-h-48 overflow-y-auto pr-1"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'jigsaw-edu-hub';
+
+        let user = null;
+        let puzzles = [];
+        let activePuzzle = null;
+        let difficulty = 30;
+        let solvedCount = 0;
+        let pieceWidth, pieceHeight;
+
+        const initAuth = async () => {
+            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                await signInWithCustomToken(auth, __initial_auth_token);
+            } else {
+                await signInAnonymously(auth);
+            }
+        };
+        initAuth();
+
+        onAuthStateChanged(auth, (u) => {
+            user = u;
+            if (user) listenToPuzzles();
+        });
+
+        function listenToPuzzles() {
+            const puzzlesRef = collection(db, 'artifacts', appId, 'public', 'data', 'puzzles');
+            onSnapshot(puzzlesRef, (snap) => {
+                puzzles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderGallery();
+                renderTeacherList();
+                document.getElementById('loading').classList.add('hidden');
+            });
+        }
+
+        window.addPuzzleToCloud = async () => {
+            if (!user) return;
+            const title = document.getElementById('newTitle');
+            const file = document.getElementById('newFile');
+            const btn = document.getElementById('addBtn');
+
+            if (!title.value || !file.files[0]) return showToast("Name and image required");
+            if (puzzles.length >= 10) return showToast("10 puzzles max");
+
+            btn.disabled = true;
+            btn.innerText = "Uploading...";
+            
+            try {
+                const base64 = await resizeAndEncode(file.files[0]);
+                await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'puzzles'), {
+                    title: title.value,
+                    image: base64,
+                    createdAt: Date.now()
+                });
+                title.value = '';
+                file.value = '';
+                showToast("Added to Gallery!");
+            } catch (e) {
+                showToast("Failed. Use a smaller file.");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = "Add to Class Gallery";
+            }
+        };
+
+        window.deletePuzzle = async (id) => {
+            if (confirm("Delete this puzzle?")) {
+                await deleteDoc(doc(db, 'artifacts', appId, 'public', 'data', 'puzzles', id));
+            }
+        };
+
+        function renderGallery() {
+            const list = document.getElementById('puzzle-list');
+            const empty = document.getElementById('empty-state');
+            document.getElementById('view-gallery').classList.remove('hidden');
+
+            if (puzzles.length === 0) {
+                list.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            list.innerHTML = puzzles.map(p => `
+                <div onclick="startPuzzle('${p.id}')" class="bg-white rounded-2xl p-2 shadow-sm border border-slate-100 hover:shadow-md transition-all active:scale-95 group">
+                    <div class="aspect-square rounded-xl overflow-hidden bg-slate-50 mb-2">
+                        <img src="${p.image}" class="w-full h-full object-cover">
+                    </div>
+                    <div class="px-1 flex justify-between items-center">
+                        <p class="text-[10px] font-bold text-slate-700 truncate w-24">${p.title}</p>
+                        ${localStorage.getItem('done_'+p.id) ? '<span>⭐</span>' : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTeacherList() {
+            const list = document.getElementById('teacher-list');
+            list.innerHTML = puzzles.map(p => `
+                <div class="flex items-center justify-between bg-slate-50 p-2 rounded-xl border border-slate-100 mb-2">
+                    <span class="text-xs font-bold text-slate-600 truncate w-32">${p.title}</span>
+                    <button onclick="deletePuzzle('${p.id}')" class="text-[10px] font-black text-red-400">DEL</button>
+                </div>
+            `).join('');
+        }
+
+        window.startPuzzle = (id) => {
+            activePuzzle = puzzles.find(p => p.id === id);
+            showView('game');
+            initGame();
+        };
+
+        function initGame() {
+            const board = document.getElementById('puzzle-board');
+            const container = document.getElementById('puzzle-board-container');
+            board.innerHTML = '';
+            solvedCount = 0;
+
+            const img = new Image();
+            img.src = activePuzzle.image;
+            img.onload = () => {
+                const aspect = img.width / img.height;
+                let bWidth = container.clientWidth - 20;
+                let bHeight = bWidth / aspect;
+                
+                if (bHeight > container.clientHeight - 20) {
+                    bHeight = container.clientHeight - 20;
+                    bWidth = bHeight * aspect;
+                }
+
+                board.style.width = bWidth + 'px';
+                board.style.height = bHeight + 'px';
+
+                const rows = Math.round(Math.sqrt(difficulty / aspect));
+                const cols = Math.round(difficulty / rows);
+                pieceWidth = bWidth / cols;
+                pieceHeight = bHeight / rows;
+
+                document.getElementById('game-title').innerText = activePuzzle.title;
+                document.getElementById('progress-chip').innerText = `0 / ${rows * cols} Pieces Found`;
+
+                board.style.backgroundImage = `url(${img.src})`;
+                board.style.backgroundSize = 'cover';
+                board.style.opacity = '1';
+
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        const p = document.createElement('div');
+                        p.className = 'puzzle-piece';
+                        p.style.width = pieceWidth + 'px';
+                        p.style.height = pieceHeight + 'px';
+                        p.style.backgroundImage = `url(${img.src})`;
+                        p.style.backgroundSize = `${bWidth}px ${bHeight}px`;
+                        p.style.backgroundPosition = `-${c * pieceWidth}px -${r * pieceHeight}px`;
+                        p.dataset.tx = c * pieceWidth;
+                        p.dataset.ty = r * pieceHeight;
+                        p.style.left = Math.random() * (bWidth - pieceWidth) + 'px';
+                        p.style.top = Math.random() * (bHeight - pieceHeight) + 'px';
+
+                        setupTouchDrag(p, board);
+                        board.appendChild(p);
+                    }
+                }
+                setTimeout(() => { board.style.transition = 'opacity 2s'; board.style.opacity = '0.08'; }, 1500);
+            };
+        }
+
+        function setupTouchDrag(el, board) {
+            let sx, sy, ox, oy;
+            const start = (e) => {
+                const t = e.type.includes('touch') ? e.touches[0] : e;
+                sx = t.clientX; sy = t.clientY; ox = el.offsetLeft; oy = el.offsetTop;
+                el.style.zIndex = 1000;
+                document.addEventListener('mousemove', move, {passive: false});
+                document.addEventListener('touchmove', move, {passive: false});
+                document.addEventListener('mouseup', end);
+                document.addEventListener('touchend', end);
+            };
+            const move = (e) => {
+                if (e.cancelable) e.preventDefault();
+                const t = e.type.includes('touch') ? e.touches[0] : e;
+                el.style.left = Math.max(0, Math.min(ox + t.clientX - sx, board.clientWidth - pieceWidth)) + 'px';
+                el.style.top = Math.max(0, Math.min(oy + t.clientY - sy, board.clientHeight - pieceHeight)) + 'px';
+            };
+            const end = () => {
+                document.removeEventListener('mousemove', move); document.removeEventListener('touchmove', move);
+                document.removeEventListener('mouseup', end); document.removeEventListener('touchend', end);
+                const tx = parseFloat(el.dataset.tx), ty = parseFloat(el.dataset.ty);
+                if (Math.sqrt((el.offsetLeft - tx)**2 + (el.offsetTop - ty)**2) < 20) {
+                    el.style.left = tx + 'px'; el.style.top = ty + 'px'; el.classList.add('snapped');
+                    solvedCount++;
+                    const total = board.querySelectorAll('.puzzle-piece').length;
+                    document.getElementById('progress-chip').innerText = `${solvedCount} / ${total} Pieces Found`;
+                    if (solvedCount === total) {
+                        localStorage.setItem('done_'+activePuzzle.id, 'true');
+                        showToast("Puzzle Complete! ⭐");
+                        setTimeout(() => showView('gallery'), 2000);
+                    }
+                } else { el.style.zIndex = 10; }
+            };
+            el.addEventListener('mousedown', start);
+            el.addEventListener('touchstart', start, {passive: false});
+        }
+
+        window.showView = (v) => {
+            document.getElementById('view-gallery').classList.toggle('hidden', v !== 'gallery');
+            document.getElementById('view-game').classList.toggle('hidden', v !== 'game');
+            document.getElementById('viewGalleryBtn').classList.toggle('hidden', v === 'gallery');
+        };
+
+        window.toggleTeacherMode = () => {
+            const m = document.getElementById('teacher-modal');
+            m.classList.toggle('hidden');
+            m.style.display = m.classList.contains('hidden') ? 'none' : 'flex';
+        };
+
+        window.shufflePuzzle = () => initGame();
+        window.changeDifficulty = (v) => { difficulty = parseInt(v); initGame(); };
+        function showToast(m) {
+            const t = document.getElementById('toast');
+            t.innerText = m; t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+        async function resizeAndEncode(file) {
+            return new Promise((res) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let w =
