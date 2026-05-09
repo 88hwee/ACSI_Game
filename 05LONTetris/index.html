@@ -10,7 +10,7 @@
         
         :root {
             --sat: env(safe-area-inset-top);
-            --sab: env(safe-area-inset-bottom);
+            --sab: env(env(safe-area-inset-bottom));
         }
 
         body {
@@ -510,34 +510,43 @@
         document.getElementById('ctrl-rotate').onclick = (e) => { e.preventDefault(); if (!state.paused && state.piece) { const m = state.piece.matrix; state.piece.matrix = rotate(m); if (collide()) state.piece.matrix = m; draw(); }};
         document.getElementById('ctrl-drop').onclick = (e) => { e.preventDefault(); hardDrop(); draw(); };
 
-        // Keyboard Handlers (for Laptop)
+        // Keyboard Handlers (for Laptop) - Enhanced for reliability
         window.addEventListener('keydown', (e) => {
-            if (state.paused || !state.gameActive) return;
+            if (!state.gameActive || state.paused || !state.piece) return;
             
+            // Prevent scrolling for game control keys
+            const gameKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Left', 'Right', 'Up', 'Down'];
+            if (gameKeys.includes(e.key)) {
+                e.preventDefault();
+            }
+
             switch(e.key) {
                 case 'ArrowLeft':
+                case 'Left':
                     state.piece.pos.x--;
                     if (collide()) state.piece.pos.x++;
                     break;
                 case 'ArrowRight':
+                case 'Right':
                     state.piece.pos.x++;
                     if (collide()) state.piece.pos.x--;
                     break;
                 case 'ArrowDown':
+                case 'Down':
                     drop();
                     break;
                 case 'ArrowUp':
+                case 'Up':
                     const m = state.piece.matrix;
                     state.piece.matrix = rotate(m);
                     if (collide()) state.piece.matrix = m;
                     break;
                 case ' ':
-                    e.preventDefault(); // Prevent scrolling
                     hardDrop();
                     break;
             }
             draw();
-        });
+        }, false);
 
         window.addEventListener('resize', resizeCanvas);
         window.onload = () => { 
