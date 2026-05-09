@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Korean War: History Mastery Unit</title>
+    <title>Korean War Mastery: Super Revision Bros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Black+Ops+One&family=Inter:wght@400;700;900&display=swap');
         
         :root {
             --sat: env(safe-area-inset-top);
-            --sab: env(safe-area-inset-bottom);
+            --sab: env(env(safe-area-inset-bottom));
             --sal: env(safe-area-inset-left);
             --sar: env(safe-area-inset-right);
         }
@@ -20,11 +20,12 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         body { 
             margin: 0; 
-            background: #020617; 
+            background: #5c94fc; /* Classic Mario Sky */
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             color: white; 
@@ -33,147 +34,168 @@
             width: 100vw;
             position: fixed;
         }
-
-        .loud-font { font-family: 'Black Ops One', cursive; }
         
+        .loud-font { font-family: 'Black Ops One', cursive; }
+
         #game-container { 
             position: relative; 
             width: 100%; 
             height: 100%; 
-            background: radial-gradient(circle at 50% 100%, #14532d 0%, #020617 70%);
             overflow: hidden;
         }
 
-        canvas { display: block; width: 100%; height: 100%; }
+        canvas { 
+            display: block; 
+            width: 100%;
+            height: 100%;
+        }
 
         .control-btn {
-            background: rgba(34, 197, 94, 0.15);
-            border: 2px solid rgba(34, 197, 94, 0.3);
-            backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.2);
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
+            transition: transform 0.1s;
         }
 
-        .control-btn:active { background: rgba(34, 197, 94, 0.4); transform: scale(0.92); }
+        .control-btn:active {
+            transform: scale(0.85);
+            background: rgba(255, 255, 255, 0.4);
+        }
 
         .option-btn {
             transition: all 0.2s;
-            min-height: 4rem;
+            min-height: 4.2rem;
             display: flex;
             align-items: center;
-            justify-content: flex-start;
-            text-align: left;
-            padding: 1rem 1.5rem;
+            justify-content: center;
+            text-align: center;
+            padding: 0.8rem 1.2rem;
             width: 100%;
-            border-radius: 12px;
+            border-radius: 18px;
             font-weight: 800;
-            font-size: 1rem;
-            background: #1e293b;
-            border: 2px solid #334155;
-            color: #fff;
+            font-size: 0.95rem;
             line-height: 1.2;
-            text-transform: uppercase;
+            box-shadow: 0 5px 0 rgba(0,0,0,0.15);
+            background: #ffffff;
+            color: #1e293b;
+            border: 3px solid #16a34a;
         }
 
+        .option-btn:active { transform: translateY(2px); box-shadow: 0 3px 0 rgba(0,0,0,0.15); }
+
         #hud {
-            padding-top: calc(0.75rem + var(--sat));
+            padding-top: calc(0.5rem + var(--sat));
             padding-left: 1rem;
             padding-right: 1rem;
         }
 
-        @media (orientation: landscape) {
-            #landscape-warning { display: flex !important; }
+        .correct-flash { background: #16a34a !important; color: white !important; border-color: #22c55e !important; }
+        .wrong-flash { background: #dc2626 !important; color: white !important; border-color: #ef4444 !important; }
+        
+        .quiz-scroll-area {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding-right: 4px;
         }
-
-        .correct-flash { background: #16a34a !important; border-color: #22c55e !important; }
-        .wrong-flash { background: #dc2626 !important; border-color: #ef4444 !important; }
+        .quiz-scroll-area::-webkit-scrollbar { width: 4px; }
+        .quiz-scroll-area::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
     </style>
 </head>
 <body>
 
-<div id="landscape-warning" class="hidden fixed inset-0 z-[1000] bg-slate-950 flex flex-col items-center justify-center p-10 text-center">
-    <div class="animate-bounce mb-4 text-green-500">
-        <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-    </div>
-    <h2 class="text-2xl loud-font text-green-400 mb-2 uppercase">Switch to Portrait</h2>
-    <p class="text-slate-500 text-sm">History Revision optimized for Portrait Mode.</p>
-</div>
-
 <div id="game-container">
     <!-- Start Screen -->
-    <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-8 text-center">
-        <h1 class="text-6xl font-black text-green-600 loud-font italic mb-4 tracking-tighter uppercase leading-tight">Korean War</h1>
-        <p class="text-green-400 font-bold text-xs tracking-widest mb-6 uppercase">Active Revision Intelligence Unit</p>
+    <div id="start-screen" class="absolute inset-0 z-[110] flex flex-col items-center justify-center p-6 text-center bg-[#5c94fc]">
+        <div class="mb-6 bg-green-600 p-6 rounded-[40px] shadow-2xl rotate-[-2deg] border-8 border-white">
+            <h1 class="text-4xl md:text-6xl font-black text-white loud-font italic tracking-tighter uppercase">Korean War</h1>
+        </div>
+        <p class="text-white font-black text-xl tracking-widest mb-4 uppercase drop-shadow-lg">Super Revision Bros</p>
         
-        <!-- Global Deployments Counter -->
-        <div id="play-tracker" class="mb-8 opacity-0 transition-opacity duration-1000">
-            <p class="text-[10px] text-slate-500 font-bold tracking-[0.3em] uppercase mb-1">Total Global Deployments</p>
-            <p id="global-play-count" class="text-3xl font-black text-white">---</p>
+        <div id="play-tracker" class="mb-8 opacity-0 transition-opacity duration-1000 bg-white/20 px-6 py-2 rounded-full border border-white/40">
+            <p class="text-[10px] text-white/80 font-bold uppercase tracking-widest">Global Deployments: <span id="global-play-count">---</span></p>
         </div>
 
-        <button id="btn-start" class="px-14 py-6 bg-green-600 text-white loud-font rounded-full shadow-2xl uppercase tracking-widest text-xl active:scale-95 transition-transform border-b-4 border-green-800">
-            Deploy Unit
+        <div class="mb-8 text-white text-sm space-y-3 max-w-md bg-white/10 p-6 rounded-[35px] border-4 border-white/20">
+            <p class="font-bold">Jump & hit <span class="text-yellow-300 font-black">? BLOCKS</span> from below!</p>
+            <p class="text-[11px]">Answer 46 Intelligence Questions correctly to win.</p>
+            <p class="text-[10px] font-black uppercase bg-green-800/50 py-2 rounded-xl">PC: Arrows & Space | Mobile: On-Screen UI</p>
+        </div>
+
+        <button id="btn-start" class="px-16 py-6 bg-green-600 text-white loud-font rounded-full shadow-[0_10px_0_#14532d] hover:translate-y-1 active:translate-y-2 uppercase tracking-widest text-xl transition-all border-4 border-white">
+            DEPLOY UNIT
         </button>
     </div>
 
     <!-- HUD -->
-    <div id="hud" class="absolute top-0 left-0 w-full grid grid-cols-3 gap-2 pointer-events-none z-20">
-        <div class="bg-green-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-green-500/30 text-center">
-            <p class="text-[8px] uppercase font-black text-red-500">Lives</p>
-            <p id="stats-lives" class="text-lg font-black text-white">3</p>
+    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
+        <div class="bg-black/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
+            <p class="text-[9px] uppercase font-black text-white/70">Integrity</p>
+            <p id="stats-lives" class="text-xl font-black text-red-500">❤️❤️❤️❤️❤️</p>
         </div>
-        <div class="bg-green-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-green-500/30 text-center">
-            <p class="text-[8px] uppercase font-black text-green-400">Score</p>
-            <p id="stats-coins" class="text-lg font-black text-white">0</p>
+        <div class="bg-black/30 backdrop-blur-md px-6 py-2 rounded-2xl border border-white/20 text-center">
+            <p class="text-[9px] uppercase font-black text-white/70">Time Remaining</p>
+            <p id="stats-timer" class="text-xl font-black text-yellow-300">180s</p>
         </div>
-        <div class="bg-green-900/40 backdrop-blur-md px-2 py-2 rounded-xl border border-green-500/30 text-center">
-            <p class="text-[8px] uppercase font-black text-blue-400">Time</p>
-            <p id="stats-timer" class="text-lg font-black text-white">300s</p>
+        <div class="bg-black/30 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-right">
+            <p class="text-[9px] uppercase font-black text-white/70">Intelligence</p>
+            <p id="stats-score" class="text-xl font-black text-green-400">0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
-    <!-- MCQ Modal -->
-    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/98 p-4 backdrop-blur-md">
-        <div class="w-full max-w-lg bg-slate-900 border-t-[8px] border-green-600 rounded-b-3xl p-6 shadow-2xl max-h-[95vh] overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <div class="text-green-500 font-black uppercase tracking-[0.2em] text-[10px]">Intelligence Data Entry</div>
-                <div id="stats-q-remaining" class="text-slate-500 text-[10px] font-bold"></div>
+    <!-- Quiz Overlay -->
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
+        <div class="w-full max-w-xl bg-white border-8 border-green-600 rounded-[45px] p-8 shadow-2xl">
+            <div class="flex justify-between items-center mb-6">
+                <div class="text-green-600 font-black uppercase tracking-[0.2em] text-[10px]">Intelligence Data Entry</div>
+                <div id="stats-q-remaining" class="text-slate-400 text-[10px] font-bold"></div>
             </div>
-            <h3 id="question-text" class="text-xl md:text-2xl font-black italic uppercase mb-8 text-white leading-tight"></h3>
-            <div id="options-container" class="grid grid-cols-1 gap-3"></div>
-            <div id="feedback" class="mt-8 text-center font-black h-12 uppercase italic text-lg leading-snug"></div>
+            <div class="quiz-scroll-area">
+                <h3 id="question-text" class="text-xl md:text-2xl font-black mb-8 text-slate-900 leading-tight"></h3>
+                <div id="options-container" class="grid grid-cols-1 gap-4"></div>
+            </div>
+            
+            <div id="feedback-area" class="hidden mt-6 p-5 rounded-3xl border-4">
+                <p id="feedback-title" class="font-black uppercase text-xl mb-1"></p>
+                <p id="feedback-detail" class="text-sm text-slate-800 font-bold leading-snug"></p>
+            </div>
         </div>
     </div>
 
     <!-- End Screen -->
-    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950/98 p-8 text-center">
-        <h1 class="text-6xl loud-font italic text-green-600 mb-8 uppercase" id="end-title">Finished</h1>
-        <div class="mb-12">
-            <p class="text-slate-500 text-xs uppercase font-black tracking-widest mb-2">Final Mastery Score</p>
-            <div class="text-7xl font-black text-white" id="final-score">0</div>
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center p-10 text-center bg-green-700">
+        <div class="mb-6 bg-white p-6 rounded-[40px] shadow-2xl border-8 border-green-900">
+            <h2 id="end-status" class="text-5xl loud-font italic uppercase tracking-tighter text-green-800">Mission End</h2>
         </div>
-        <button id="btn-restart" class="px-14 py-6 bg-white text-black loud-font rounded-full active:bg-green-600 active:text-white transition-all uppercase tracking-widest text-lg shadow-2xl">
-            Restart Deck
+        <div class="mb-10">
+            <p class="text-white font-black uppercase tracking-widest mb-3">Final Intelligence Level</p>
+            <div class="text-8xl leading-none font-black text-yellow-300" id="final-score">0</div>
+        </div>
+        <button id="btn-restart" class="px-16 py-6 bg-white text-green-800 loud-font rounded-full shadow-[0_10px_0_#14532d] uppercase tracking-widest text-xl transition-all active:translate-y-1 active:shadow-none border-4 border-green-900">
+            REDEPLOY
         </button>
     </div>
 
-    <!-- Mobile Controls -->
-    <div class="absolute bottom-[calc(2rem+var(--sab))] left-0 w-full px-8 flex justify-between items-center z-30 pointer-events-none">
-        <div class="flex gap-6">
-            <div id="ctrl-left" class="control-btn w-20 h-20 pointer-events-auto">
-                <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+    <!-- Mobile UI Controls -->
+    <div class="absolute inset-0 pointer-events-none z-30">
+        <div class="absolute bottom-10 left-10 flex gap-4 pointer-events-auto">
+            <div id="ctrl-left" class="control-btn w-20 h-20">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M15 19l-7-7 7-7"/></svg>
             </div>
-            <div id="ctrl-right" class="control-btn w-20 h-20 pointer-events-auto">
-                <svg class="w-10 h-10 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
+            <div id="ctrl-right" class="control-btn w-20 h-20">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
-        <div id="ctrl-shoot" class="control-btn w-24 h-24 bg-red-600/20 border-red-600/40 pointer-events-auto">
-            <div class="w-10 h-10 rounded-full bg-red-600 animate-pulse"></div>
+        <div class="absolute bottom-10 right-10 pointer-events-auto">
+            <div id="ctrl-jump" class="control-btn w-24 h-24 bg-green-600/30 border-green-600 shadow-xl">
+                <div class="text-white font-black text-2xl italic">JUMP</div>
+            </div>
         </div>
     </div>
 </div>
@@ -183,7 +205,65 @@ import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.1/firebas
 import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js';
 import { getFirestore, doc, getDoc, setDoc, updateDoc, increment, onSnapshot } from 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
 
-// Configuration check
+const KOREAN_WAR_QUESTIONS = [
+    // Easy Level
+    { q: "On what date did the North Korean People's Army (NKPA) first cross the 38th parallel to invade South Korea?", a: "June 25, 1950", o: ["August 15, 1945", "June 25, 1950", "July 27, 1953", "October 1, 1949"] },
+    { q: "Who was the leader of North Korea during the war?", a: "Kim Il Sung", o: ["Syngman Rhee", "Kim Il Sung", "Mao Zedong", "Ho Chi Minh"] },
+    { q: "Which US General led the UN Command at the start of the war and planned the Inchon landing?", a: "Douglas MacArthur", o: ["Matthew Ridgway", "Walton Walker", "Douglas MacArthur", "Dwight D. Eisenhower"] },
+    { q: "What was the code name for the daring amphibious landing at the port of Inchon?", a: "Operation Chromite", o: ["Operation Overlord", "Operation Rolling Thunder", "Operation Chromite", "Operation Rat Killer"] },
+    { q: "What geographical line served as the boundary between North and South Korea before and after the war?", a: "The 38th Parallel", o: ["The Yalu River", "The 17th Parallel", "The 38th Parallel", "The Kansas Line"] },
+    { q: "Which nation provided the 'People's Volunteer Army' (PVA) to support North Korea?", a: "China", o: ["The Soviet Union", "China", "Japan", "Vietnam"] },
+    { q: "Who was the President of the United States at the start of the Korean War?", a: "Harry S. Truman", o: ["Franklin D. Roosevelt", "Harry S. Truman", "Dwight D. Eisenhower", "John F. Kennedy"] },
+    { q: "What is the Korean War often called because it is frequently overshadowed by WWII and the Vietnam War?", a: "The Forgotten War", o: ["The Great War", "The Silent War", "The Forgotten War", "The Three-Year War"] },
+    { q: "What was the name of the last defensive pocket held by UN forces in the southeastern tip of Korea in August 1950?", a: "The Pusan Perimeter", o: ["The Seoul Sector", "The Pusan Perimeter", "The Iron Triangle", "The Chosin Reservoir"] },
+    { q: "Which US President was elected in 1952 after promising to visit Korea and end the conflict?", a: "Dwight D. Eisenhower", o: ["Richard Nixon", "Dwight D. Eisenhower", "Adlai Stevenson", "Harry Truman"] },
+    { q: "Where was the final armistice agreement signed in 1953?", a: "Panmunjom", o: ["Seoul", "Pyongyang", "Panmunjom", "Kaesong"] },
+    { q: "The 'Safe Conduct Passes' dropped by UN forces were known in Korean as:", a: "Ppira", o: ["Juche", "Ppira", "Hwarang", "Unam"] },
+    { q: "Which country provided the most significant amount of military equipment and tanks to the North Korean Army?", a: "The Soviet Union", o: ["China", "The Soviet Union", "Japan", "Great Britain"] },
+    { q: "What was the name of the primary North Korean ideology established by Kim Il Sung?", a: "Juche", o: ["Marxism", "Juche", "Maoism", "Ilminism"] },
+    { q: "Approximately how many total propaganda leaflets did the US-led forces drop during the war?", a: "2.5 billion", o: ["1 million", "100 million", "500 million", "2.5 billion"] },
+    
+    // Medium Level
+    { q: "What was the primary focus of the US 'NSC-68' document?", a: "A massive increase in military spending to counter Soviet expansion", o: ["Immediate peace negotiations", "A massive increase in military spending to counter Soviet expansion", "A plan to rebuild the Japanese economy", "The withdrawal of troops from Europe"] },
+    { q: "Why was the Soviet Union unable to veto the UN Security Council resolution to assist South Korea?", a: "They were boycotting the UN because it would not recognize communist China.", o: ["They were no longer a member of the UN.", "They were boycotting the UN because it would not recognize communist China.", "They had lost their veto power temporarily.", "They actually supported the resolution secretly."] },
+    { q: "Which speech is often blamed for giving the 'green light' to the North to invade by excluding Korea from the US defense perimeter?", a: "Dean Acheson’s National Press Club speech", o: ["The Truman Doctrine", "Dean Acheson’s National Press Club speech", "MacArthur’s 'No Substitute for Victory' speech", "The Cairo Declaration"] },
+    { q: "What term refers to the Korean War being a conflict where superpowers support opposing sides without fighting each other directly?", a: "Proxy War", o: ["Civil War", "Total War", "Proxy War", "Guerrilla War"] },
+    { q: "Why did China officially call its troops 'volunteers'?", a: "To avoid a formal declaration of war with the United States.", o: ["They were not paid for their service.", "To avoid a formal declaration of war with the United States.", "Because they were all civilian farmers.", "To show they were not under Mao's control."] },
+    { q: "What was the 'Lips and Teeth' theory?", a: "A Chinese security concept viewing North Korea as a critical buffer for China.", o: ["A medical theory about cold weather injuries.", "A Chinese security concept viewing North Korea as a critical buffer for China.", "A psychological warfare theme about hunger.", "A North Korean tactic for urban combat."] },
+    { q: "What was the 'sticking point' that delayed the armistice for two years (1951–1953)?", a: "The repatriation of prisoners of war (POWs)", o: ["The location of the border", "The repatriation of prisoners of war (POWs)", "The status of Taiwan", "The amount of war reparations"] },
+    { q: "Which battle is considered a major turning point in February 1951 where UN forces restored their morale?", a: "Chipyong-ni", o: ["Heartbreak Ridge", "Chipyong-ni", "Triangle Hill", "Pork Chop Hill"] },
+    { q: "The 'Bodo League' massacre involved the execution of suspected communists by which side?", a: "South Korean forces", o: ["North Korean forces", "South Korean forces", "The Chinese Volunteer Army", "The US Marines"] },
+    { q: "What was the official reason President Truman gave for firing General MacArthur?", a: "Insubordination and failure to respect civilian control of the military.", o: ["He lost the Battle of Chosin Reservoir.", "Insubordination and failure to respect civilian control of the military.", "He was too old for command.", "He refused to use nuclear weapons."] },
+    { q: "Which US agency was primarily responsible for 'black' (clandestine) propaganda during the war?", a: "The CIA", o: ["The State Department", "The FBI", "The CIA", "The Army Signal Corps"] },
+    { q: "What was the goal of 'Operation Strike'?", a: "To warn civilians of imminent bombing raids so they could flee.", o: ["To encourage industrial strikes in the North.", "To warn civilians of imminent bombing raids so they could flee.", "To launch a sudden ground assault on Pyongyang.", "To strike the Yalu River bridges."] },
+    { q: "How did the death of Joseph Stalin in March 1953 affect the war?", a: "His successors encouraged North Korea and China to accept peace terms.", o: ["It caused the Soviet Union to send more troops.", "His successors encouraged North Korea and China to accept peace terms.", "It led to a North Korean surrender.", "It resulted in a US invasion of the USSR."] },
+    { q: "What was the 'Pseudo-Kim Il Sung' theory used in UN propaganda?", a: "That the current leader was a fake 'Kim Sung Ju' masquerading as a hero.", o: ["That Kim was a Soviet robot.", "That the current leader was a fake 'Kim Sung Ju' masquerading as a hero.", "That Kim was secretly a capitalist.", "That Kim had already been killed in 1950."] },
+    { q: "Which US general took over the Eighth Army after Walton Walker died and is credited with restoring UN fighting spirit?", a: "Matthew Ridgway", o: ["Maxwell Taylor", "James Van Fleet", "Matthew Ridgway", "Mark Clark"] },
+    { q: "What was the significance of 'MiG Alley'?", a: "It was the northwestern area where jet-to-jet air combat occurred.", o: ["It was a supply route for North Korean tanks.", "It was the northwestern area where jet-to-jet air combat occurred.", "It was a nickname for the streets of Seoul.", "It was a famous propaganda leaflet theme."] },
+    { q: "What was the 'Rollback' policy suggested by MacArthur?", a: "Going beyond containment to destroy the North Korean regime and reunite Korea.", o: ["Withdrawing to the Pusan Perimeter.", "Going beyond containment to destroy the North Korean regime and reunite Korea.", "Using tanks to roll over enemy trenches.", "Rolling back the defense budget to 1945 levels."] },
+    { q: "Which battle involved US Marines fighting their way out of a massive Chinese encirclement in freezing temperatures?", a: "Chosin Reservoir", o: ["Inchon", "Chosin Reservoir", "Osan", "Pork Chop Hill"] },
+    { q: "What was the result of the 'Operation Little Switch' in April 1953?", a: "The exchange of sick and wounded prisoners.", o: ["The exchange of dead bodies.", "The exchange of sick and wounded prisoners.", "A temporary ceasefire for the New Year.", "The swapping of field generals."] },
+    { q: "How did the Korean War impact Japan's economy?", a: "US wartime spending 'jump-started' the economy, leading to rapid growth.", o: ["It destroyed Japanese factories.", "US wartime spending 'jump-started' the economy, leading to rapid growth.", "Japan was forced to pay for the UN's military costs.", "Japan was annexed by the United States."] },
+    
+    // Hard Level
+    { q: "Under 'Operation Nightingale,' the primary psychological message to enemy soldiers was:", a: "That they would receive excellent medical care and food as POWs.", o: ["That their leaders were lying.", "That they would receive excellent medical care and food as POWs.", "That they were about to be bombed.", "That the Soviet Union had abandoned them."] },
+    { q: "The '1st Radio Broadcasting and Leaflet Group' was also known by the nickname:", a: "The Ganders", o: ["The Hwarang", "The Sad Sacks", "The Ganders", "The Iron Men"] },
+    { q: "Which specific psywar plan was designed to distract from the Communist observance of 'May Day'?", a: "Plan Mist", o: ["Plan Blizzard", "Plan Mist", "Plan Eyewash", "Plan Nutcracker"] },
+    { q: "What was the mortality rate for American prisoners of war in North Korean/Chinese captivity?", a: "38%–43%", o: ["5%", "15%", "38%–43%", "70%"] },
+    { q: " 'Plan Rat Killer' was a military and psychological campaign directed at:", a: "Communist guerrillas/partisans remaining in South Korea.", o: ["Enemy officers who ran away.", "Communist guerrillas/partisans remaining in South Korea.", "North Korean farmers hiding rice.", "Infected areas where germ warfare was suspected."] },
+    { q: "The term 'Enemy Collapse Service' was the communist counterpart to the US term:", a: "Psychological Warfare", o: ["Counter-Intelligence", "Psychological Warfare", "Special Operations", "Strategic Bombing"] },
+    { q: "According to major economic studies, by the end of the war in 1953, South Korea's money in circulation had increased by:", a: "24–42 times", o: ["2 times", "5 times", "24–42 times", "100 times"] },
+    { q: "Which UN ally suffered the highest number of deaths (after the US) among the 16 nations that sent combat troops?", a: "The United Kingdom", o: ["Canada", "The United Kingdom", "Turkey", "Australia"] },
+    { q: "What was the primary reason many Chinese and North Korean POWs refused repatriation?", a: "Many were former Nationalists or people forced into service who feared execution at home.", o: ["They were offered money by the US.", "Many were former Nationalists or people forced into service who feared execution at home.", "They had forgotten the Korean language.", "They were 'brainwashed' by American movies."] },
+    { q: "Which specific leaflet operation was designed to convince North Korean farmers to hide their crops from communist collectors?", a: "Plan 52/19", o: ["Plan Think", "Plan 52/19", "Plan Farmer", "Plan Harvest Moon"] },
+    { q: "How did General Ridgway's preferred psychological warfare approach differ from standard theory?", a: "He advocated for showing realistic pictures of dead/disfigured enemy soldiers to inspire fear.", o: ["He wanted to use only radio.", "He advocated for showing realistic pictures of dead/disfigured enemy soldiers to inspire fear.", "He refused to use leaflets at all.", "He wanted to focus only on friendly morale."] },
+    { q: "The 'Mayer Agreement' of May 1953 concerned what aspect of the war?", a: "Repayment of loans made by South Korea to UN forces.", o: ["The final border line.", "Repayment of loans made by South Korea to UN forces.", "The exchange of female prisoners.", "The status of Soviet pilots."] },
+    { q: "Which specific psywar theme used the name of a Shakespearean character to denote distrust of communist superiors?", a: "Iago", o: ["Desdemona", "Iago", "Othello", "Hamlet"] },
+    { q: "In Chinese propaganda, what was the primary purpose of the song 'War Song of the Chinese People’s Volunteer Army'?", a: "To mobilize the masses, boost morale, and normalize the hardships of war.", o: ["To coordinate secret attacks.", "To mobilize the masses, boost morale, and normalize the hardships of war.", "To mock the American leaders.", "To signal a retreat."] },
+    { q: "What was 'Operation Glory'?", a: "The exchange of deceased combatants' remains after the armistice.", o: ["The final offensive in 1953.", "The exchange of deceased combatants' remains after the armistice.", "The nickname for the Inchon landing.", "A plan to drop gold on North Korean cities."] }
+];
+
+// Configuration Setup
 let auth, db, appId;
 let firebaseEnabled = false;
 
@@ -197,7 +277,7 @@ try {
         firebaseEnabled = true;
     }
 } catch (e) {
-    console.error("Cloud storage disabled:", e);
+    console.error("Cloud tracking unavailable.");
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -207,96 +287,59 @@ let state = {
     gameStarted: false,
     gameActive: false,
     paused: false,
-    timer: 300,
+    timer: 180,
+    lives: 5,
     score: 0,
-    lives: 3,
     viewportW: window.innerWidth,
     viewportH: window.innerHeight,
-    particles: [],
-    bullets: [],
-    enemies: [],
-    lastSpawn: 0,
-    lastTimeUpdate: 0,
-    lastShootTime: 0,
-    shootCooldown: 300,
-    stars: [],
-    user: null,
-    hitOccurred: false
+    groundY: 0,
+    cameraX: 0,
+    user: null
 };
 
-const player = { x: 0, w: 120, h: 80, speed: 11 };
+const player = { 
+    x: 200, y: 0, w: 50, h: 75,
+    vx: 0, vy: 0, 
+    speed: 8, jumpPower: -20, 
+    grounded: false, facingRight: true,
+    jumpsAvailable: 2,
+    frame: 0
+};
 
-const questionsDeckRaw = [
-    { q: "On what date did the conventional phase of the Korean War begin?", a: "June 25, 1950", o: ["August 15, 1945", "June 25, 1950", "July 27, 1953", "October 1, 1949"] },
-    { q: "What was the primary geographical dividing line between North and South Korea in 1945?", a: "The 38th Parallel", o: ["The Yalu River", "The Han River", "The 38th Parallel", "The Pusan Perimeter"] },
-    { q: "Why is the Korean War often characterized as a 'civil war'?", a: "It was a conflict between two regimes claiming to be the sole legitimate government.", o: ["Soldiers from one ethnic group.", "A conflict between two regimes claiming to be the sole legitimate government.", "No foreign weaponry.", "No international assistance."] },
-    { q: "How is the Korean War defined as a 'proxy war'?", a: "Superpowers supported opposing sides but did not fight directly.", o: ["Fought by robots.", "Local leaders had no power.", "Superpowers supported opposing sides but did not fight directly.", "Economic sanctions only."] },
-    { q: "What was the central U.S. foreign policy goal during the Korean War?", a: "Containment", o: ["Expansionism", "Containment", "Isolationism", "Imperialism"] },
-    { q: "How did President Truman officially describe the intervention?", a: "A 'police action'", o: ["A total war", "A 'police action'", "An invasion", "A liberation mission"] },
-    { q: "What was the 'Domino Theory' in the context of the U.S. intervention?", a: "If South Korea fell, neighboring countries like Japan would follow.", o: ["Game strategy.", "If South Korea fell, neighboring countries like Japan would follow.", "All wars start with one incident.", "Leaflet plan."] },
-    { q: "Which document advocated for a massive buildup of U.S. military power?", a: "NSC-68", o: ["Truman Doctrine", "Cairo Declaration", "NSC-68", "Marshall Plan"] },
-    { q: "The U.S. provided approximately what percentage of UN personnel?", a: "90%", o: ["50%", "90%", "10%", "100%"] },
-    { q: "Who was the chosen leader of the Soviet-backed North Korea?", a: "Kim Il Sung", o: ["Syngman Rhee", "Mao Zedong", "Kim Il Sung", "Peng Dehuai"] },
-    { q: "Why was the USSR unable to veto the UN resolution to assist the South?", a: "They were boycotting the UN over PRC recognition.", o: ["Lost veto power.", "They were boycotting the UN over PRC recognition.", "Supported the resolution.", "Not members."] },
-    { q: "When did Stalin give Kim Il Sung the 'green light' to invade?", a: "Late January 1950", o: ["1945", "Late January 1950", "After Inchon", "1953"] },
-    { q: "Premier Zhou Enlai's phrase for the China-Korea relationship?", a: "As closely related as lips and teeth", o: ["Brothers in arms", "As closely related as lips and teeth", "One nation", "Great Wall of Communism"] },
-    { q: "Under what name did China constitute its forces?", a: "The People's Volunteer Army (PVA)", o: ["Red Army", "PLA", "The People's Volunteer Army (PVA)", "Northeastern Defense Army"] },
-    { q: "What triggered the massive Chinese intervention in late 1950?", a: "UNC forces advancing toward the Yalu River.", o: ["Death of Stalin.", "UNC forces advancing toward the Yalu River.", "Rhee's declaration.", "Inchon landing."] },
-    { q: "What was the daring amphibious assault planned by MacArthur?", a: "Operation Chromite (The Inchon Landing)", o: ["Yalu Crossing", "Operation Chromite (The Inchon Landing)", "Thunderbolt", "Chosin breakout"] },
-    { q: "What was the 'Pusan Perimeter'?", a: "The last line of defense in the southeastern tip of Korea.", o: ["A type of tank.", "The last line of defense in the southeastern tip of Korea.", "Leaflet strategy.", "Manchurian border."] },
-    { q: "What became the biggest 'sticking point' in peace negotiations?", a: "The repatriation of prisoners of war (POWs).", o: ["Capital location.", "The repatriation of prisoners of war (POWs).", "Language choice.", "Food supplies."] },
-    { q: "Where was the Korean Armistice Agreement signed?", a: "Panmunjom", o: ["Seoul", "Pyongyang", "Panmunjom", "Tokyo"] },
-    { q: "What is the name of the buffer zone created by the armistice?", a: "The Demilitarized Zone (DMZ)", o: ["No-Man's Land", "The Demilitarized Zone (DMZ)", "Iron Curtain", "Bamboo Curtain"] },
-    { q: "Was a formal peace treaty signed to officially end the war?", a: "No, technicality means North and South Korea remain in a state of war.", o: ["Yes, 1953.", "No, technicality means North and South Korea remain in a state of war.", "China and US only.", "UN vetoed."] }
-];
-
-let currentSessionDeck = [];
-function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
-
-function initStars() {
-    state.stars = [];
-    for(let i=0; i<40; i++) {
-        state.stars.push({
-            x: Math.random() * state.viewportW,
-            y: Math.random() * state.viewportH,
-            speed: 0.8 + Math.random() * 2,
-            size: 1 + Math.random() * 2
-        });
-    }
-}
-
-function resize() {
-    state.viewportW = window.innerWidth;
-    state.viewportH = window.innerHeight;
-    canvas.width = state.viewportW;
-    canvas.height = state.viewportH;
-    player.x = state.viewportW / 2 - player.w / 2;
-    initStars();
-}
-
+let sessionDeck = [];
+let blocks = [];
 const touchInput = { left: false, right: false };
+
+// Double Randomization: Shuffle Master List and Options
+function shuffle(a) {
+    let array = [...a];
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+    }
+    return array;
+}
 
 async function initTracking() {
     if (!firebaseEnabled) return;
-    // FIXED: Segment segment count must be even. path: artifacts/id/public/data/usage/stats
     const analyticsDoc = doc(db, 'artifacts', appId, 'public', 'data', 'usage', 'stats');
-    
-    try {
+
+    const initAuth = async () => {
         if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
             await signInWithCustomToken(auth, __initial_auth_token);
         } else {
             await signInAnonymously(auth);
         }
-    } catch (err) {
-        console.error("Auth failed", err);
-    }
+    };
     
-    onAuthStateChanged(auth, (user) => {
-        state.user = user;
+    await initAuth();
+
+    onAuthStateChanged(auth, async (user) => {
         if (user) {
-            onSnapshot(analyticsDoc, (snap) => {
-                if (snap.exists()) {
-                    const count = snap.data().playCount || 0;
+            state.user = user;
+            onSnapshot(analyticsDoc, (snapshot) => {
+                if (snapshot.exists()) {
+                    const count = snapshot.data().playCount || 0;
                     document.getElementById('global-play-count').innerText = count.toLocaleString();
                     document.getElementById('play-tracker').style.opacity = '1';
                 } else {
@@ -317,21 +360,77 @@ async function recordDeployment() {
     }
 }
 
+function initBlocks() {
+    blocks = [];
+    // Generate long track of quiz blocks
+    for (let i = 0; i < 80; i++) {
+        blocks.push({
+            x: 800 + (i * 550),
+            y: state.groundY - 240 - (Math.random() * 120),
+            w: 80, h: 80,
+            active: true,
+            type: 'quiz'
+        });
+        
+        // Random Platform Bricks
+        if (Math.random() > 0.4) {
+            blocks.push({
+                x: 1100 + (i * 550),
+                y: state.groundY - 140,
+                w: 80, h: 80,
+                active: true,
+                type: 'brick'
+            });
+        }
+    }
+}
+
+function resize() {
+    state.viewportW = window.innerWidth;
+    state.viewportH = window.innerHeight;
+    canvas.width = state.viewportW;
+    canvas.height = state.viewportH;
+    state.groundY = state.viewportH - 100;
+    
+    if (!state.gameStarted) {
+        player.y = state.groundY - player.h;
+        initBlocks();
+    }
+}
+
+function handleJump() {
+    if (!state.gameActive || state.paused) return;
+    if (player.jumpsAvailable > 0) {
+        player.vy = player.jumpPower;
+        player.jumpsAvailable--;
+        player.grounded = false;
+    }
+}
+
 function init() {
+    window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', resize);
     resize();
     initTracking();
-    
-    currentSessionDeck = shuffle([...questionsDeckRaw]);
 
-    document.getElementById('btn-start').onclick = () => {
-        if (firebaseEnabled) recordDeployment();
-        document.getElementById('start-screen').classList.add('hidden');
-        state.gameStarted = true; 
-        state.gameActive = true;
-        state.lastTimeUpdate = performance.now();
+    // Randomize Question Pool for the session
+    sessionDeck = shuffle([...KOREAN_WAR_QUESTIONS]);
+
+    // Keyboard Input
+    const handleKey = (e, isDown) => {
+        if (!state.gameActive || state.paused) return;
+        const key = e.key.toLowerCase();
+        if (key === 'arrowleft' || key === 'a') touchInput.left = isDown;
+        if (key === 'arrowright' || key === 'd') touchInput.right = isDown;
+        if (isDown && (key === ' ' || key === 'w' || key === 'arrowup')) {
+            e.preventDefault();
+            handleJump();
+        }
     };
-    document.getElementById('btn-restart').onclick = () => location.reload();
+    window.addEventListener('keydown', (e) => handleKey(e, true));
+    window.addEventListener('keyup', (e) => handleKey(e, false));
 
+    // Touch Controls
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
         el.addEventListener('touchstart', (e) => { 
@@ -345,73 +444,43 @@ function init() {
     };
     setupTouch('ctrl-left', 'left');
     setupTouch('ctrl-right', 'right');
-    
-    document.getElementById('ctrl-shoot').addEventListener('touchstart', (e) => {
-        e.preventDefault();
-        const now = performance.now();
-        if (state.gameActive && !state.paused && now - state.lastShootTime > state.shootCooldown) {
-            shoot();
-            state.lastShootTime = now;
-        }
+    document.getElementById('ctrl-jump').addEventListener('touchstart', (e) => { 
+        e.preventDefault(); 
+        handleJump(); 
     }, { passive: false });
 
-    requestAnimationFrame(gameLoop);
-}
+    document.getElementById('btn-start').onclick = () => {
+        if (firebaseEnabled) recordDeployment();
+        document.getElementById('start-screen').classList.add('hidden');
+        state.gameStarted = true;
+        state.gameActive = true;
+        window.focus();
+    };
 
-function shoot() {
-    state.bullets.push({ x: player.x + player.w/2 - 4, y: state.viewportH - 180, r: 10, speed: 15 });
-}
-
-function spawnEnemy() {
-    const r = 38;
-    state.enemies.push({
-        x: Math.random() * (state.viewportW - r*2) + r,
-        y: -r,
-        r: r,
-        speed: 2.2 + Math.random() * 1.5,
-        type: 'mcq'
-    });
-}
-
-function createFireworks(x, y) {
-    const colors = ['#22c55e', '#fbbf24', '#3b82f6', '#ef4444', '#ffffff'];
-    for (let i = 0; i < 35; i++) {
-        state.particles.push({
-            x: x, y: y,
-            vx: (Math.random() - 0.5) * 15,
-            vy: (Math.random() - 0.5) * 15,
-            life: 1.0,
-            color: colors[Math.floor(Math.random() * colors.length)],
-            size: Math.random() * 3 + 1
-        });
-    }
-}
-
-function updateHUD() {
-    document.getElementById('stats-lives').innerText = state.lives;
-    document.getElementById('stats-coins').innerText = state.score;
-    document.getElementById('stats-timer').innerText = state.timer + "s";
+    document.getElementById('btn-restart').onclick = () => location.reload();
+    requestAnimationFrame(update);
 }
 
 function triggerQuiz() {
-    if (state.paused) return; 
+    if (state.paused) return;
     state.paused = true;
-    state.hitOccurred = false;
-    
-    const q = currentSessionDeck[0];
+    const q = sessionDeck[0];
     const modal = document.getElementById('quiz-overlay');
     const container = document.getElementById('options-container');
-    const feedback = document.getElementById('feedback');
-    const qCount = document.getElementById('stats-q-remaining');
+    const feedback = document.getElementById('feedback-area');
     
-    qCount.innerText = `UNITS REMAINING: ${currentSessionDeck.length}`;
     document.getElementById('question-text').innerText = q.q;
+    document.getElementById('stats-q-remaining').innerText = `DATA REQUISITION REMAINING: ${sessionDeck.length}`;
+    feedback.classList.add('hidden');
+    container.classList.remove('hidden');
     container.innerHTML = '';
-    feedback.innerText = '';
     
-    shuffle([...q.o]).forEach(opt => {
+    // Randomize choice order for the quiz modal
+    const choices = shuffle([...q.o]);
+    
+    choices.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn';
+        btn.className = 'option-btn'; 
         btn.innerText = opt;
         btn.onclick = () => {
             const btns = Array.from(container.children);
@@ -419,31 +488,41 @@ function triggerQuiz() {
             
             if (opt === q.a) {
                 btn.classList.add('correct-flash');
-                state.score += 100;
-                createFireworks(state.viewportW / 2, state.viewportH / 2);
-                currentSessionDeck.shift();
-                updateHUD();
+                state.score += 1000;
+                document.getElementById('stats-score').innerText = state.score;
+                sessionDeck.shift();
                 
-                setTimeout(() => {
-                    if (currentSessionDeck.length === 0) endGame(true);
-                    else resume();
-                }, 800);
+                feedback.classList.remove('hidden');
+                container.classList.add('hidden');
+                feedback.className = "mt-6 p-5 rounded-[25px] border-4 border-green-500 bg-green-50";
+                document.getElementById('feedback-title').innerText = "VERIFIED";
+                document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-green-600";
+                document.getElementById('feedback-detail').innerText = "Data entry confirmed. Mission continuing.";
+
+                if (sessionDeck.length === 0) {
+                    setTimeout(() => endGame(true), 1200);
+                } else {
+                    setTimeout(() => resume(), 1200);
+                }
             } else {
                 btn.classList.add('wrong-flash');
-                btns.forEach(b => {
-                    if(b.innerText === q.a) b.classList.add('correct-flash');
-                });
+                btns.forEach(b => { if(b.innerText === q.a) b.classList.add('correct-flash'); });
                 
-                feedback.innerText = `REVISION: The correct entry is ${q.a}`;
-                feedback.className = "mt-8 text-center font-black uppercase italic text-red-500 text-sm leading-tight";
+                state.lives--;
+                updateLivesHUD();
                 
-                const missed = currentSessionDeck.shift();
-                const targetPos = Math.min(3, currentSessionDeck.length);
-                currentSessionDeck.splice(targetPos, 0, missed);
-                
+                feedback.classList.remove('hidden');
+                container.classList.add('hidden');
+                feedback.className = "mt-6 p-5 rounded-[25px] border-4 border-red-500 bg-red-50";
+                document.getElementById('feedback-title').innerText = "DATA CORRUPTED";
+                document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-red-600";
+                document.getElementById('feedback-detail').innerText = `Correction: ${q.a}. Unit re-evaluating.`;
+
+                // Re-queue the missed question later in the session
+                const missedQ = sessionDeck.shift();
+                sessionDeck.splice(Math.min(3, sessionDeck.length), 0, missedQ); 
+
                 setTimeout(() => {
-                    state.lives--;
-                    updateHUD();
                     if (state.lives <= 0) endGame(false);
                     else resume();
                 }, 2800);
@@ -454,149 +533,165 @@ function triggerQuiz() {
     modal.classList.remove('hidden');
 }
 
+function updateLivesHUD() {
+    document.getElementById('stats-lives').innerText = '❤️'.repeat(Math.max(0, state.lives)) + '🖤'.repeat(Math.max(0, 5 - state.lives));
+}
+
 function resume() {
     document.getElementById('quiz-overlay').classList.add('hidden');
     state.paused = false;
 }
 
-function gameLoop(now) {
-    if (!state.gameStarted) { requestAnimationFrame(gameLoop); return; }
+function update() {
+    if (state.gameStarted && state.gameActive && !state.paused) {
+        // Horizontal Movement
+        if (touchInput.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.25; }
+        else if (touchInput.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.25; }
+        else { player.vx *= 0.85; player.frame = 0; }
 
-    if (!state.paused && state.gameActive) {
-        if (now - state.lastTimeUpdate >= 1000) {
-            state.timer--;
-            state.lastTimeUpdate = now;
-            document.getElementById('stats-timer').innerText = state.timer + "s";
-            if (state.timer <= 0) endGame(false);
+        // Gravity
+        player.vy += 1.0; 
+        player.x += player.vx;
+        player.y += player.vy;
+
+        // Ground Floor
+        if (player.y + player.h > state.groundY) { 
+            player.y = state.groundY - player.h;
+            player.vy = 0; 
+            player.grounded = true;
+            player.jumpsAvailable = 2;
         }
 
-        if (touchInput.left && player.x > 0) player.x -= player.speed;
-        if (touchInput.right && player.x < state.viewportW - player.w) player.x += player.speed;
-
-        if (now - state.lastSpawn > 2500) {
-            spawnEnemy();
-            state.lastSpawn = now;
-        }
-
-        // Clean up and update bullets
-        for (let i = state.bullets.length - 1; i >= 0; i--) {
-            const b = state.bullets[i];
-            b.y -= b.speed;
-            if (b.y < -50) state.bullets.splice(i, 1);
-        }
-
-        // Clean up and update enemies
-        for (let i = state.enemies.length - 1; i >= 0; i--) {
-            const en = state.enemies[i];
-            en.y += en.speed;
+        // Hit Detection (Mario Blocks)
+        blocks.forEach(b => {
+            if (!b.active && b.type === 'quiz') return;
             
-            if (en.y > state.viewportH + en.r) {
-                state.enemies.splice(i, 1);
-                state.lives--;
-                updateHUD();
-                if (state.lives <= 0) endGame(false);
-                continue;
-            }
-
-            // High performance collision
-            for (let j = state.bullets.length - 1; j >= 0; j--) {
-                const b = state.bullets[j];
-                const dx = b.x - en.x;
-                const dy = b.y - en.y;
-                const distSq = dx * dx + dy * dy;
-                // bullet hit detection
-                if (distSq < (en.r + 15) * (en.r + 15)) {
-                    state.bullets.splice(j, 1);
-                    state.enemies.splice(i, 1);
-                    state.hitOccurred = true;
-                    break;
+            if (player.x < b.x + b.w && player.x + player.w > b.x && 
+                player.y < b.y + b.h && player.y + player.h > b.y) {
+                
+                // Head Bump Detection
+                if (player.vy < 0 && player.y > b.y + b.h - 35) {
+                    player.vy = 5;
+                    if (b.type === 'quiz' && b.active) {
+                        b.active = false;
+                        triggerQuiz();
+                    }
+                } 
+                // Landing on platform
+                else if (player.vy > 0 && player.y + player.h < b.y + 35) {
+                    player.y = b.y - player.h;
+                    player.vy = 0;
+                    player.grounded = true;
+                    player.jumpsAvailable = 2;
                 }
+                // Wall bumping
+                else if (player.vx > 0 && player.x + player.w < b.x + 25) { player.x = b.x - player.w; }
+                else if (player.vx < 0 && player.x > b.x + b.w - 25) { player.x = b.x + b.w; }
             }
-            if (state.hitOccurred) break;
-        }
+        });
 
-        if (state.hitOccurred) {
-            triggerQuiz();
-        }
-    }
-
-    // Stars Update
-    state.stars.forEach(s => {
-        s.y += s.speed;
-        if (s.y > state.viewportH) {
-            s.y = -20;
-            s.x = Math.random() * state.viewportW;
-        }
-    });
-
-    // Particles Update
-    for (let i = state.particles.length - 1; i >= 0; i--) {
-        const p = state.particles[i];
-        p.x += p.vx; p.y += p.vy;
-        p.life -= 0.02;
-        if (p.life <= 0) state.particles.splice(i, 1);
+        if (player.x < 0) player.x = 0;
+        
+        // Dynamic Camera
+        let targetCamX = -player.x + (state.viewportW * 0.25);
+        state.cameraX += (targetCamX - state.cameraX) * 0.15;
+        if (state.cameraX > 0) state.cameraX = 0;
     }
 
     render();
-    requestAnimationFrame(gameLoop);
+    requestAnimationFrame(update);
 }
 
 function render() {
-    ctx.clearRect(0, 0, state.viewportW, state.viewportH);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
     
+    // Background Sky
+    ctx.fillStyle = "#5c94fc";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Scenery: Clouds
     ctx.fillStyle = "rgba(255,255,255,0.4)";
-    state.stars.forEach(s => {
-        ctx.fillRect(s.x, s.y, s.size, s.size);
+    for(let i=0; i<20; i++) {
+        ctx.beginPath(); ctx.ellipse(400 + i*900, 180, 100, 50, 0, 0, Math.PI*2); ctx.fill();
+    }
+    
+    ctx.save();
+    ctx.translate(state.cameraX, 0);
+    
+    // Ground Grass and Dirt
+    ctx.fillStyle = "#16a34a"; 
+    ctx.fillRect(-5000, state.groundY, 80000, 30);
+    ctx.fillStyle = "#5c4033"; 
+    ctx.fillRect(-5000, state.groundY + 30, 80000, 150);
+    
+    // Level Bricks
+    blocks.forEach(b => { 
+        if (!b.active && b.type === 'quiz') {
+            ctx.fillStyle = '#6b7280'; 
+            ctx.beginPath(); 
+            if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 12);
+            else ctx.rect(b.x, b.y, b.w, b.h);
+            ctx.fill();
+            return;
+        }
+        
+        if (b.type === 'quiz') {
+            ctx.fillStyle = '#fbbf24'; 
+            ctx.beginPath(); 
+            if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 12);
+            else ctx.rect(b.x, b.y, b.w, b.h);
+            ctx.fill();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'black 56px Inter'; ctx.textAlign = 'center';
+            ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 18);
+        } else {
+            ctx.fillStyle = '#15803d'; 
+            ctx.beginPath(); 
+            if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 6);
+            else ctx.rect(b.x, b.y, b.w, b.h);
+            ctx.fill();
+        }
     });
-
-    // Unit
-    ctx.fillStyle = "#16a34a";
-    ctx.fillRect(player.x, state.viewportH - 160, player.w, 45);
-    ctx.fillStyle = "#15803d";
-    ctx.fillRect(player.x + (player.w * 0.25), state.viewportH - 185, player.w * 0.5, 25);
-
-    // Targets
-    ctx.font = "900 24px Inter";
-    ctx.textAlign = "center";
-    state.enemies.forEach(en => {
-        ctx.beginPath();
-        ctx.arc(en.x, en.y, en.r, 0, Math.PI * 2);
-        ctx.fillStyle = "#1e293b";
-        ctx.fill();
-        ctx.strokeStyle = "#22c55e";
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        ctx.fillStyle = "#ffffff";
-        ctx.fillText("?", en.x, en.y + 8);
-    });
-
-    // Bullets
-    ctx.fillStyle = "#fbbf24";
-    state.bullets.forEach(b => {
-        ctx.fillRect(b.x, b.y, 8, 22);
-    });
-
-    // FX
-    state.particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-    });
-    ctx.globalAlpha = 1.0;
+    
+    // Player Character Design (Boy)
+    ctx.save();
+    ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
+    if (!player.facingRight) ctx.scale(-1, 1);
+    
+    const bounce = Math.sin(player.frame * 2) * 6;
+    ctx.fillStyle = "#4b2c20"; // Hair
+    ctx.fillRect(-22, -45 + bounce, 44, 25);
+    ctx.fillStyle = "#ffdbac"; // Skin
+    ctx.fillRect(-20, -20 + bounce, 40, 35);
+    ctx.fillStyle = "#000"; // Eyes
+    ctx.fillRect(8, -12 + bounce, 5, 5);
+    ctx.fillStyle = "#16a34a"; // Military Shirt
+    ctx.fillRect(-22, 15 + bounce, 44, 30);
+    ctx.fillStyle = "#1e3a8a"; // Blue Pants
+    ctx.fillRect(-22, 25 + bounce, 44, 15);
+    ctx.fillRect(-22, 40, 18, 20); // Leg Left
+    ctx.fillRect(4, 40, 18, 20);  // Leg Right
+    ctx.restore();
+    
+    ctx.restore();
 }
 
 function endGame(victory) {
     state.gameActive = false;
-    const title = document.getElementById('end-title');
-    title.innerText = victory ? "FACTS MASTERED" : "UNIT DEFEATED";
-    title.className = victory ? "text-6xl loud-font italic text-green-600 mb-8 uppercase" : "text-6xl loud-font italic text-red-600 mb-8 uppercase";
+    document.getElementById('end-status').innerText = victory ? "FACTS MASTERED" : "UNIT DEFEATED";
     document.getElementById('final-score').innerText = state.score;
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-// Safer initialization for Module scripts
+// 180 Second Countdown
+setInterval(() => {
+    if (state.gameActive && !state.paused && state.timer > 0) {
+        state.timer--;
+        document.getElementById('stats-timer').innerText = state.timer + "s";
+        if (state.timer <= 0) endGame(false);
+    }
+}, 1000);
+
 if (document.readyState === 'complete' || document.readyState === 'interactive') {
     init();
 } else {
