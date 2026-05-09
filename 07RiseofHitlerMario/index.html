@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>History Mastery: Super Mario Edition</title>
+    <title>History Mastery: Super Revision Bros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         :root {
             --sat: env(safe-area-inset-top);
-            --sab: env(safe-area-inset-bottom);
+            --sab: env(env(safe-area-inset-bottom));
             --sal: env(safe-area-inset-left);
             --sar: env(safe-area-inset-right);
         }
@@ -50,7 +50,7 @@
 
         .control-btn {
             background: rgba(255, 255, 255, 0.2);
-            border: 3px solid rgba(255, 255, 255, 0.4);
+            border: 4px solid rgba(255, 255, 255, 0.5);
             backdrop-filter: blur(5px);
             border-radius: 50%;
             display: flex;
@@ -67,18 +67,19 @@
 
         .option-btn {
             transition: all 0.2s;
-            min-height: 4rem;
+            min-height: 4.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
             padding: 1rem 1.5rem;
             width: 100%;
-            border-radius: 20px;
+            border-radius: 24px;
             font-weight: 800;
-            font-size: 1rem;
+            font-size: 1.1rem;
             line-height: 1.2;
-            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            border: 4px solid #3b82f6;
         }
 
         #hud {
@@ -87,11 +88,8 @@
             padding-right: calc(1rem + var(--sar));
         }
 
-        /* Screen overlays */
-        .overlay-screen {
-            background: rgba(0, 0, 0, 0.85);
-            backdrop-filter: blur(10px);
-            z-index: 100;
+        .pixel-text {
+            text-shadow: 2px 2px 0px #000;
         }
     </style>
 </head>
@@ -99,86 +97,85 @@
 
 <div id="game-container">
     <!-- Start Screen -->
-    <div id="start-screen" class="absolute inset-0 z-[110] flex flex-col items-center justify-center p-6 text-center bg-blue-600">
-        <div class="mb-4 bg-yellow-400 p-4 rounded-3xl shadow-xl rotate-[-2deg] border-4 border-white">
-            <h1 class="text-4xl md:text-6xl font-black text-blue-900 italic tracking-tighter uppercase">Rise of Hitler</h1>
+    <div id="start-screen" class="absolute inset-0 z-[110] flex flex-col items-center justify-center p-6 text-center bg-[#5c94fc]">
+        <div class="mb-6 bg-yellow-400 p-6 rounded-[40px] shadow-2xl rotate-[-2deg] border-8 border-white">
+            <h1 class="text-5xl md:text-7xl font-black text-blue-900 italic tracking-tighter uppercase">Rise of Hitler</h1>
         </div>
-        <p class="text-white font-bold text-sm tracking-widest mb-10 uppercase drop-shadow-md">SUPER REVISION BROS</p>
+        <p class="text-white font-black text-xl tracking-widest mb-10 uppercase pixel-text">SUPER REVISION BROS</p>
         
-        <div class="mb-10 text-white text-sm space-y-4 max-w-md bg-white/10 p-6 rounded-3xl border border-white/20">
-            <p>Run, jump, and hit <b class="text-yellow-400">? Blocks</b> from below to reveal history questions!</p>
-            <p>Incorrect answers reduce your <b class="text-red-400">Hearts</b>.</p>
-            <p class="text-xs font-black uppercase bg-blue-800 py-2 rounded-lg">PC: Arrows/WASD & Space | Mobile: UI Buttons</p>
+        <div class="mb-10 text-white text-sm space-y-4 max-w-md bg-white/20 p-8 rounded-[40px] border-4 border-white/40">
+            <p class="font-bold">Jump into <span class="text-yellow-300 font-black">? BLOCKS</span> from below to unlock history facts!</p>
+            <p>Incorrect answers damage your <span class="text-red-400 font-black">Hearts</span>.</p>
+            <p class="text-xs font-black uppercase bg-blue-800/50 py-3 rounded-2xl">Computer: Arrows/WASD & Space | Mobile: On-Screen UI</p>
         </div>
 
-        <button id="btn-start" class="px-16 py-6 bg-yellow-400 text-blue-900 font-black rounded-full shadow-[0_8px_0_#ca8a04] hover:shadow-[0_4px_0_#ca8a04] hover:translate-y-1 uppercase tracking-widest text-xl transition-all">
-            Start Mission
+        <button id="btn-start" class="px-20 py-8 bg-yellow-400 text-blue-900 font-black rounded-full shadow-[0_12px_0_#ca8a04] hover:shadow-[0_6px_0_#ca8a04] hover:translate-y-1 uppercase tracking-widest text-2xl transition-all border-4 border-white">
+            START WORLD 1-1
         </button>
     </div>
 
     <!-- HUD -->
     <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
-        <div class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
-            <p class="text-[10px] uppercase font-black text-white/60">Integrity</p>
-            <p id="stats-lives" class="text-xl font-black text-red-500">❤️❤️❤️❤️❤️</p>
+        <div class="bg-black/30 backdrop-blur-md px-5 py-3 rounded-3xl border-2 border-white/20">
+            <p class="text-[10px] uppercase font-black text-white/70">Lives</p>
+            <p id="stats-lives" class="text-2xl font-black text-red-500">❤️❤️❤️❤️❤️</p>
         </div>
-        <div class="bg-black/40 backdrop-blur-md px-6 py-2 rounded-2xl border border-white/20 text-center">
-            <p class="text-[10px] uppercase font-black text-white/60">Time Remaining</p>
-            <p id="stats-timer" class="text-xl font-black text-yellow-400">180s</p>
+        <div class="bg-black/30 backdrop-blur-md px-8 py-3 rounded-3xl border-2 border-white/20 text-center">
+            <p class="text-[10px] uppercase font-black text-white/70">Time Remaining</p>
+            <p id="stats-timer" class="text-2xl font-black text-yellow-300">180s</p>
         </div>
-        <div class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-right">
-            <p class="text-[10px] uppercase font-black text-white/60">Mastery Score</p>
-            <p id="stats-score" class="text-xl font-black text-green-400">0</p>
+        <div class="bg-black/30 backdrop-blur-md px-5 py-3 rounded-3xl border-2 border-white/20 text-right">
+            <p class="text-[10px] uppercase font-black text-white/70">Mastery Score</p>
+            <p id="stats-score" class="text-2xl font-black text-green-400">0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
     <!-- Quiz Overlay -->
-    <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
-        <div class="w-full max-w-2xl bg-slate-900 border-4 border-yellow-400 rounded-[40px] p-8 shadow-2xl overflow-hidden">
-            <div class="flex justify-between items-center mb-6">
-                <span class="bg-yellow-400 text-blue-900 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">History Challenge</span>
-                <span id="quiz-status" class="text-white/40 text-[10px] uppercase font-bold tracking-widest">Awaiting Answer...</span>
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+        <div class="w-full max-w-2xl bg-white border-8 border-yellow-400 rounded-[50px] p-10 shadow-2xl overflow-hidden">
+            <div class="flex justify-between items-center mb-8">
+                <span class="bg-blue-600 text-white text-[12px] px-4 py-2 rounded-full font-black uppercase tracking-widest">History Challenge</span>
+                <span id="quiz-status" class="text-blue-900/40 text-[10px] uppercase font-black tracking-widest">Awaiting Analysis...</span>
             </div>
-            <h3 id="question-text" class="text-xl md:text-3xl font-black mb-8 text-white leading-tight"></h3>
-            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <h3 id="question-text" class="text-2xl md:text-3xl font-black mb-10 text-blue-900 leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
             
-            <div id="feedback-area" class="hidden mt-8 p-6 rounded-3xl border-4">
-                <p id="feedback-title" class="font-black uppercase text-lg mb-1"></p>
-                <p id="feedback-detail" class="text-sm text-white/80 font-bold"></p>
+            <div id="feedback-area" class="hidden mt-10 p-8 rounded-[40px] border-4">
+                <p id="feedback-title" class="font-black uppercase text-2xl mb-2"></p>
+                <p id="feedback-detail" class="text-base text-blue-900/80 font-bold"></p>
             </div>
         </div>
     </div>
 
     <!-- End Screen -->
-    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center p-8 text-center bg-blue-900">
-        <h2 id="end-status" class="text-6xl font-black mb-4 italic uppercase tracking-tighter text-white"></h2>
-        <div class="w-32 h-2 bg-yellow-400 mb-10 rounded-full"></div>
-        <div class="mb-12">
-            <p class="text-white/60 text-xs uppercase font-black tracking-widest mb-2">Final Revision Score</p>
-            <div class="text-9xl font-black text-yellow-400 drop-shadow-2xl" id="final-score">0</div>
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center p-10 text-center bg-blue-600">
+        <div class="mb-8 bg-white p-6 rounded-[40px] shadow-2xl border-8 border-yellow-400">
+            <h2 id="end-status" class="text-6xl font-black italic uppercase tracking-tighter text-blue-900"></h2>
         </div>
-        <button id="btn-restart" class="px-16 py-6 bg-white text-blue-900 font-black rounded-full shadow-[0_8px_0_#cbd5e1] uppercase tracking-widest text-xl transition-all active:translate-y-1 active:shadow-none">
-            Play Again
+        <div class="mb-12">
+            <p class="text-white font-black uppercase tracking-widest mb-4 pixel-text">Final Mastery Points</p>
+            <div class="text-[10rem] leading-none font-black text-yellow-300 drop-shadow-[0_15px_0_rgba(0,0,0,0.3)]" id="final-score">0</div>
+        </div>
+        <button id="btn-restart" class="px-20 py-8 bg-yellow-400 text-blue-900 font-black rounded-full shadow-[0_12px_0_#ca8a04] uppercase tracking-widest text-2xl transition-all active:translate-y-1 active:shadow-none border-4 border-white">
+            PLAY AGAIN
         </button>
     </div>
 
     <!-- Mobile UI Controls -->
     <div class="absolute inset-0 pointer-events-none z-30">
-        <!-- Directional Pad -->
-        <div class="absolute bottom-10 left-10 flex gap-4 pointer-events-auto">
-            <div id="ctrl-left" class="control-btn w-20 h-20 active:bg-white/40">
-                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
+        <div class="absolute bottom-10 left-10 flex gap-6 pointer-events-auto">
+            <div id="ctrl-left" class="control-btn w-24 h-24">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M15 19l-7-7 7-7"/></svg>
             </div>
-            <div id="ctrl-right" class="control-btn w-20 h-20 active:bg-white/40">
-                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
+            <div id="ctrl-right" class="control-btn w-24 h-24">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
-        <!-- Jump Button -->
         <div class="absolute bottom-10 right-10 pointer-events-auto">
-            <div id="ctrl-jump" class="control-btn w-24 h-24 bg-yellow-400/30 border-yellow-400 shadow-lg active:bg-yellow-400/50">
-                <div class="text-white font-black text-3xl">JUMP</div>
+            <div id="ctrl-jump" class="control-btn w-32 h-32 bg-yellow-400/30 border-yellow-400 shadow-xl">
+                <div class="text-white font-black text-4xl italic">JUMP</div>
             </div>
         </div>
     </div>
@@ -215,9 +212,9 @@ let state = {
 };
 
 const player = { 
-    x: 150, y: 0, w: 40, h: 60,
+    x: 200, y: 0, w: 50, h: 75,
     vx: 0, vy: 0, 
-    speed: 7, jumpPower: -18, 
+    speed: 8, jumpPower: -20, 
     grounded: false, facingRight: true,
     jumpsAvailable: 2,
     frame: 0
@@ -225,7 +222,6 @@ const player = {
 
 let sessionDeck = [];
 let blocks = [];
-let groundBlocks = [];
 
 function shuffle(a) {
     let array = [...a];
@@ -238,24 +234,23 @@ function shuffle(a) {
 
 function initBlocks() {
     blocks = [];
-    groundBlocks = [];
-    // Background scenery/level generation
-    for (let i = 0; i < 40; i++) {
-        // Question Blocks
+    // Generate World 1-1 style level
+    for (let i = 0; i < 50; i++) {
+        // Main Question Blocks
         blocks.push({
-            x: 800 + (i * 500),
-            y: state.groundY - 180 - (Math.random() * 100),
-            w: 70, h: 70,
+            x: 800 + (i * 600),
+            y: state.groundY - 240 - (Math.random() * 100),
+            w: 80, h: 80,
             active: true,
             type: 'quiz'
         });
         
-        // Random Solid Brick Platforms
-        if (Math.random() > 0.6) {
+        // Random Solid Decorative Bricks
+        if (Math.random() > 0.5) {
             blocks.push({
-                x: 1000 + (i * 500),
-                y: state.groundY - 120,
-                w: 70, h: 70,
+                x: 1000 + (i * 600),
+                y: state.groundY - 140,
+                w: 80, h: 80,
                 active: true,
                 type: 'brick'
             });
@@ -268,7 +263,7 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    state.groundY = state.viewportH - 80;
+    state.groundY = state.viewportH - 100;
     
     if (!state.gameStarted) {
         player.y = state.groundY - player.h;
@@ -292,7 +287,7 @@ function init() {
     window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
-    // Universal Keyboard Listeners
+    // Computer Controls
     const handleKey = (e, isDown) => {
         if (!state.gameActive || state.paused) return;
         const key = e.key.toLowerCase();
@@ -303,11 +298,10 @@ function init() {
             handleJump();
         }
     };
-
     window.addEventListener('keydown', (e) => handleKey(e, true));
     window.addEventListener('keyup', (e) => handleKey(e, false));
 
-    // Touch controls
+    // Touch Controls
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
         el.addEventListener('touchstart', (e) => { e.preventDefault(); inputs[key] = true; }, {passive: false});
@@ -340,12 +334,12 @@ function triggerQuiz(block) {
     container.classList.remove('hidden');
     container.innerHTML = '';
     
-    // Randomize choices
+    // Shuffled options
     const choices = shuffle([...q.o]);
     
     choices.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn bg-white text-blue-900 border-4 border-blue-200 active:bg-yellow-400 active:border-yellow-600 transition-colors'; 
+        btn.className = 'option-btn bg-blue-600 text-white active:bg-yellow-400 active:text-blue-900 border-b-8 border-blue-800 transition-all'; 
         btn.innerText = opt;
         btn.onclick = () => {
             Array.from(container.children).forEach(b => b.disabled = true);
@@ -357,10 +351,11 @@ function triggerQuiz(block) {
                 
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
-                feedback.className = "mt-8 p-6 rounded-[30px] border-4 border-green-500 bg-green-500/10";
-                document.getElementById('feedback-title').innerText = "EXCELLENT!";
-                document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-green-400";
-                document.getElementById('feedback-detail').innerText = "Stability increased. Mission continuing...";
+                feedback.className = "mt-10 p-8 rounded-[40px] border-8 border-green-500 bg-green-100";
+                document.getElementById('feedback-title').innerText = "MARVELOUS!";
+                document.getElementById('feedback-title').className = "font-black uppercase text-3xl mb-1 text-green-600";
+                document.getElementById('feedback-detail').innerText = "History stabilized. Onward!";
+                document.getElementById('feedback-detail').className = "text-blue-900 font-bold";
                 
                 setTimeout(() => resume(), 1200);
             } else {
@@ -369,14 +364,15 @@ function triggerQuiz(block) {
                 
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
-                feedback.className = "mt-8 p-6 rounded-[30px] border-4 border-red-500 bg-red-500/10";
-                document.getElementById('feedback-title').innerText = "OUCH!";
-                document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-red-400";
-                document.getElementById('feedback-detail').innerText = `Incorrect entry. Fact: ${q.a}`;
+                feedback.className = "mt-10 p-8 rounded-[40px] border-8 border-red-500 bg-red-100";
+                document.getElementById('feedback-title').innerText = "MISS!";
+                document.getElementById('feedback-title').className = "font-black uppercase text-3xl mb-1 text-red-600";
+                document.getElementById('feedback-detail').innerText = `Fact Check: ${q.a}`;
+                document.getElementById('feedback-detail').className = "text-blue-900 font-bold";
                 
-                // Keep the missed question at the top for learning
+                // Keep the missed question close by
                 const missedQ = sessionDeck.shift();
-                sessionDeck.splice(2, 0, missedQ); // Re-insert a few questions later
+                sessionDeck.splice(2, 0, missedQ);
 
                 setTimeout(() => {
                     if (state.lives <= 0) endGame("GAME OVER", "The timeline collapsed.");
@@ -400,17 +396,14 @@ function resume() {
 
 function update() {
     if (state.gameStarted && state.gameActive && !state.paused) {
-        // Horizontal Movement
-        if (inputs.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.2; }
-        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.2; }
-        else { player.vx *= 0.8; player.frame = 0; }
+        if (inputs.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.25; }
+        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.25; }
+        else { player.vx *= 0.85; player.frame = 0; }
 
-        // Physics
-        player.vy += 0.9; 
+        player.vy += 1.0; 
         player.x += player.vx;
         player.y += player.vy;
 
-        // Ground collision
         if (player.y + player.h > state.groundY) { 
             player.y = state.groundY - player.h;
             player.vy = 0; 
@@ -418,39 +411,37 @@ function update() {
             player.jumpsAvailable = 2;
         }
 
-        // Block collision
         blocks.forEach(b => {
             if (!b.active && b.type === 'quiz') return;
             
             if (player.x < b.x + b.w && player.x + player.w > b.x && 
                 player.y < b.y + b.h && player.y + player.h > b.y) {
                 
-                // Head Bump (Hitting bottom)
-                if (player.vy < 0 && player.y > b.y + b.h - 30) {
-                    player.vy = 4;
+                // Head Bump (Classical Mario)
+                if (player.vy < 0 && player.y > b.y + b.h - 35) {
+                    player.vy = 5;
                     if (b.type === 'quiz' && b.active) {
                         b.active = false;
                         triggerQuiz(b);
                     }
                 } 
-                // Landing on Top
-                else if (player.vy > 0 && player.y + player.h < b.y + 30) {
+                // Landing
+                else if (player.vy > 0 && player.y + player.h < b.y + 35) {
                     player.y = b.y - player.h;
                     player.vy = 0;
                     player.grounded = true;
                     player.jumpsAvailable = 2;
                 }
-                // Side bumping
-                else if (player.vx > 0 && player.x + player.w < b.x + 20) { player.x = b.x - player.w; }
-                else if (player.vx < 0 && player.x > b.x + b.w - 20) { player.x = b.x + b.w; }
+                // Wall Collision
+                else if (player.vx > 0 && player.x + player.w < b.x + 25) { player.x = b.x - player.w; }
+                else if (player.vx < 0 && player.x > b.x + b.w - 25) { player.x = b.x + b.w; }
             }
         });
 
         if (player.x < 0) player.x = 0;
         
-        // Camera Follow
-        let targetCamX = -player.x + (state.viewportW * 0.3);
-        state.cameraX += (targetCamX - state.cameraX) * 0.1;
+        let targetCamX = -player.x + (state.viewportW * 0.25);
+        state.cameraX += (targetCamX - state.cameraX) * 0.15;
         if (state.cameraX > 0) state.cameraX = 0;
     }
 
@@ -461,78 +452,84 @@ function update() {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Background: Sky
+    // Sky
     ctx.fillStyle = "#5c94fc";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Clouds/Scenery (Static for simplicity)
-    ctx.fillStyle = "rgba(255,255,255,0.3)";
-    for(let i=0; i<10; i++) {
-        ctx.beginPath(); ctx.arc(200 + i*600, 200, 50, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(250 + i*600, 180, 60, 0, Math.PI*2); ctx.fill();
-        ctx.beginPath(); ctx.arc(300 + i*600, 200, 50, 0, Math.PI*2); ctx.fill();
+    // Background Scenery
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    for(let i=0; i<15; i++) {
+        ctx.beginPath(); ctx.ellipse(400 + i*800, 200, 100, 50, 0, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.ellipse(480 + i*800, 220, 80, 40, 0, 0, Math.PI*2); ctx.fill();
     }
     
     ctx.save();
     ctx.translate(state.cameraX, 0);
     
-    // Ground: Grass/Dirt
-    ctx.fillStyle = "#88d800"; // Grass top
-    ctx.fillRect(-2000, state.groundY, 50000, 20);
-    ctx.fillStyle = "#c84c0c"; // Dirt bottom
-    ctx.fillRect(-2000, state.groundY + 20, 50000, 100);
+    // Mario Ground
+    ctx.fillStyle = "#88d800"; // Top
+    ctx.fillRect(-5000, state.groundY, 60000, 30);
+    ctx.fillStyle = "#c84c0c"; // Dirt
+    ctx.fillRect(-5000, state.groundY + 30, 60000, 150);
+    
+    // Dirt Grid Pattern
+    ctx.strokeStyle = "rgba(0,0,0,0.1)";
+    ctx.lineWidth = 4;
+    for(let i=0; i<60; i++) {
+        ctx.beginPath(); ctx.moveTo(i*500, state.groundY+30); ctx.lineTo(i*500, state.viewportH); ctx.stroke();
+    }
 
-    // Blocks
+    // Interactive Blocks
     blocks.forEach(b => { 
         if (!b.active && b.type === 'quiz') {
-            ctx.fillStyle = '#737373'; // Spent block
-            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 10); ctx.fill();
+            ctx.fillStyle = '#6b7280'; // Empty block
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 12); ctx.fill();
+            ctx.strokeStyle = '#374151'; ctx.lineWidth = 6; ctx.stroke();
             return;
         }
         
         if (b.type === 'quiz') {
-            ctx.fillStyle = '#fbbf24'; // Question block
-            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 10); ctx.fill();
-            ctx.strokeStyle = '#92400e'; ctx.lineWidth = 4; ctx.stroke();
+            ctx.fillStyle = '#fbbf24'; // Question mark block
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 12); ctx.fill();
+            ctx.strokeStyle = '#92400e'; ctx.lineWidth = 6; ctx.stroke();
             ctx.fillStyle = '#0f172a';
-            ctx.font = 'black 48px Inter'; ctx.textAlign = 'center';
-            ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 15);
+            ctx.font = 'black 56px Inter'; ctx.textAlign = 'center';
+            ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 18);
         } else {
-            ctx.fillStyle = '#c84c0c'; // Brick block
-            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 5); ctx.fill();
-            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+            ctx.fillStyle = '#c84c0c'; // Brick
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 6); ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.stroke();
         }
     });
     
-    // Player Character (Boy Design)
+    // Character: Super Revision Boy
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
     
-    // Animation bounce
-    const bounce = Math.sin(player.frame) * 3;
+    const walk = Math.sin(player.frame * 2) * 6;
     
-    // Hair
-    ctx.fillStyle = "#4b2c20";
-    ctx.beginPath(); ctx.roundRect(-22, -32 + bounce, 44, 25, 10); ctx.fill();
+    // Cap
+    ctx.fillStyle = "#ef4444";
+    ctx.beginPath(); ctx.roundRect(-25, -45 + walk, 50, 20, 10); ctx.fill();
     // Face
     ctx.fillStyle = "#ffdbac";
-    ctx.fillRect(-18, -15 + bounce, 36, 30);
+    ctx.fillRect(-20, -25 + walk, 40, 35);
     // Eyes
     ctx.fillStyle = "#000";
-    ctx.fillRect(8, -8 + bounce, 4, 4);
-    // Shirt
-    ctx.fillStyle = "#ef4444"; // Red shirt
-    ctx.fillRect(-20, 15 + bounce, 40, 25);
-    // Blue Overalls/Pants
-    ctx.fillStyle = "#1d4ed8";
-    ctx.fillRect(-20, 30 + bounce, 40, 15);
-    ctx.fillRect(-20, 45, 15, 15); // Left leg
-    ctx.fillRect(5, 45, 15, 15);  // Right leg
+    ctx.fillRect(10, -15 + walk, 5, 5);
+    // Body (Red Shirt)
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(-22, 10 + walk, 44, 30);
+    // Blue Overalls
+    ctx.fillStyle = "#2563eb";
+    ctx.fillRect(-22, 25 + walk, 44, 15);
+    ctx.fillRect(-22, 40, 18, 20); // Left Leg
+    ctx.fillRect(4, 40, 18, 20);  // Right Leg
     // Shoes
     ctx.fillStyle = "#000";
-    ctx.fillRect(-22, 55, 18, 8);
-    ctx.fillRect(4, 55, 18, 8);
+    ctx.fillRect(-25, 58, 22, 10);
+    ctx.fillRect(3, 58, 22, 10);
 
     ctx.restore();
     ctx.restore();
@@ -545,12 +542,11 @@ function endGame(status, msg) {
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-// 180 Second Timer
 setInterval(() => {
     if (state.gameActive && !state.paused && state.timer > 0) {
         state.timer--;
         document.getElementById('stats-timer').innerText = state.timer + "s";
-        if (state.timer <= 0) endGame("TIME'S UP!", "Session ended.");
+        if (state.timer <= 0) endGame("FINISHED!", "Revision completed.");
     }
 }, 1000);
 
