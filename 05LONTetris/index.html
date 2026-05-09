@@ -37,7 +37,6 @@
             max-width: 100%;
         }
 
-        /* Responsive Controls Area */
         .control-btn {
             background: rgba(255, 255, 255, 0.1);
             border: 1px solid rgba(255, 255, 255, 0.15);
@@ -105,7 +104,6 @@
             opacity: 0.7;
         }
 
-        /* Hide controls on very large screens if preferred, but usually better to keep for accessibility */
         @media (min-height: 800px) and (min-width: 1024px) {
             #controls-area {
                 padding-left: 20%;
@@ -147,7 +145,6 @@
                 <h3 id="question-text" class="text-lg font-bold mb-6 text-white leading-tight"></h3>
                 <div id="options-container" class="grid grid-cols-1 gap-3"></div>
                 
-                <!-- Feedback Overlay -->
                 <div id="feedback-area" class="hidden mt-6 p-4 rounded-xl border-l-4">
                     <p id="feedback-title" class="font-black uppercase text-sm mb-1"></p>
                     <p id="feedback-text" class="text-xs text-slate-300 leading-relaxed mb-4"></p>
@@ -178,7 +175,7 @@
             <p class="text-blue-500 font-bold text-xs uppercase tracking-widest mb-10">1919-1939 Revision</p>
             <div class="space-y-4 mb-8 text-sm text-slate-400">
                 <p>Play 2 pieces, then solve an MCQ.</p>
-                <p>Laptop: Use <b>Arrow Keys</b> & <b>Space</b></p>
+                <p>Laptop: <b>Arrows</b> (Move/Rotate) & <b>Space</b> (Drop)</p>
                 <p>Mobile: Use touch buttons below</p>
                 <p>Wrong answers damage <span class="text-red-500 font-bold">Integrity</span>.</p>
             </div>
@@ -188,7 +185,7 @@
         </div>
     </div>
 
-    <!-- Controls: Fixed at bottom for touch devices -->
+    <!-- Controls area for touch/iPad -->
     <div id="controls-area" class="grid grid-cols-4 gap-3 p-4 border-t border-slate-800 shadow-2xl">
         <button id="ctrl-left" class="control-btn h-16 md:h-20 rounded-2xl">
             <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
@@ -218,16 +215,18 @@
             { q: "What was the main goal of 'collective security'?", a: "To protect members if they were attacked", o: ["To collect taxes", "To protect members if they were attacked", "To build a global army"], ex: "Article 10 meant members acted together to stop aggressors." },
             { q: "Which country was excluded for being communist until 1934?", a: "USSR", o: ["Germany", "USSR", "Italy"], ex: "The Western powers feared the spread of Communism after the 1917 revolution." },
             { q: "What are 'economic sanctions'?", a: "Official actions to stop trade", o: ["Military invasions", "Official actions to stop trade", "Monetary gifts to poor countries"], ex: "The League could pressure nations by cutting off their financial supply." },
-            { q: "In what year did Germany join the League?", a: "1926", o: ["1920", "1924", "1926"], ex: "Germany joined after the Locarno Treaties showed they were peaceful." }
+            { q: "In what year did Germany join the League?", a: "1926", o: ["1920", "1924", "1926"], ex: "Germany joined after the Locarno Treaties showed they were peaceful." },
+            { q: "Which city was the headquarters of the League of Nations?", a: "Geneva", o: ["Geneva", "London", "Paris"], ex: "Geneva, Switzerland was chosen for its neutrality." },
+            { q: "What body did the Secretariat represent?", a: "Civil service", o: ["Army", "Civil service", "Main assembly"], ex: "The Secretariat performed day-to-day administrative work." }
         ];
 
         const MEDIUM_MCQS = [
             { q: "Why was the absence of the USA a major blow?", a: "It made economic sanctions difficult to enforce.", o: ["The League had no leader.", "It made economic sanctions difficult to enforce.", "The USA had the only army."], ex: "Without the world's biggest economy, trade bans were ineffective." },
             { q: "Which treaty saw Germany and the USSR re-establish relations in 1922?", a: "Rapallo Treaty", o: ["Locarno Treaty", "Rapallo Treaty", "Dawes Plan"], ex: "The two 'pariah' nations joined together to trade and cooperate." },
-            { q: "What was a significant outcome of the Locarno Treaties (1925)?", a: "Germany accepted its western borders.", o: ["Germany paid more reparations.", "Germany accepted its western borders.", "The USSR joined the League."], ex: "Locarno created a brief era of optimism and peace in Europe." }
+            { q: "What was a significant outcome of the Locarno Treaties (1925)?", a: "Germany accepted its western borders.", o: ["Germany paid more reparations.", "Germany accepted its western borders.", "The USSR joined the League."], ex: "Locarno created a brief era of optimism and peace in Europe." },
+            { q: "Why did the League fail to act in the Vilna dispute of 1920?", a: "Poland was seen as a barrier to Communism.", o: ["Lithuania was too far away.", "Poland was seen as a barrier to Communism.", "The League didn't have any maps."], ex: "Britain and France supported Poland's claim for political reasons." }
         ];
 
-        // --- Game Logic ---
         const COLS = 10;
         const ROWS = 20;
         let blockSize = 0;
@@ -259,8 +258,19 @@
             [[0, 1, 1], [1, 1, 0]]  
         ];
 
+        // Advanced Fisher-Yates Shuffle Algorithm
+        function shuffle(array) {
+            const arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
         function resizeCanvas() {
             const container = document.getElementById('game-container');
+            if (!container) return;
             const availableW = container.clientWidth - 20;
             const availableH = container.clientHeight - 20;
             const maxW = Math.floor(availableW / COLS);
@@ -285,7 +295,6 @@
             ctx.fillStyle = '#0f172a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
             
-            // Draw Grid Lines (Ghost Grid)
             ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
             ctx.lineWidth = 1;
             for(let i=0; i<=COLS; i++) { ctx.beginPath(); ctx.moveTo(i*blockSize,0); ctx.lineTo(i*blockSize, canvas.height); ctx.stroke(); }
@@ -312,8 +321,6 @@
             ctx.strokeStyle = '#050810';
             ctx.lineWidth = 2;
             ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
-            
-            // Highlight for 3D effect
             ctx.fillStyle = 'rgba(255,255,255,0.1)';
             ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize / 4);
         }
@@ -382,13 +389,9 @@
                 y++;
             }
             if (linesCleared > 0) {
-                state.score += linesCleared * 100 * linesCleared; // Bonus for multi-lines
+                state.score += linesCleared * 100 * linesCleared;
                 updateHUD();
             }
-        }
-
-        function shuffle(arr) {
-            return arr.sort(() => Math.random() - 0.5);
         }
 
         function triggerMCQ() {
@@ -398,10 +401,10 @@
             
             let q;
             if (state.qRhythm < 2) {
-                if (state.easyPool.length === 0) state.easyPool = shuffle([...EASY_MCQS]);
+                if (state.easyPool.length === 0) state.easyPool = shuffle(EASY_MCQS);
                 q = state.easyPool.pop();
             } else {
-                if (state.hardPool.length === 0) state.hardPool = shuffle([...MEDIUM_MCQS]);
+                if (state.hardPool.length === 0) state.hardPool = shuffle(MEDIUM_MCQS);
                 q = state.hardPool.pop();
             }
             
@@ -412,14 +415,17 @@
         function renderMCQ(q) {
             document.getElementById('question-text').innerText = q.q;
             const tag = document.getElementById('difficulty-tag');
-            tag.innerText = `Focus: ${q.a.length > 12 ? 'Deep Knowledge' : 'Core Concept'}`;
+            tag.innerText = `Focus: ${q.a.length > 12 ? 'Detailed History' : 'Core Foundation'}`;
             
             const container = document.getElementById('options-container');
             container.innerHTML = '';
             document.getElementById('feedback-area').classList.add('hidden');
             container.classList.remove('hidden');
 
-            shuffle([...q.o]).forEach(opt => {
+            // Shuffle the options before rendering them as buttons
+            const shuffledOptions = shuffle(q.o);
+
+            shuffledOptions.forEach(opt => {
                 const btn = document.createElement('button');
                 btn.className = "option-btn w-full rounded-xl bg-slate-800 border border-slate-700 text-white font-bold active:scale-95 text-sm";
                 btn.innerText = opt;
@@ -467,7 +473,7 @@
             const m = Math.floor(state.timeLeft / 60);
             const s = state.timeLeft % 60;
             document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            document.getElementById('integrity-stars').innerHTML = '★'.repeat(state.lives) + '<span class="text-slate-800">' + '★'.repeat(Math.max(0, 5 - state.lives)) + '</span>';
+            document.getElementById('integrity-stars').innerHTML = '★'.repeat(Math.max(0, state.lives)) + '<span class="text-slate-800">' + '★'.repeat(Math.max(0, 5 - state.lives)) + '</span>';
         }
 
         function endGame(status, msg) {
@@ -504,47 +510,35 @@
 
         // --- Controls Mapping ---
         
-        // Touch Handlers
         document.getElementById('ctrl-left').onclick = (e) => { e.preventDefault(); if (!state.paused && state.piece) { state.piece.pos.x--; if (collide()) state.piece.pos.x++; draw(); }};
         document.getElementById('ctrl-right').onclick = (e) => { e.preventDefault(); if (!state.paused && state.piece) { state.piece.pos.x++; if (collide()) state.piece.pos.x--; draw(); }};
         document.getElementById('ctrl-rotate').onclick = (e) => { e.preventDefault(); if (!state.paused && state.piece) { const m = state.piece.matrix; state.piece.matrix = rotate(m); if (collide()) state.piece.matrix = m; draw(); }};
         document.getElementById('ctrl-drop').onclick = (e) => { e.preventDefault(); hardDrop(); draw(); };
 
-        // Keyboard Handlers (for Laptop) - Enhanced for reliability
         window.addEventListener('keydown', (e) => {
             if (!state.gameActive || state.paused || !state.piece) return;
             
-            // Prevent scrolling for game control keys
-            const gameKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Left', 'Right', 'Up', 'Down'];
-            if (gameKeys.includes(e.key)) {
-                e.preventDefault();
-            }
+            const gameKeys = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' ', 'Left', 'Right', 'Up', 'Down', 'Spacebar'];
+            if (gameKeys.includes(e.key)) e.preventDefault();
 
-            switch(e.key) {
-                case 'ArrowLeft':
-                case 'Left':
-                    state.piece.pos.x--;
-                    if (collide()) state.piece.pos.x++;
-                    break;
-                case 'ArrowRight':
-                case 'Right':
-                    state.piece.pos.x++;
-                    if (collide()) state.piece.pos.x--;
-                    break;
-                case 'ArrowDown':
-                case 'Down':
-                    drop();
-                    break;
-                case 'ArrowUp':
-                case 'Up':
-                    const m = state.piece.matrix;
-                    state.piece.matrix = rotate(m);
-                    if (collide()) state.piece.matrix = m;
-                    break;
-                case ' ':
-                    hardDrop();
-                    break;
+            const key = e.key;
+
+            if (key === 'ArrowLeft' || key === 'Left') {
+                state.piece.pos.x--;
+                if (collide()) state.piece.pos.x++;
+            } else if (key === 'ArrowRight' || key === 'Right') {
+                state.piece.pos.x++;
+                if (collide()) state.piece.pos.x--;
+            } else if (key === 'ArrowDown' || key === 'Down') {
+                drop();
+            } else if (key === 'ArrowUp' || key === 'Up') {
+                const m = state.piece.matrix;
+                state.piece.matrix = rotate(m);
+                if (collide()) state.piece.matrix = m;
+            } else if (key === ' ' || key === 'Spacebar') {
+                hardDrop();
             }
+            
             draw();
         }, false);
 
