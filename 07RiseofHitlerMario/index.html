@@ -116,6 +116,11 @@
             pointer-events: none;
             display: none;
         }
+
+        /* Ensure Quiz is visible and centered */
+        #quiz-overlay {
+            z-index: 1000 !important;
+        }
     </style>
 </head>
 <body>
@@ -127,7 +132,7 @@
         <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">History Revision Platformer</p>
         
         <div class="mb-10 text-slate-400 text-sm space-y-3 max-w-md bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
-            <p>Hit <b class="text-yellow-500">? Blocks</b> from below to reveal history questions.</p>
+            <p>Jump and hit <b class="text-yellow-500">? Blocks</b> from below to reveal history questions.</p>
             <p>Incorrect answers damage <b class="text-red-500">Historical Integrity</b> (Lives).</p>
             <p class="pt-4 text-xs font-black text-white border-t border-slate-800 uppercase">Computer: Arrows/WASD & Space</p>
             <p class="text-[10px] uppercase">Mobile: Use On-Screen Buttons</p>
@@ -158,7 +163,7 @@
     <div id="focus-hint">Click game area to enable keyboard</div>
 
     <!-- Quiz Overlay -->
-    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/95 p-4 backdrop-blur-sm">
+    <div id="quiz-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-slate-950/95 p-4 backdrop-blur-sm">
         <div class="w-full max-w-2xl bg-slate-900 border-2 border-yellow-500/30 rounded-3xl p-8 shadow-2xl">
             <div class="flex justify-between items-center mb-6">
                 <span class="text-yellow-500 text-xs font-black uppercase tracking-widest">Historical Fact Check</span>
@@ -449,7 +454,7 @@ function update() {
             if (player.x < b.x + b.w && player.x + player.w > b.x && 
                 player.y < b.y + b.h && player.y + player.h > b.y) {
                 
-                // Hitting from bottom (Jump hit)
+                // Hitting from bottom (Jump hit) - The Mario mechanic
                 if (player.vy < 0 && player.y > b.y + b.h - 20) {
                     b.active = false;
                     player.vy = 4; 
