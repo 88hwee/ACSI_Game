@@ -10,7 +10,7 @@
         
         :root {
             --sat: env(safe-area-inset-top);
-            --sab: env(safe-area-inset-bottom);
+            --sab: env(env(safe-area-inset-bottom));
             --sal: env(safe-area-inset-left);
             --sar: env(safe-area-inset-right);
         }
@@ -48,6 +48,7 @@
             display: block; 
             width: 100%;
             height: 100%;
+            outline: none;
         }
 
         .control-btn {
@@ -151,7 +152,7 @@
         </div>
     </div>
 
-    <canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas" tabindex="0"></canvas>
 
     <!-- Quiz Overlay -->
     <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm">
@@ -280,7 +281,7 @@ try {
         firebaseEnabled = true;
     }
 } catch (e) {
-    console.error("Cloud storage disabled.");
+    console.error("Cloud tracking unavailable.");
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -364,7 +365,7 @@ async function recordDeployment() {
 
 function initBlocks() {
     blocks = [];
-    for (let i = 0; i < 60; i++) {
+    for (let i = 0; i < 70; i++) {
         blocks.push({
             x: 800 + (i * 600),
             y: state.groundY - 240 - (Math.random() * 120),
@@ -414,18 +415,28 @@ function init() {
 
     sessionDeck = shuffle([...KOREAN_WAR_QUESTIONS]);
 
+    // High-precision keyboard listeners using e.code for laptop compatibility
     const handleKey = (e, isDown) => {
         if (!state.gameActive || state.paused) return;
-        const key = e.key.toLowerCase();
-        if (key === 'arrowleft' || key === 'a') { e.preventDefault(); inputs.left = isDown; }
-        if (key === 'arrowright' || key === 'd') { e.preventDefault(); inputs.right = isDown; }
-        if (isDown && (key === ' ' || key === 'w' || key === 'arrowup')) {
+        const code = e.code;
+        
+        // Movement
+        if (code === 'ArrowLeft' || code === 'KeyA') { e.preventDefault(); inputs.left = isDown; }
+        if (code === 'ArrowRight' || code === 'KeyD') { e.preventDefault(); inputs.right = isDown; }
+        
+        // Jump
+        if (isDown && (code === 'Space' || code === 'KeyW' || code === 'ArrowUp')) {
             e.preventDefault();
             handleJump();
         }
     };
     window.addEventListener('keydown', (e) => handleKey(e, true));
     window.addEventListener('keyup', (e) => handleKey(e, false));
+
+    // Force focus on canvas click for laptop
+    canvas.addEventListener('mousedown', () => {
+        canvas.focus();
+    });
 
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
@@ -450,6 +461,9 @@ function init() {
         document.getElementById('start-screen').classList.add('hidden');
         state.gameStarted = true;
         state.gameActive = true;
+        
+        // Transfer focus to game immediately
+        canvas.focus();
         window.focus();
     };
 
@@ -534,6 +548,7 @@ function updateLivesHUD() {
 function resume() {
     document.getElementById('quiz-overlay').classList.add('hidden');
     state.paused = false;
+    canvas.focus(); // Return focus to game after quiz
 }
 
 function update() {
@@ -625,7 +640,7 @@ function render() {
         }
     });
     
-    // Boy
+    // Character
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
