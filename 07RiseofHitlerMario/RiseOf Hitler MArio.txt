@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>History Mastery: Rise of Hitler</title>
+    <title>History Mastery: Super Revision Bros</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
         
         :root {
             --sat: env(safe-area-inset-top);
-            --sab: env(safe-area-inset-bottom);
+            --sab: env(env(safe-area-inset-bottom));
             --sal: env(safe-area-inset-left);
             --sar: env(safe-area-inset-right);
         }
@@ -20,11 +20,12 @@
             -webkit-user-select: none;
             user-select: none;
             -webkit-tap-highlight-color: transparent;
+            outline: none;
         }
 
         body { 
             margin: 0; 
-            background: #050810; 
+            background: #5c94fc;
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             color: white; 
@@ -38,7 +39,6 @@
             position: relative; 
             width: 100%; 
             height: 100%; 
-            background: #0f172a;
             overflow: hidden;
         }
 
@@ -49,35 +49,37 @@
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.2);
+            border: 4px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(5px);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
-            transition: background 0.1s;
+            transition: transform 0.1s;
         }
 
         .control-btn:active {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.9);
+            transform: scale(0.85);
+            background: rgba(255, 255, 255, 0.4);
         }
 
         .option-btn {
             transition: all 0.2s;
-            min-height: 3.5rem;
+            min-height: 4.5rem;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            padding: 0.5rem 1.5rem;
+            padding: 1rem 1.5rem;
             width: 100%;
-            border-radius: 12px;
-            font-weight: 700;
-            font-size: 0.9rem;
+            border-radius: 24px;
+            font-weight: 800;
+            font-size: 1.1rem;
             line-height: 1.2;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            border: 4px solid #3b82f6;
         }
 
         #hud {
@@ -86,11 +88,8 @@
             padding-right: calc(1rem + var(--sar));
         }
 
-        /* Responsive UI for Desktop */
-        @media (min-width: 1024px) {
-            .mobile-only-controls {
-                display: none !important;
-            }
+        .pixel-text {
+            text-shadow: 2px 2px 0px #000;
         }
     </style>
 </head>
@@ -98,102 +97,103 @@
 
 <div id="game-container">
     <!-- Start Screen -->
-    <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-5xl md:text-7xl font-black text-yellow-500 italic mb-2 tracking-tighter uppercase">Rise of Hitler</h1>
-        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">History Revision platformer</p>
+    <div id="start-screen" class="absolute inset-0 z-[110] flex flex-col items-center justify-center p-6 text-center bg-[#5c94fc]">
+        <div class="mb-6 bg-yellow-400 p-6 rounded-[40px] shadow-2xl rotate-[-2deg] border-8 border-white">
+            <h1 class="text-5xl md:text-7xl font-black text-blue-900 italic tracking-tighter uppercase">Rise of Hitler</h1>
+        </div>
+        <p class="text-white font-black text-xl tracking-widest mb-10 uppercase pixel-text">SUPER REVISION BROS</p>
         
-        <div class="mb-10 text-slate-400 text-sm space-y-2 max-w-md">
-            <p>Hit <b>? Blocks</b> from below to unlock history facts.</p>
-            <p>Correct answers give points. Wrong answers re-queue facts.</p>
-            <p>Laptop: <b>ARROWS / WASD</b> to move. <b>SPACE</b> to jump.</p>
+        <div class="mb-10 text-white text-sm space-y-4 max-w-md bg-white/20 p-8 rounded-[40px] border-4 border-white/40">
+            <p class="font-bold">Jump into <span class="text-yellow-300 font-black">? BLOCKS</span> from below to unlock history facts!</p>
+            <p>Incorrect answers damage your <span class="text-red-400 font-black">Hearts</span>.</p>
+            <p class="text-xs font-black uppercase bg-blue-800/50 py-3 rounded-2xl">Computer: Arrows/WASD & Space | Mobile: On-Screen UI</p>
         </div>
 
-        <button id="btn-start" class="px-16 py-5 bg-yellow-500 text-slate-950 font-black rounded-2xl shadow-2xl uppercase tracking-widest text-lg active:scale-95 transition-transform">
-            Begin Mission
+        <button id="btn-start" class="px-20 py-8 bg-yellow-400 text-blue-900 font-black rounded-full shadow-[0_12px_0_#ca8a04] hover:shadow-[0_6px_0_#ca8a04] hover:translate-y-1 uppercase tracking-widest text-2xl transition-all border-4 border-white">
+            START WORLD 1-1
         </button>
     </div>
 
     <!-- HUD -->
     <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
-        <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Integrity</p>
-            <p id="stats-lives" class="text-lg font-black text-red-500">3</p>
+        <div class="bg-black/30 backdrop-blur-md px-5 py-3 rounded-3xl border-2 border-white/20">
+            <p class="text-[10px] uppercase font-black text-white/70">Lives</p>
+            <p id="stats-lives" class="text-2xl font-black text-red-500">❤️❤️❤️❤️❤️</p>
         </div>
-        <div class="bg-black/60 backdrop-blur-md px-6 py-2 rounded-xl border border-white/10 text-center">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Stability</p>
-            <p id="stats-timer" class="text-lg font-black text-blue-400">180s</p>
+        <div class="bg-black/30 backdrop-blur-md px-8 py-3 rounded-3xl border-2 border-white/20 text-center">
+            <p class="text-[10px] uppercase font-black text-white/70">Time Remaining</p>
+            <p id="stats-timer" class="text-2xl font-black text-yellow-300">180s</p>
         </div>
-        <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-right">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Mastery</p>
-            <p id="stats-score" class="text-lg font-black text-yellow-500">0</p>
+        <div class="bg-black/30 backdrop-blur-md px-5 py-3 rounded-3xl border-2 border-white/20 text-right">
+            <p class="text-[10px] uppercase font-black text-white/70">Mastery Score</p>
+            <p id="stats-score" class="text-2xl font-black text-green-400">0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
 
     <!-- Quiz Overlay -->
-    <div id="quiz-overlay" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-slate-950/90 p-4 backdrop-blur-sm">
-        <div class="w-full max-w-2xl bg-slate-900 border-2 border-yellow-500/30 rounded-3xl p-8 shadow-2xl">
-            <div class="flex justify-between items-center mb-6">
-                <span class="text-yellow-500 text-xs font-black uppercase tracking-widest">Historical Verification Required</span>
-                <span id="quiz-status" class="text-slate-500 text-[10px] uppercase">Analysis Active</span>
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/85 backdrop-blur-sm">
+        <div class="w-full max-w-2xl bg-white border-8 border-yellow-400 rounded-[50px] p-10 shadow-2xl overflow-hidden">
+            <div class="flex justify-between items-center mb-8">
+                <span class="bg-blue-600 text-white text-[12px] px-4 py-2 rounded-full font-black uppercase tracking-widest">History Challenge</span>
+                <span id="quiz-status" class="text-blue-900/40 text-[10px] uppercase font-black tracking-widest">Awaiting Analysis...</span>
             </div>
-            <h3 id="question-text" class="text-xl md:text-2xl font-bold mb-8 text-white leading-tight"></h3>
-            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+            <h3 id="question-text" class="text-2xl md:text-3xl font-black mb-10 text-blue-900 leading-tight"></h3>
+            <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-5"></div>
             
-            <div id="feedback-area" class="hidden mt-8 p-6 rounded-2xl border-l-4">
-                <p id="feedback-title" class="font-black uppercase text-sm mb-1"></p>
-                <p id="feedback-detail" class="text-sm text-slate-300"></p>
+            <div id="feedback-area" class="hidden mt-10 p-8 rounded-[40px] border-4">
+                <p id="feedback-title" class="font-black uppercase text-2xl mb-2"></p>
+                <p id="feedback-detail" class="text-base text-blue-900/80 font-bold"></p>
             </div>
         </div>
     </div>
 
     <!-- End Screen -->
-    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950 p-8 text-center">
-        <h2 id="end-status" class="text-5xl font-black mb-2 italic uppercase tracking-tighter"></h2>
-        <div class="w-20 h-1 bg-yellow-500 mb-10 rounded-full"></div>
-        <div class="mb-12">
-            <p class="text-slate-500 text-xs uppercase font-bold tracking-widest mb-2">Final Mastery Level</p>
-            <div class="text-8xl font-black text-white" id="final-score">0</div>
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center p-10 text-center bg-blue-600">
+        <div class="mb-8 bg-white p-6 rounded-[40px] shadow-2xl border-8 border-yellow-400">
+            <h2 id="end-status" class="text-6xl font-black italic uppercase tracking-tighter text-blue-900"></h2>
         </div>
-        <button id="btn-restart" class="px-16 py-5 bg-white text-slate-950 font-black rounded-2xl uppercase tracking-widest text-lg shadow-2xl active:scale-95 transition-transform">
-            Restart Simulation
+        <div class="mb-12">
+            <p class="text-white font-black uppercase tracking-widest mb-4 pixel-text">Final Mastery Points</p>
+            <div class="text-[10rem] leading-none font-black text-yellow-300 drop-shadow-[0_15px_0_rgba(0,0,0,0.3)]" id="final-score">0</div>
+        </div>
+        <button id="btn-restart" class="px-20 py-8 bg-yellow-400 text-blue-900 font-black rounded-full shadow-[0_12px_0_#ca8a04] uppercase tracking-widest text-2xl transition-all active:translate-y-1 active:shadow-none border-4 border-white">
+            PLAY AGAIN
         </button>
     </div>
 
     <!-- Mobile UI Controls -->
-    <div class="mobile-only-controls absolute inset-0 pointer-events-none z-30">
-        <div class="absolute bottom-8 left-8 flex gap-6">
-            <div id="ctrl-left" class="control-btn w-20 h-20">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+    <div class="absolute inset-0 pointer-events-none z-30">
+        <div class="absolute bottom-10 left-10 flex gap-6 pointer-events-auto">
+            <div id="ctrl-left" class="control-btn w-24 h-24">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M15 19l-7-7 7-7"/></svg>
             </div>
-            <div id="ctrl-right" class="control-btn w-20 h-20">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+            <div id="ctrl-right" class="control-btn w-24 h-24">
+                <svg class="w-12 h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
-        <div class="absolute bottom-8 right-8">
-            <div id="ctrl-jump" class="control-btn w-24 h-24 bg-yellow-500/20 border-yellow-500/40">
-                <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 10l7-7 7 7M5 21l7-7 7 7"/></svg>
+        <div class="absolute bottom-10 right-10 pointer-events-auto">
+            <div id="ctrl-jump" class="control-btn w-32 h-32 bg-yellow-400/30 border-yellow-400 shadow-xl">
+                <div class="text-white font-black text-4xl italic">JUMP</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-const QUEST_BANK = {
-    easy: [
-        { q: "Who was the first President of the Weimar Republic?", a: "Friedrich Ebert", o: ["Friedrich Ebert", "Paul von Hindenburg", "Gustav Stresemann", "Franz von Papen"] },
-        { q: "The Dolchstoss theory claimed that the German army was:", a: "betrayed by politicians and civilians at home", o: ["defeated fairly by superior Allied tactics", "betrayed by politicians and civilians at home", "weakened mainly by poor military leadership", "abandoned by Austria-Hungary in the war"] },
-        { q: "What event helped trigger the worldwide economic depression?", a: "the Wall Street Crash", o: ["the Ruhr occupation", "the Wall Street Crash", "the Munich Putsch", "the Reichstag Fire"] },
-        { q: "What was the Nazi Party’s private army called?", a: "the SA", o: ["the SS", "the Gestapo", "the SA", "the SD"] },
-        { q: "Which building burned and helped Hitler gain emergency powers?", a: "the Reichstag", o: ["the Reich Chancellery", "the Reichstag", "the Kroll Opera House", "the Foreign Ministry"] }
-    ],
-    hard: [
-        { q: "What did Article 48 allow the President to do?", a: "rule by decree during emergencies", o: ["suspend elections permanently", "rule by decree during emergencies", "appoint army commanders without approval", "dissolve all political parties"] },
-        { q: "What majority was needed to pass the Enabling Act?", a: "a two-thirds majority", o: ["a simple majority", "a two-thirds majority", "a three-quarters majority", "a unanimous vote"] },
-        { q: "Who played a key role in Nazi economic recovery policy?", a: "Hjalmar Schacht", o: ["Joseph Goebbels", "Hjalmar Schacht", "Ernst Röhm", "Wilhelm Frick"] }
-    ]
-};
+const QUESTIONS = [
+    { q: "Who was the first President of the Weimar Republic?", a: "Friedrich Ebert", o: ["Friedrich Ebert", "Paul von Hindenburg", "Gustav Stresemann", "Franz von Papen"] },
+    { q: "The Dolchstoss theory claimed that the German army was:", a: "betrayed by politicians and civilians at home", o: ["defeated fairly by Allied tactics", "betrayed by politicians and civilians at home", "weakened by military leadership", "abandoned by Austria-Hungary"] },
+    { q: "What event helped trigger the worldwide economic depression in 1929?", a: "the Wall Street Crash", o: ["the Ruhr occupation", "the Wall Street Crash", "the Munich Putsch", "the Reichstag Fire"] },
+    { q: "What was the Nazi Party’s private army called?", a: "the SA", o: ["the SS", "the Gestapo", "the SA", "the SD"] },
+    { q: "Which building burned and helped Hitler gain emergency powers in 1933?", a: "the Reichstag", o: ["the Reich Chancellery", "the Reichstag", "the Kroll Opera House", "the Foreign Ministry"] },
+    { q: "What majority was needed to pass the Enabling Act?", a: "a two-thirds majority", o: ["a simple majority", "a two-thirds majority", "a three-quarters majority", "a unanimous vote"] },
+    { q: "Who played a key role in Nazi economic recovery policy as Minister of Economics?", a: "Hjalmar Schacht", o: ["Joseph Goebbels", "Hjalmar Schacht", "Ernst Röhm", "Wilhelm Frick"] },
+    { q: "What does the title 'Führer' mean?", a: "Leader", o: ["Chancellor", "Leader", "Emperor", "President"] },
+    { q: "Where was the 1923 Nazi attempt to seize power (The Putsch)?", a: "Munich", o: ["Berlin", "Munich", "Nuremberg", "Hamburg"] },
+    { q: "What was the purpose of the Nuremberg Laws (1935)?", a: "to strip Jews of their citizenship", o: ["to rebuild the army", "to strip Jews of their citizenship", "to ban trade unions", "to end the Great Depression"] }
+];
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -203,7 +203,7 @@ let state = {
     gameActive: false,
     paused: false,
     timer: 180,
-    lives: 3,
+    lives: 5,
     score: 0,
     viewportW: window.innerWidth,
     viewportH: window.innerHeight,
@@ -212,38 +212,46 @@ let state = {
 };
 
 const player = { 
-    x: 100, y: 0, w: 32, h: 48,
+    x: 200, y: 0, w: 50, h: 75,
     vx: 0, vy: 0, 
-    speed: 6, jumpPower: -14, 
+    speed: 8, jumpPower: -20, 
     grounded: false, facingRight: true,
-    jumpsAvailable: 2
+    jumpsAvailable: 2,
+    frame: 0
 };
 
 let sessionDeck = [];
 let blocks = [];
 
-function shuffle(a) { return a.sort(() => Math.random() - 0.5); }
-
-function buildSessionDeck() {
-    let easy = shuffle([...QUEST_BANK.easy]);
-    let hard = shuffle([...QUEST_BANK.hard]);
-    let deck = [];
-    while(easy.length > 0 || hard.length > 0) {
-        if(easy.length > 0) deck.push(easy.pop());
-        if(hard.length > 0) deck.push(hard.pop());
+function shuffle(a) {
+    let array = [...a];
+    for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
     }
-    return deck;
+    return array;
 }
 
 function initBlocks() {
     blocks = [];
-    for (let i = 0; i < 30; i++) {
+    for (let i = 0; i < 50; i++) {
         blocks.push({
-            x: 600 + (i * 450) + (Math.random() * 100),
-            y: state.groundY - 140 - (Math.random() * 80),
-            w: 64, h: 64,
-            active: true
+            x: 800 + (i * 600),
+            y: state.groundY - 240 - (Math.random() * 100),
+            w: 80, h: 80,
+            active: true,
+            type: 'quiz'
         });
+        
+        if (Math.random() > 0.5) {
+            blocks.push({
+                x: 1000 + (i * 600),
+                y: state.groundY - 140,
+                w: 80, h: 80,
+                active: true,
+                type: 'brick'
+            });
+        }
     }
 }
 
@@ -252,7 +260,7 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    state.groundY = state.viewportH - 60;
+    state.groundY = state.viewportH - 100;
     
     if (!state.gameStarted) {
         player.y = state.groundY - player.h;
@@ -260,18 +268,7 @@ function resize() {
     }
 }
 
-const inputs = { left: false, right: false, jump: false };
-
-function handleKeyDown(e) {
-    if (e.key === 'ArrowLeft' || e.key === 'a') inputs.left = true;
-    if (e.key === 'ArrowRight' || e.key === 'd') inputs.right = true;
-    if (e.key === ' ' || e.key === 'w' || e.key === 'ArrowUp') handleJump();
-}
-
-function handleKeyUp(e) {
-    if (e.key === 'ArrowLeft' || e.key === 'a') inputs.left = false;
-    if (e.key === 'ArrowRight' || e.key === 'd') inputs.right = false;
-}
+const inputs = { left: false, right: false };
 
 function handleJump() {
     if (!state.gameActive || state.paused) return;
@@ -284,34 +281,45 @@ function handleJump() {
 
 function init() {
     window.addEventListener('resize', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
+    const handleKey = (e, isDown) => {
+        if (!state.gameActive || state.paused) return;
+        const key = e.key.toLowerCase();
+        if (key === 'arrowleft' || key === 'a') inputs.left = isDown;
+        if (key === 'arrowright' || key === 'd') inputs.right = isDown;
+        if (isDown && (key === ' ' || key === 'w' || key === 'arrowup')) {
+            e.preventDefault();
+            handleJump();
+        }
+    };
+    window.addEventListener('keydown', (e) => handleKey(e, true));
+    window.addEventListener('keyup', (e) => handleKey(e, false));
 
-    // Mobile touch
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
-        el.addEventListener('touchstart', (e) => { e.preventDefault(); inputs[key] = true; });
-        el.addEventListener('touchend', (e) => { e.preventDefault(); inputs[key] = false; });
+        // Fix for Chrome/Strict mobile browsers: passive: false
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); inputs[key] = true; }, {passive: false});
+        el.addEventListener('touchend', (e) => { e.preventDefault(); inputs[key] = false; }, {passive: false});
     };
     setupTouch('ctrl-left', 'left');
     setupTouch('ctrl-right', 'right');
-    document.getElementById('ctrl-jump').addEventListener('touchstart', (e) => { e.preventDefault(); handleJump(); });
+    document.getElementById('ctrl-jump').addEventListener('touchstart', (e) => { e.preventDefault(); handleJump(); }, {passive: false});
 
     document.getElementById('btn-start').onclick = () => {
         document.getElementById('start-screen').classList.add('hidden');
-        sessionDeck = buildSessionDeck();
+        sessionDeck = shuffle([...QUESTIONS]);
         state.gameStarted = true;
         state.gameActive = true;
+        window.focus(); // Ensure inputs captured immediately
     };
 
     document.getElementById('btn-restart').onclick = () => location.reload();
-
     requestAnimationFrame(update);
 }
 
-function triggerQuiz() {
+function triggerQuiz(block) {
     state.paused = true;
     const q = sessionDeck[0];
     const modal = document.getElementById('quiz-overlay');
@@ -323,44 +331,44 @@ function triggerQuiz() {
     container.classList.remove('hidden');
     container.innerHTML = '';
     
-    shuffle([...q.o]).forEach(opt => {
+    const choices = shuffle([...q.o]);
+    
+    choices.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn bg-slate-800 text-white border-2 border-slate-700 active:bg-blue-600'; 
+        btn.className = 'option-btn bg-blue-600 text-white active:bg-yellow-400 active:text-blue-900 border-b-8 border-blue-800 transition-all'; 
         btn.innerText = opt;
         btn.onclick = () => {
             Array.from(container.children).forEach(b => b.disabled = true);
             if (opt === q.a) {
-                state.score += 250;
+                state.score += 1000;
                 document.getElementById('stats-score').innerText = state.score;
                 sessionDeck.shift();
+                if (sessionDeck.length === 0) sessionDeck = shuffle([...QUESTIONS]);
                 
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
-                feedback.className = "mt-8 p-6 rounded-2xl border-l-4 border-green-500 bg-green-500/10";
-                document.getElementById('feedback-title').innerText = "VERIFIED";
-                document.getElementById('feedback-title').className = "font-black uppercase text-sm mb-1 text-green-400";
-                document.getElementById('feedback-detail').innerText = "Correct. Historical integrity strengthened.";
+                feedback.className = "mt-10 p-8 rounded-[40px] border-8 border-green-500 bg-green-100";
+                document.getElementById('feedback-title').innerText = "MARVELOUS!";
+                document.getElementById('feedback-title').className = "font-black uppercase text-3xl mb-1 text-green-600";
+                document.getElementById('feedback-detail').innerText = "History stabilized. Onward!";
                 
-                setTimeout(() => {
-                    if (sessionDeck.length === 0) endGame("MISSION COMPLETE", "History Mastered.");
-                    else resume();
-                }, 1000);
+                setTimeout(() => resume(), 1200);
             } else {
                 state.lives--;
-                document.getElementById('stats-lives').innerText = state.lives;
+                updateLivesHUD();
                 
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
-                feedback.className = "mt-8 p-6 rounded-2xl border-l-4 border-red-500 bg-red-500/10";
-                document.getElementById('feedback-title').innerText = "ERROR DETECTED";
-                document.getElementById('feedback-title').className = "font-black uppercase text-sm mb-1 text-red-400";
-                document.getElementById('feedback-detail').innerText = `Incorrect. Fact: ${q.a}. Re-queueing analysis.`;
+                feedback.className = "mt-10 p-8 rounded-[40px] border-8 border-red-500 bg-red-100";
+                document.getElementById('feedback-title').innerText = "MISS!";
+                document.getElementById('feedback-title').className = "font-black uppercase text-3xl mb-1 text-red-600";
+                document.getElementById('feedback-detail').innerText = `Fact Check: ${q.a}`;
                 
                 const missedQ = sessionDeck.shift();
-                sessionDeck.push(missedQ); // Put at end of deck
+                sessionDeck.splice(2, 0, missedQ);
 
                 setTimeout(() => {
-                    if (state.lives <= 0) endGame("SYSTEM FAILURE", "Historical integrity lost.");
+                    if (state.lives <= 0) endGame("GAME OVER", "The timeline collapsed.");
                     else resume();
                 }, 2000);
             }
@@ -370,6 +378,10 @@ function triggerQuiz() {
     modal.classList.remove('hidden');
 }
 
+function updateLivesHUD() {
+    document.getElementById('stats-lives').innerText = '❤️'.repeat(Math.max(0, state.lives)) + '🖤'.repeat(Math.max(0, 5 - state.lives));
+}
+
 function resume() {
     document.getElementById('quiz-overlay').classList.add('hidden');
     state.paused = false;
@@ -377,17 +389,14 @@ function resume() {
 
 function update() {
     if (state.gameStarted && state.gameActive && !state.paused) {
-        // Horizontal Movement
-        if (inputs.right) { player.vx = player.speed; player.facingRight = true; }
-        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; }
-        else player.vx *= 0.8;
+        if (inputs.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.25; }
+        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.25; }
+        else { player.vx *= 0.85; player.frame = 0; }
 
-        // Physics
-        player.vy += 0.8; 
+        player.vy += 1.0; 
         player.x += player.vx;
         player.y += player.vy;
 
-        // Ground Collision
         if (player.y + player.h > state.groundY) { 
             player.y = state.groundY - player.h;
             player.vy = 0; 
@@ -395,36 +404,34 @@ function update() {
             player.jumpsAvailable = 2;
         }
 
-        // Block Collision
         blocks.forEach(b => {
-            if (!b.active) return;
+            if (!b.active && b.type === 'quiz') return;
             
-            // Basic AABB collision
             if (player.x < b.x + b.w && player.x + player.w > b.x && 
                 player.y < b.y + b.h && player.y + player.h > b.y) {
                 
-                // Head hit (from below)
-                if (player.vy < 0 && player.y > b.y + b.h - 20) {
-                    b.active = false;
-                    player.vy = 2; 
-                    triggerQuiz();
+                if (player.vy < 0 && player.y > b.y + b.h - 35) {
+                    player.vy = 5;
+                    if (b.type === 'quiz' && b.active) {
+                        b.active = false;
+                        triggerQuiz(b);
+                    }
                 } 
-                // Feet hit (from above)
-                else if (player.vy > 0 && player.y + player.h < b.y + 20) {
+                else if (player.vy > 0 && player.y + player.h < b.y + 35) {
                     player.y = b.y - player.h;
                     player.vy = 0;
                     player.grounded = true;
                     player.jumpsAvailable = 2;
                 }
+                else if (player.vx > 0 && player.x + player.w < b.x + 25) { player.x = b.x - player.w; }
+                else if (player.vx < 0 && player.x > b.x + b.w - 25) { player.x = b.x + b.w; }
             }
         });
 
-        // Limits
         if (player.x < 0) player.x = 0;
         
-        // Camera follow
-        let targetCamX = -player.x + (state.viewportW * 0.3);
-        state.cameraX += (targetCamX - state.cameraX) * 0.1;
+        let targetCamX = -player.x + (state.viewportW * 0.25);
+        state.cameraX += (targetCamX - state.cameraX) * 0.15;
         if (state.cameraX > 0) state.cameraX = 0;
     }
 
@@ -435,78 +442,104 @@ function update() {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Background
-    const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grd.addColorStop(0, "#0f172a");
-    grd.addColorStop(1, "#1e293b");
-    ctx.fillStyle = grd;
+    // Sky
+    ctx.fillStyle = "#5c94fc";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Scenery
+    ctx.fillStyle = "rgba(255,255,255,0.4)";
+    for(let i=0; i<15; i++) {
+        ctx.beginPath(); 
+        ctx.ellipse(400 + i*800, 200, 100, 50, 0, 0, Math.PI*2); 
+        ctx.fill();
+    }
     
     ctx.save();
     ctx.translate(state.cameraX, 0);
     
-    // Ground
-    ctx.fillStyle = "#334155";
-    ctx.fillRect(-1000, state.groundY, 50000, 100);
-    ctx.strokeStyle = "#475569";
+    // Mario Ground
+    ctx.fillStyle = "#88d800"; 
+    ctx.fillRect(-5000, state.groundY, 60000, 30);
+    ctx.fillStyle = "#c84c0c"; 
+    ctx.fillRect(-5000, state.groundY + 30, 60000, 150);
+    
+    ctx.strokeStyle = "rgba(0,0,0,0.1)";
     ctx.lineWidth = 4;
-    ctx.strokeRect(-1000, state.groundY, 50000, 1);
+    for(let i=0; i<60; i++) {
+        ctx.beginPath(); ctx.moveTo(i*500, state.groundY+30); ctx.lineTo(i*500, state.viewportH); ctx.stroke();
+    }
 
     // Blocks
     blocks.forEach(b => { 
-        if (!b.active) return;
+        if (!b.active && b.type === 'quiz') {
+            ctx.fillStyle = '#6b7280'; 
+            ctx.beginPath(); 
+            // Fallback for older roundRect implementations
+            if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 12);
+            else ctx.rect(b.x, b.y, b.w, b.h);
+            ctx.fill();
+            ctx.strokeStyle = '#374151'; ctx.lineWidth = 6; ctx.stroke();
+            return;
+        }
         
-        // Shadow
-        ctx.fillStyle = 'rgba(0,0,0,0.4)';
-        ctx.fillRect(b.x + 4, b.y + 4, b.w, b.h);
-        
-        // Block
-        ctx.fillStyle = '#fbbf24';
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-        
-        // Question mark
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 32px Inter'; 
-        ctx.textAlign = 'center';
-        ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 10);
+        if (b.type === 'quiz') {
+            ctx.fillStyle = '#fbbf24'; 
+            ctx.beginPath(); 
+            if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 12);
+            else ctx.rect(b.x, b.y, b.w, b.h);
+            ctx.fill();
+            ctx.strokeStyle = '#92400e'; ctx.lineWidth = 6; ctx.stroke();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'black 56px Inter'; ctx.textAlign = 'center';
+            ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 18);
+        } else {
+            ctx.fillStyle = '#c84c0c'; 
+            ctx.beginPath(); 
+            if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 6);
+            else ctx.rect(b.x, b.y, b.w, b.h);
+            ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 4; ctx.stroke();
+        }
     });
     
-    // Player
+    // Character
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
     
-    // Simple character
-    ctx.fillStyle = "#ffdbac"; // Skin
-    ctx.fillRect(-12, -22, 24, 22);
-    ctx.fillStyle = "#fbbf24"; // Shirt
-    ctx.fillRect(-14, 0, 28, 20);
-    ctx.fillStyle = "#0f172a"; // Legs
-    ctx.fillRect(-14, 20, 12, 10);
-    ctx.fillRect(2, 20, 12, 10);
+    const walk = Math.sin(player.frame * 2) * 6;
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(-25, -45 + walk, 50, 20);
+    ctx.fillStyle = "#ffdbac";
+    ctx.fillRect(-20, -25 + walk, 40, 35);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(10, -15 + walk, 5, 5);
+    ctx.fillStyle = "#ef4444";
+    ctx.fillRect(-22, 10 + walk, 44, 30);
+    ctx.fillStyle = "#2563eb";
+    ctx.fillRect(-22, 25 + walk, 44, 15);
+    ctx.fillRect(-22, 40, 18, 20);
+    ctx.fillRect(4, 40, 18, 20);
     ctx.restore();
-    
     ctx.restore();
 }
 
 function endGame(status, msg) {
     state.gameActive = false;
     document.getElementById('end-status').innerText = status;
-    document.getElementById('end-status').className = `text-5xl font-black mb-2 italic uppercase tracking-tighter ${status.includes('COMPLETE') ? 'text-green-500' : 'text-red-500'}`;
     document.getElementById('final-score').innerText = state.score;
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-// Timer Logic
 setInterval(() => {
     if (state.gameActive && !state.paused && state.timer > 0) {
         state.timer--;
         document.getElementById('stats-timer').innerText = state.timer + "s";
-        if (state.timer <= 0) endGame("TIME EXPIRED", "Mission incomplete.");
+        if (state.timer <= 0) endGame("FINISHED!", "Revision completed.");
     }
 }, 1000);
 
-init();
+window.onload = init;
 </script>
 </body>
 </html>
