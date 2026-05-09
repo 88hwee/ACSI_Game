@@ -4,188 +4,283 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Local Hero: Versailles Defense</title>
+
 <script src="https://cdn.tailwindcss.com"></script>
 
 <style>
-body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    background: #050505;
-    font-family: 'Courier New', monospace;
-    user-select: none;
-    touch-action: none;
-    position: fixed;
-    width: 100%;
-    height: 100%;
+body{
+    margin:0;
+    padding:0;
+    overflow:hidden;
+    background:#050505;
+    font-family:Arial, sans-serif;
+    touch-action:none;
+    user-select:none;
+    position:fixed;
+    width:100%;
+    height:100%;
 }
 
-#game-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle at bottom, #1a1a2e 0%, #000 70%);
-    overflow: hidden;
+#game-container{
+    position:relative;
+    width:100%;
+    height:100%;
+    overflow:hidden;
+    background:
+    radial-gradient(circle at bottom,#1a1a2e 0%,#000 70%);
 }
 
-canvas {
-    display: block;
-    width: 100%;
-    height: 100%;
+canvas{
+    width:100%;
+    height:100%;
+    display:block;
 }
 
-.option-btn {
-    min-height: 3.5rem;
-    border: 2px solid #374151;
-    touch-action: manipulation;
+.option-btn{
+    min-height:60px;
+    border:2px solid #374151;
 }
 
-.correct {
-    background: #059669 !important;
-    border-color: #34d399 !important;
+.correct{
+    background:#059669 !important;
 }
 
-.wrong {
-    background: #dc2626 !important;
-    border-color: #f87171 !important;
+.wrong{
+    background:#dc2626 !important;
 }
 
-.shake {
-    animation: shake 0.3s;
+.shake{
+    animation:shake 0.3s;
 }
 
-@keyframes shake {
-    20% { transform: translateX(-5px); }
-    40% { transform: translateX(5px); }
-    60% { transform: translateX(-5px); }
-    80% { transform: translateX(5px); }
+@keyframes shake{
+    20%{transform:translateX(-5px);}
+    40%{transform:translateX(5px);}
+    60%{transform:translateX(-5px);}
+    80%{transform:translateX(5px);}
 }
 
-#hud {
-    padding-top: calc(0.75rem + env(safe-area-inset-top));
-    padding-left: calc(1rem + env(safe-area-inset-left));
-    padding-right: calc(1rem + env(safe-area-inset-right));
+#hud{
+    padding-top:calc(10px + env(safe-area-inset-top));
+    padding-left:calc(12px + env(safe-area-inset-left));
+    padding-right:calc(12px + env(safe-area-inset-right));
 }
 
-#mobile-controls {
-    padding-bottom: calc(1.5rem + env(safe-area-inset-bottom));
-    padding-left: calc(1.5rem + env(safe-area-inset-left));
-    padding-right: calc(1.5rem + env(safe-area-inset-right));
+#mobile-controls{
+    padding-bottom:calc(18px + env(safe-area-inset-bottom));
+    padding-left:calc(18px + env(safe-area-inset-left));
+    padding-right:calc(18px + env(safe-area-inset-right));
 }
 </style>
 </head>
 
 <body>
+
 <div id="game-container">
 
-    <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-center z-40 bg-black/50 backdrop-blur-sm border-b border-blue-900/40">
-        <div>
-            <div class="text-blue-400 text-[10px] font-bold">SCORE</div>
-            <div id="score-val" class="text-white text-lg font-mono">0000</div>
-        </div>
+<div id="hud"
+class="absolute top-0 left-0 w-full flex justify-between items-center z-40 bg-black/50 backdrop-blur-sm border-b border-blue-900/30">
 
-        <div class="text-center">
-            <div class="text-red-400 text-[10px] font-bold">TIME</div>
-            <div id="timer-val" class="text-white text-xl font-mono">180s</div>
-        </div>
+<div>
+<div class="text-blue-400 text-[10px] font-bold">SCORE</div>
+<div id="score-val" class="text-white text-lg font-mono">0000</div>
+</div>
 
-        <div class="text-right">
-            <div class="text-green-400 text-[10px] font-bold">LIVES</div>
-            <div id="lives-container" class="text-sm"></div>
-        </div>
-    </div>
+<div class="text-center">
+<div class="text-red-400 text-[10px] font-bold">TIME</div>
+<div id="timer-val" class="text-white text-xl font-mono">180s</div>
+</div>
 
-    <canvas id="gameCanvas"></canvas>
+<div class="text-right">
+<div class="text-green-400 text-[10px] font-bold">LIVES</div>
+<div id="lives-container"></div>
+</div>
 
-    <div id="start-screen" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-6 text-center">
-        <h1 class="text-4xl md:text-7xl font-black text-white italic uppercase mb-2">Local Hero</h1>
-        <h2 class="text-blue-500 text-lg md:text-2xl font-bold mb-8">VERSAILLES DEFENSE</h2>
+</div>
 
-        <div class="max-w-md text-gray-300 text-sm md:text-base mb-8 space-y-3">
-            <p>Survive for <b>180 seconds</b>.</p>
-            <p>Shoot enemies. Missed enemies have <b>no penalty</b>.</p>
-            <p>Answer wrongly = lose <b>1 life</b>.</p>
-            <p>You have <b>5 lives</b>.</p>
-            <p>Laptop: A/D or ←/→ to move. Space to shoot.</p>
-        </div>
+<canvas id="gameCanvas"></canvas>
 
-        <button id="start-btn" class="w-full max-w-xs py-4 bg-blue-600 text-white font-black rounded-2xl text-lg active:scale-95">
-            START MISSION
-        </button>
-    </div>
+<!-- START SCREEN -->
+<div id="start-screen"
+class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-black/95 p-6 text-center">
 
-    <div id="mcq-modal" class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
-        <div class="bg-gray-900 border-2 border-blue-500 rounded-3xl w-full max-w-md p-6 shadow-2xl">
-            <p id="q-category" class="text-blue-400 text-xs font-bold uppercase mb-2">Question</p>
-            <h3 id="question-text" class="text-lg md:text-xl text-white font-bold mb-6"></h3>
-            <div id="options-container" class="grid grid-cols-1 gap-3"></div>
-            <div id="feedback-text" class="mt-4 h-8 text-center text-sm font-bold"></div>
-        </div>
-    </div>
+<h1 class="text-4xl md:text-7xl font-black text-white italic uppercase mb-2">
+Local Hero
+</h1>
 
-    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black p-8 text-center">
-        <h2 id="end-status" class="text-3xl md:text-5xl font-black text-red-500 mb-4">MISSION COMPLETE</h2>
-        <div id="final-score-display" class="text-6xl md:text-8xl font-black text-white mb-6">0000</div>
-        <p id="end-message" class="text-gray-300 text-sm mb-10"></p>
+<h2 class="text-blue-500 text-xl md:text-3xl font-bold mb-8">
+VERSAILLES DEFENSE
+</h2>
 
-        <button id="restart-btn" class="w-full max-w-xs py-4 bg-white text-black font-black rounded-2xl">
-            PLAY AGAIN
-        </button>
-    </div>
+<div class="max-w-md text-gray-300 text-sm md:text-base mb-8 space-y-3">
 
-    <div id="mobile-controls" class="absolute bottom-0 left-0 w-full flex justify-between items-end z-30 pointer-events-none">
-        <div class="flex gap-4 pointer-events-auto">
-            <button id="btn-left" class="w-20 h-20 bg-white/10 rounded-2xl border border-white/20 text-white text-4xl">‹</button>
-            <button id="btn-right" class="w-20 h-20 bg-white/10 rounded-2xl border border-white/20 text-white text-4xl">›</button>
-        </div>
+<p>Survive for <b>180 seconds</b>.</p>
 
-        <button id="btn-fire" class="w-24 h-24 bg-red-600 rounded-full border-4 border-red-300 pointer-events-auto text-white font-black">
-            FIRE
-        </button>
-    </div>
+<p>Wrong answer = lose 1 life.</p>
+
+<p>You have 5 lives.</p>
+
+<p>Missed enemies have no penalty.</p>
+
+<p>Laptop: A/D or ← → to move. Space to shoot.</p>
+
+</div>
+
+<button id="start-btn"
+class="w-full max-w-xs py-4 bg-blue-600 text-white font-black rounded-2xl text-lg active:scale-95">
+START GAME
+</button>
+
+</div>
+
+<!-- MCQ -->
+<div id="mcq-modal"
+class="hidden absolute inset-0 z-[100] flex items-center justify-center bg-black/90 p-4">
+
+<div class="bg-gray-900 border-2 border-blue-500 rounded-3xl w-full max-w-md p-6 shadow-2xl">
+
+<p id="q-category"
+class="text-blue-400 text-xs font-bold uppercase mb-2">
+Question
+</p>
+
+<h3 id="question-text"
+class="text-lg md:text-xl text-white font-bold mb-6">
+</h3>
+
+<div id="options-container"
+class="grid grid-cols-1 gap-3">
+</div>
+
+<div id="feedback-text"
+class="mt-4 h-8 text-center text-sm font-bold">
+</div>
+
+</div>
+</div>
+
+<!-- END SCREEN -->
+<div id="end-screen"
+class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-black p-8 text-center">
+
+<h2 id="end-status"
+class="text-3xl md:text-5xl font-black text-red-500 mb-4">
+MISSION COMPLETE
+</h2>
+
+<div id="final-score-display"
+class="text-6xl md:text-8xl font-black text-white mb-6">
+0000
+</div>
+
+<p id="end-message"
+class="text-gray-300 text-sm mb-10">
+</p>
+
+<button id="restart-btn"
+class="w-full max-w-xs py-4 bg-white text-black font-black rounded-2xl">
+PLAY AGAIN
+</button>
+
+</div>
+
+<!-- MOBILE CONTROLS -->
+<div id="mobile-controls"
+class="absolute bottom-0 left-0 w-full flex justify-between items-end z-30 pointer-events-none">
+
+<div class="flex gap-4 pointer-events-auto">
+
+<button id="btn-left"
+class="w-20 h-20 bg-white/10 rounded-2xl border border-white/20 text-white text-4xl">
+‹
+</button>
+
+<button id="btn-right"
+class="w-20 h-20 bg-white/10 rounded-2xl border border-white/20 text-white text-4xl">
+›
+</button>
+
+</div>
+
+<button id="btn-fire"
+class="w-24 h-24 bg-red-600 rounded-full border-4 border-red-300 pointer-events-auto text-white font-black">
+FIRE
+</button>
+
+</div>
+
 </div>
 
 <script>
+
 const QUESTIONS = [
-    { q: "Which article of the Treaty was the War Guilt Clause?", a: "Article 231", o: ["Article 231", "Article 105", "Article 42", "Article 15"] },
-    { q: "How much reparations was Germany forced to pay?", a: "£6,600 million", o: ["£6,600 million", "£3,300 million", "£1,100 million", "£9,900 million"] },
-    { q: "The German army was limited to how many men?", a: "100,000 men", o: ["100,000 men", "250,000 men", "500,000 men", "50,000 men"] },
-    { q: "Which territory was returned to France?", a: "Alsace-Lorraine", o: ["Alsace-Lorraine", "The Rhineland", "Danzig", "Saar"] },
-    { q: "What happened to the Rhineland?", a: "Demilitarised", o: ["Demilitarised", "Given to Italy", "Annexed by USA", "Split in two"] },
-    { q: "Which union was forbidden for Germany?", a: "Anschluss", o: ["Anschluss", "Triple Entente", "League membership", "German empire"] },
-    { q: "Which body was created to keep peace?", a: "League of Nations", o: ["League of Nations", "United Nations", "NATO", "European Union"] },
-    { q: "Germany was forbidden from having an...", a: "Air Force", o: ["Air Force", "Large police force", "Medical corps", "Railway system"] },
-    { q: "Who was known as the Tiger of France?", a: "Clemenceau", o: ["Clemenceau", "Lloyd George", "Wilson", "Orlando"] },
-    { q: "Who proposed the Fourteen Points?", a: "Woodrow Wilson", o: ["Woodrow Wilson", "Lloyd George", "Clemenceau", "Kaiser Wilhelm"] }
+{
+q:"Which article was the War Guilt Clause?",
+a:"Article 231",
+o:["Article 231","Article 105","Article 42","Article 15"]
+},
+{
+q:"How much reparations was Germany forced to pay?",
+a:"£6,600 million",
+o:["£6,600 million","£3,300 million","£1,100 million","£9,900 million"]
+},
+{
+q:"German army limited to how many men?",
+a:"100,000 men",
+o:["100,000 men","250,000 men","500,000 men","50,000 men"]
+},
+{
+q:"Which territory returned to France?",
+a:"Alsace-Lorraine",
+o:["Alsace-Lorraine","Rhineland","Danzig","Saar"]
+},
+{
+q:"What happened to the Rhineland?",
+a:"Demilitarised",
+o:["Demilitarised","Given to Italy","Split in two","Annexed"]
+},
+{
+q:"Which body was created to keep peace?",
+a:"League of Nations",
+o:["League of Nations","United Nations","NATO","European Union"]
+},
+{
+q:"Who proposed the Fourteen Points?",
+a:"Woodrow Wilson",
+o:["Woodrow Wilson","Lloyd George","Clemenceau","Kaiser Wilhelm"]
+}
 ];
 
 const canvas = document.getElementById("gameCanvas");
 const ctx = canvas.getContext("2d");
 
 let state = {
-    screen: "start",
-    score: 0,
-    lives: 5,
-    timeLeft: 180,
-    pausedForMCQ: false,
-    lastSpawn: 0,
-    lastFire: 0,
-    spawnRate: 2000,
-    qIndex: 0,
-    questionPool: [],
-    totalAnswered: 0,
-    correctAnswers: 0,
-    viewport: { w: window.innerWidth, h: window.innerHeight }
+screen:"start",
+score:0,
+lives:5,
+timeLeft:180,
+pausedForMCQ:false,
+lastSpawn:0,
+lastFire:0,
+spawnRate:2200,
+qIndex:0,
+questionPool:[],
+correctAnswers:0,
+totalAnswered:0,
+viewport:{
+w:window.innerWidth,
+h:window.innerHeight
+}
 };
 
 let player = {
-    x: 0,
-    y: 0,
-    w: 60,
-    h: 60,
-    speed: 0,
-    movingLeft: false,
-    movingRight: false
+x:0,
+y:0,
+w:60,
+h:60,
+speed:0,
+movingLeft:false,
+movingRight:false
 };
 
 let bullets = [];
@@ -193,417 +288,600 @@ let enemies = [];
 let particles = [];
 let timerInterval = null;
 
-function init() {
-    resize();
-    window.addEventListener("resize", resize);
+function init(){
 
-    document.getElementById("start-btn").onclick = startGame;
-    document.getElementById("restart-btn").onclick = resetGame;
+resize();
 
-    setupControls();
+window.addEventListener("resize",resize);
 
-    requestAnimationFrame(gameLoop);
+document.getElementById("start-btn").onclick = startGame;
+document.getElementById("restart-btn").onclick = resetGame;
+
+setupControls();
+
+requestAnimationFrame(gameLoop);
+
 }
 
-function resize() {
-    const dpr = window.devicePixelRatio || 1;
+function resize(){
 
-    state.viewport.w = window.innerWidth;
-    state.viewport.h = window.innerHeight;
+const dpr = window.devicePixelRatio || 1;
 
-    canvas.width = state.viewport.w * dpr;
-    canvas.height = state.viewport.h * dpr;
-    canvas.style.width = state.viewport.w + "px";
-    canvas.style.height = state.viewport.h + "px";
+state.viewport.w = window.innerWidth;
+state.viewport.h = window.innerHeight;
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+canvas.width = state.viewport.w * dpr;
+canvas.height = state.viewport.h * dpr;
 
-    const size = Math.min(state.viewport.w * 0.15, 70);
-    player.w = size;
-    player.h = size;
-    player.y = state.viewport.h - (state.viewport.w < 768 ? 180 : 140);
+canvas.style.width = state.viewport.w + "px";
+canvas.style.height = state.viewport.h + "px";
 
-    // SLOWER SHOOTING MACHINE MOVEMENT
-    player.speed = state.viewport.w * 0.012;
+ctx.setTransform(dpr,0,0,dpr,0,0);
 
-    if (state.screen === "start") {
-        player.x = state.viewport.w / 2 - player.w / 2;
-    }
+const size = Math.min(state.viewport.w * 0.15,70);
+
+player.w = size;
+player.h = size;
+
+player.y = state.viewport.h - (state.viewport.w < 768 ? 180 : 140);
+
+/* MUCH SLOWER PLAYER */
+player.speed = Math.min(5, state.viewport.w * 0.006);
+
+if(state.screen === "start"){
+player.x = state.viewport.w / 2 - player.w / 2;
 }
 
-function setupControls() {
-    const left = document.getElementById("btn-left");
-    const right = document.getElementById("btn-right");
-    const fireBtn = document.getElementById("btn-fire");
-
-    left.addEventListener("touchstart", e => { e.preventDefault(); player.movingLeft = true; });
-    left.addEventListener("touchend", e => { e.preventDefault(); player.movingLeft = false; });
-
-    right.addEventListener("touchstart", e => { e.preventDefault(); player.movingRight = true; });
-    right.addEventListener("touchend", e => { e.preventDefault(); player.movingRight = false; });
-
-    fireBtn.addEventListener("touchstart", e => { e.preventDefault(); fire(); });
-
-    left.addEventListener("mousedown", () => player.movingLeft = true);
-    left.addEventListener("mouseup", () => player.movingLeft = false);
-
-    right.addEventListener("mousedown", () => player.movingRight = true);
-    right.addEventListener("mouseup", () => player.movingRight = false);
-
-    fireBtn.addEventListener("mousedown", fire);
-
-    window.addEventListener("keydown", e => {
-        const key = e.key.toLowerCase();
-        if (key === "arrowleft" || key === "a") player.movingLeft = true;
-        if (key === "arrowright" || key === "d") player.movingRight = true;
-        if (key === " ") fire();
-    });
-
-    window.addEventListener("keyup", e => {
-        const key = e.key.toLowerCase();
-        if (key === "arrowleft" || key === "a") player.movingLeft = false;
-        if (key === "arrowright" || key === "d") player.movingRight = false;
-    });
 }
 
-function startGame() {
-    state.screen = "playing";
-    state.score = 0;
-    state.lives = 5;
-    state.timeLeft = 180;
-    state.pausedForMCQ = false;
-    state.lastSpawn = 0;
-    state.spawnRate = 2000;
-    state.qIndex = 0;
-    state.totalAnswered = 0;
-    state.correctAnswers = 0;
-    state.questionPool = shuffle([...QUESTIONS]);
+function setupControls(){
 
-    bullets = [];
-    enemies = [];
-    particles = [];
+const left = document.getElementById("btn-left");
+const right = document.getElementById("btn-right");
+const fireBtn = document.getElementById("btn-fire");
 
-    document.getElementById("start-screen").classList.add("hidden");
-    document.getElementById("end-screen").classList.add("hidden");
+left.addEventListener("touchstart",e=>{
+e.preventDefault();
+player.movingLeft = true;
+});
 
-    updateHUD();
+left.addEventListener("touchend",e=>{
+e.preventDefault();
+player.movingLeft = false;
+});
 
-    if (timerInterval) clearInterval(timerInterval);
+right.addEventListener("touchstart",e=>{
+e.preventDefault();
+player.movingRight = true;
+});
 
-    timerInterval = setInterval(() => {
-        if (state.screen === "playing" && !state.pausedForMCQ) {
-            state.timeLeft--;
-            updateHUD();
+right.addEventListener("touchend",e=>{
+e.preventDefault();
+player.movingRight = false;
+});
 
-            if (state.timeLeft <= 0) {
-                endGame("MISSION COMPLETE");
-            }
-        }
-    }, 1000);
+fireBtn.addEventListener("touchstart",e=>{
+e.preventDefault();
+fire();
+});
+
+window.addEventListener("keydown",e=>{
+
+const key = e.key.toLowerCase();
+
+if(key === "arrowleft" || key === "a"){
+player.movingLeft = true;
 }
 
-function resetGame() {
-    if (timerInterval) clearInterval(timerInterval);
-
-    state.screen = "start";
-    state.score = 0;
-    state.lives = 5;
-    state.timeLeft = 180;
-    state.pausedForMCQ = false;
-
-    bullets = [];
-    enemies = [];
-    particles = [];
-
-    document.getElementById("end-screen").classList.add("hidden");
-    document.getElementById("start-screen").classList.remove("hidden");
-
-    resize();
-    updateHUD();
+if(key === "arrowright" || key === "d"){
+player.movingRight = true;
 }
 
-function fire() {
-    if (state.screen !== "playing" || state.pausedForMCQ) return;
-
-    const now = Date.now();
-
-    if (now - state.lastFire < 170) return;
-
-    bullets.push({
-        x: player.x + player.w / 2 - 4,
-        y: player.y,
-        w: 8,
-        h: 30,
-        speed: state.viewport.h * 0.022
-    });
-
-    state.lastFire = now;
+if(key === " "){
+fire();
 }
 
-function update() {
-    if (state.screen !== "playing" || state.pausedForMCQ) return;
+});
 
-    if (player.movingLeft) player.x -= player.speed;
-    if (player.movingRight) player.x += player.speed;
+window.addEventListener("keyup",e=>{
 
-    player.x = Math.max(0, Math.min(state.viewport.w - player.w, player.x));
+const key = e.key.toLowerCase();
 
-    bullets.forEach((b, i) => {
-        b.y -= b.speed;
-        if (b.y < -50) bullets.splice(i, 1);
-    });
-
-    const now = Date.now();
-
-    if (now - state.lastSpawn > state.spawnRate) {
-        spawnEnemy();
-        state.lastSpawn = now;
-        state.spawnRate = Math.max(1000, state.spawnRate - 8);
-    }
-
-    enemies.forEach((en, i) => {
-        en.y += en.speed;
-
-        bullets.forEach((b, bi) => {
-            if (checkCollision(b, en)) {
-                bullets.splice(bi, 1);
-                enemies.splice(i, 1);
-                state.score += 50;
-                createExplosion(en.x + en.w / 2, en.y + en.h / 2);
-                updateHUD();
-
-                if (Math.random() < 0.35) {
-                    triggerMCQ();
-                }
-            }
-        });
-
-        if (en.y > state.viewport.h) {
-            enemies.splice(i, 1);
-            // No consequence if enemy is not shot
-        }
-    });
-
-    particles.forEach((p, i) => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.life -= 0.03;
-        if (p.life <= 0) particles.splice(i, 1);
-    });
+if(key === "arrowleft" || key === "a"){
+player.movingLeft = false;
 }
 
-function spawnEnemy() {
-    const size = Math.min(state.viewport.w * 0.16, 75);
-
-    enemies.push({
-        x: Math.random() * (state.viewport.w - size),
-        y: -size,
-        w: size,
-        h: size,
-        speed: (1.2 + Math.random() * 1.1) * (state.viewport.h / 800)
-    });
+if(key === "arrowright" || key === "d"){
+player.movingRight = false;
 }
 
-function draw() {
-    ctx.clearRect(0, 0, state.viewport.w, state.viewport.h);
+});
 
-    drawPlayer();
-
-    bullets.forEach(b => {
-        ctx.fillStyle = "#60A5FA";
-        ctx.shadowBlur = 12;
-        ctx.shadowColor = "#60A5FA";
-        ctx.fillRect(b.x, b.y, b.w, b.h);
-        ctx.shadowBlur = 0;
-    });
-
-    enemies.forEach(en => {
-        ctx.fillStyle = "#ef4444";
-        ctx.beginPath();
-        ctx.arc(en.x + en.w / 2, en.y + en.h / 2, en.w / 2, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.fillStyle = "#7f1d1d";
-        ctx.beginPath();
-        ctx.arc(en.x + en.w / 2, en.y + en.h / 2, en.w / 4, 0, Math.PI * 2);
-        ctx.fill();
-    });
-
-    particles.forEach(p => {
-        ctx.globalAlpha = p.life;
-        ctx.fillStyle = "#facc15";
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.globalAlpha = 1;
-    });
 }
 
-function drawPlayer() {
-    ctx.fillStyle = "#3b82f6";
-    ctx.fillRect(player.x, player.y, player.w, player.h);
+function startGame(){
 
-    ctx.fillStyle = "#93c5fd";
-    ctx.fillRect(player.x + player.w * 0.35, player.y - 12, player.w * 0.3, 14);
+state.screen = "playing";
+state.score = 0;
+state.lives = 5;
+state.timeLeft = 180;
+state.pausedForMCQ = false;
+state.spawnRate = 2200;
+state.qIndex = 0;
+state.correctAnswers = 0;
+state.totalAnswered = 0;
 
-    ctx.fillStyle = "#1e40af";
-    ctx.fillRect(player.x + 5, player.y + player.h - 12, player.w - 10, 12);
+state.questionPool = shuffle([...QUESTIONS]);
+
+bullets = [];
+enemies = [];
+particles = [];
+
+document.getElementById("start-screen").classList.add("hidden");
+document.getElementById("end-screen").classList.add("hidden");
+
+updateHUD();
+
+if(timerInterval) clearInterval(timerInterval);
+
+timerInterval = setInterval(()=>{
+
+if(state.screen === "playing" && !state.pausedForMCQ){
+
+state.timeLeft--;
+
+updateHUD();
+
+if(state.timeLeft <= 0){
+endGame("MISSION COMPLETE");
 }
 
-function triggerMCQ() {
-    state.pausedForMCQ = true;
-    document.getElementById("mcq-modal").classList.remove("hidden");
-    renderQuestion();
 }
 
-function renderQuestion() {
-    if (state.qIndex >= state.questionPool.length) {
-        state.questionPool = shuffle([...QUESTIONS]);
-        state.qIndex = 0;
-    }
+},1000);
 
-    const q = state.questionPool[state.qIndex];
-
-    document.getElementById("q-category").innerText =
-        `Question ${state.qIndex + 1}/${state.questionPool.length}`;
-
-    document.getElementById("question-text").innerText = q.q;
-
-    const container = document.getElementById("options-container");
-    const feedback = document.getElementById("feedback-text");
-
-    container.innerHTML = "";
-    feedback.innerText = "";
-
-    shuffle([...q.o]).forEach(opt => {
-        const btn = document.createElement("button");
-
-        btn.className = "option-btn w-full px-5 py-3 text-left text-white rounded-2xl bg-gray-800 font-bold text-sm";
-        btn.innerText = opt;
-        btn.onclick = () => handleAnswer(opt, q.a, btn);
-
-        container.appendChild(btn);
-    });
 }
 
-function handleAnswer(selected, correct, btn) {
-    const allBtns = document.querySelectorAll(".option-btn");
+function resetGame(){
 
-    allBtns.forEach(b => b.disabled = true);
+if(timerInterval) clearInterval(timerInterval);
 
-    state.totalAnswered++;
+state.screen = "start";
 
-    if (selected === correct) {
-        btn.classList.add("correct");
-        state.correctAnswers++;
-        state.score += 150;
-        state.qIndex++;
-        updateHUD();
+document.getElementById("end-screen").classList.add("hidden");
+document.getElementById("start-screen").classList.remove("hidden");
 
-        document.getElementById("feedback-text").innerText = "Correct!";
-        document.getElementById("feedback-text").style.color = "#34d399";
+resize();
+updateHUD();
 
-        setTimeout(resumeGame, 700);
-    } else {
-        btn.classList.add("wrong");
-
-        allBtns.forEach(b => {
-            if (b.innerText === correct) b.classList.add("correct");
-        });
-
-        // WRONG ANSWER = LOSE ONE LIFE
-        state.lives--;
-        state.qIndex++;
-        updateHUD();
-
-        document.getElementById("feedback-text").innerText =
-            `Wrong. Correct answer: ${correct}`;
-        document.getElementById("feedback-text").style.color = "#f87171";
-
-        document.getElementById("game-container").classList.add("shake");
-        setTimeout(() => {
-            document.getElementById("game-container").classList.remove("shake");
-        }, 300);
-
-        if (state.lives <= 0) {
-            setTimeout(() => endGame("MISSION FAILED"), 1200);
-        } else {
-            setTimeout(resumeGame, 1500);
-        }
-    }
 }
 
-function resumeGame() {
-    document.getElementById("mcq-modal").classList.add("hidden");
-    state.pausedForMCQ = false;
+function fire(){
+
+if(state.screen !== "playing") return;
+if(state.pausedForMCQ) return;
+
+const now = Date.now();
+
+if(now - state.lastFire < 170) return;
+
+/* BIGGER BULLETS */
+
+bullets.push({
+x:player.x + player.w/2 - 6,
+y:player.y,
+w:12,
+h:36,
+speed:state.viewport.h * 0.025
+});
+
+state.lastFire = now;
+
 }
 
-function updateHUD() {
-    document.getElementById("score-val").innerText =
-        state.score.toString().padStart(4, "0");
+function update(){
 
-    document.getElementById("timer-val").innerText =
-        `${state.timeLeft}s`;
+if(state.screen !== "playing") return;
+if(state.pausedForMCQ) return;
 
-    document.getElementById("lives-container").innerHTML =
-        "🛡️".repeat(state.lives);
+if(player.movingLeft){
+player.x -= player.speed;
 }
 
-function endGame(reason) {
-    state.screen = "end";
-
-    if (timerInterval) clearInterval(timerInterval);
-
-    document.getElementById("mcq-modal").classList.add("hidden");
-    document.getElementById("end-screen").classList.remove("hidden");
-
-    const accuracy = state.totalAnswered > 0
-        ? Math.round((state.correctAnswers / state.totalAnswered) * 100)
-        : 0;
-
-    document.getElementById("end-status").innerText = reason;
-    document.getElementById("final-score-display").innerText =
-        state.score.toString().padStart(4, "0");
-
-    document.getElementById("end-message").innerText =
-        `Accuracy: ${accuracy}% | Correct: ${state.correctAnswers}/${state.totalAnswered} | Lives left: ${state.lives}`;
+if(player.movingRight){
+player.x += player.speed;
 }
 
-function checkCollision(a, b) {
-    return a.x < b.x + b.w &&
-           a.x + a.w > b.x &&
-           a.y < b.y + b.h &&
-           a.y + a.h > b.y;
+player.x = Math.max(0,Math.min(state.viewport.w-player.w,player.x));
+
+bullets.forEach((b,i)=>{
+
+b.y -= b.speed;
+
+if(b.y < -50){
+bullets.splice(i,1);
 }
 
-function createExplosion(x, y) {
-    for (let i = 0; i < 15; i++) {
-        particles.push({
-            x,
-            y,
-            vx: (Math.random() - 0.5) * 8,
-            vy: (Math.random() - 0.5) * 8,
-            life: 1
-        });
-    }
+});
+
+const now = Date.now();
+
+if(now - state.lastSpawn > state.spawnRate){
+
+spawnEnemy();
+
+state.lastSpawn = now;
+
+state.spawnRate = Math.max(1200,state.spawnRate - 5);
+
 }
 
-function gameLoop() {
-    update();
-    draw();
-    requestAnimationFrame(gameLoop);
+enemies.forEach((en,i)=>{
+
+en.y += en.speed;
+
+bullets.forEach((b,bi)=>{
+
+if(checkCollision(b,en)){
+
+bullets.splice(bi,1);
+enemies.splice(i,1);
+
+state.score += 50;
+
+createExplosion(en.x + en.w/2,en.y + en.h/2);
+
+updateHUD();
+
+if(Math.random() < 0.35){
+triggerMCQ();
 }
 
-function shuffle(arr) {
-    for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
-    }
+}
 
-    return arr;
+});
+
+/* NO CONSEQUENCE IF ENEMY ESCAPES */
+
+if(en.y > state.viewport.h){
+enemies.splice(i,1);
+}
+
+});
+
+particles.forEach((p,i)=>{
+
+p.x += p.vx;
+p.y += p.vy;
+p.life -= 0.03;
+
+if(p.life <= 0){
+particles.splice(i,1);
+}
+
+});
+
+}
+
+function spawnEnemy(){
+
+const size = Math.min(state.viewport.w * 0.16,75);
+
+enemies.push({
+
+x:Math.random() * (state.viewport.w - size),
+
+y:-size,
+
+w:size,
+h:size,
+
+/* MUCH SLOWER ENEMIES */
+
+speed:(0.7 + Math.random() * 0.6) * (state.viewport.h / 800)
+
+});
+
+}
+
+function draw(){
+
+ctx.clearRect(0,0,state.viewport.w,state.viewport.h);
+
+drawPlayer();
+
+bullets.forEach(b=>{
+
+ctx.fillStyle = "#60A5FA";
+
+ctx.shadowBlur = 12;
+ctx.shadowColor = "#60A5FA";
+
+ctx.fillRect(b.x,b.y,b.w,b.h);
+
+ctx.shadowBlur = 0;
+
+});
+
+enemies.forEach(en=>{
+
+ctx.fillStyle = "#ef4444";
+
+ctx.beginPath();
+
+ctx.arc(
+en.x + en.w/2,
+en.y + en.h/2,
+en.w/2,
+0,
+Math.PI * 2
+);
+
+ctx.fill();
+
+});
+
+particles.forEach(p=>{
+
+ctx.globalAlpha = p.life;
+
+ctx.fillStyle = "#facc15";
+
+ctx.beginPath();
+
+ctx.arc(p.x,p.y,3,0,Math.PI*2);
+
+ctx.fill();
+
+ctx.globalAlpha = 1;
+
+});
+
+}
+
+function drawPlayer(){
+
+ctx.fillStyle = "#3b82f6";
+
+ctx.fillRect(player.x,player.y,player.w,player.h);
+
+ctx.fillStyle = "#93c5fd";
+
+ctx.fillRect(
+player.x + player.w*0.35,
+player.y - 12,
+player.w*0.3,
+14
+);
+
+}
+
+function triggerMCQ(){
+
+state.pausedForMCQ = true;
+
+document.getElementById("mcq-modal").classList.remove("hidden");
+
+renderQuestion();
+
+}
+
+function renderQuestion(){
+
+if(state.qIndex >= state.questionPool.length){
+
+state.questionPool = shuffle([...QUESTIONS]);
+state.qIndex = 0;
+
+}
+
+const q = state.questionPool[state.qIndex];
+
+document.getElementById("q-category").innerText =
+`Question ${state.qIndex + 1}/${state.questionPool.length}`;
+
+document.getElementById("question-text").innerText = q.q;
+
+const container = document.getElementById("options-container");
+
+const feedback = document.getElementById("feedback-text");
+
+container.innerHTML = "";
+feedback.innerText = "";
+
+shuffle([...q.o]).forEach(opt=>{
+
+const btn = document.createElement("button");
+
+btn.className =
+"option-btn w-full px-5 py-3 text-left text-white rounded-2xl bg-gray-800 font-bold text-sm";
+
+btn.innerText = opt;
+
+btn.onclick = ()=>handleAnswer(opt,q.a,btn);
+
+container.appendChild(btn);
+
+});
+
+}
+
+function handleAnswer(selected,correct,btn){
+
+const allBtns = document.querySelectorAll(".option-btn");
+
+allBtns.forEach(b=>b.disabled = true);
+
+state.totalAnswered++;
+
+if(selected === correct){
+
+btn.classList.add("correct");
+
+state.correctAnswers++;
+
+state.score += 150;
+
+state.qIndex++;
+
+updateHUD();
+
+document.getElementById("feedback-text").innerText = "Correct!";
+document.getElementById("feedback-text").style.color = "#34d399";
+
+setTimeout(resumeGame,700);
+
+}else{
+
+btn.classList.add("wrong");
+
+allBtns.forEach(b=>{
+
+if(b.innerText === correct){
+b.classList.add("correct");
+}
+
+});
+
+/* LOSE ONE LIFE */
+
+state.lives--;
+
+updateHUD();
+
+state.qIndex++;
+
+document.getElementById("feedback-text").innerText =
+`Wrong! Correct: ${correct}`;
+
+document.getElementById("feedback-text").style.color = "#f87171";
+
+document.getElementById("game-container").classList.add("shake");
+
+setTimeout(()=>{
+document.getElementById("game-container").classList.remove("shake");
+},300);
+
+/* GAME CONTINUES EVEN AT 0 LIVES */
+
+if(state.lives <= 0){
+
+state.lives = 0;
+
+updateHUD();
+
+}
+
+setTimeout(resumeGame,1500);
+
+}
+
+}
+
+function resumeGame(){
+
+document.getElementById("mcq-modal").classList.add("hidden");
+
+state.pausedForMCQ = false;
+
+}
+
+function updateHUD(){
+
+document.getElementById("score-val").innerText =
+state.score.toString().padStart(4,"0");
+
+document.getElementById("timer-val").innerText =
+`${state.timeLeft}s`;
+
+document.getElementById("lives-container").innerHTML =
+"🛡️".repeat(state.lives);
+
+}
+
+function endGame(reason){
+
+state.screen = "end";
+
+if(timerInterval) clearInterval(timerInterval);
+
+document.getElementById("mcq-modal").classList.add("hidden");
+
+document.getElementById("end-screen").classList.remove("hidden");
+
+const accuracy =
+state.totalAnswered > 0
+? Math.round((state.correctAnswers/state.totalAnswered)*100)
+: 0;
+
+document.getElementById("end-status").innerText = reason;
+
+document.getElementById("final-score-display").innerText =
+state.score.toString().padStart(4,"0");
+
+document.getElementById("end-message").innerText =
+`Accuracy: ${accuracy}% | Correct: ${state.correctAnswers}/${state.totalAnswered}`;
+
+}
+
+function checkCollision(a,b){
+
+return(
+a.x < b.x + b.w &&
+a.x + a.w > b.x &&
+a.y < b.y + b.h &&
+a.y + a.h > b.y
+);
+
+}
+
+function createExplosion(x,y){
+
+for(let i=0;i<15;i++){
+
+particles.push({
+
+x,
+y,
+
+vx:(Math.random()-0.5)*8,
+vy:(Math.random()-0.5)*8,
+
+life:1
+
+});
+
+}
+
+}
+
+function gameLoop(){
+
+update();
+
+draw();
+
+requestAnimationFrame(gameLoop);
+
+}
+
+function shuffle(arr){
+
+for(let i=arr.length-1;i>0;i--){
+
+const j = Math.floor(Math.random()*(i+1));
+
+[arr[i],arr[j]] = [arr[j],arr[i]];
+
+}
+
+return arr;
+
 }
 
 window.onload = init;
+
 </script>
+
 </body>
 </html>
