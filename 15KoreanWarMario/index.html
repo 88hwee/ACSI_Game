@@ -10,7 +10,7 @@
         
         :root {
             --sat: env(safe-area-inset-top);
-            --sab: env(env(safe-area-inset-bottom));
+            --sab: env(safe-area-inset-bottom);
             --sal: env(safe-area-inset-left);
             --sar: env(safe-area-inset-right);
         }
@@ -25,7 +25,7 @@
 
         body { 
             margin: 0; 
-            background: #5c94fc; /* Classic Mario Sky */
+            background: #5c94fc; 
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             color: white; 
@@ -90,20 +90,24 @@
 
         #hud {
             padding-top: calc(0.5rem + var(--sat));
-            padding-left: 1rem;
-            padding-right: 1rem;
+            padding-left: calc(1rem + var(--sal));
+            padding-right: calc(1rem + var(--sar));
         }
 
         .correct-flash { background: #16a34a !important; color: white !important; border-color: #22c55e !important; }
         .wrong-flash { background: #dc2626 !important; color: white !important; border-color: #ef4444 !important; }
         
         .quiz-scroll-area {
-            max-height: 60vh;
+            max-height: 55vh;
             overflow-y: auto;
             padding-right: 4px;
         }
         .quiz-scroll-area::-webkit-scrollbar { width: 4px; }
         .quiz-scroll-area::-webkit-scrollbar-thumb { background: #16a34a; border-radius: 10px; }
+
+        @media (min-width: 1024px) {
+            .mobile-controls { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -122,11 +126,11 @@
 
         <div class="mb-8 text-white text-sm space-y-3 max-w-md bg-white/10 p-6 rounded-[35px] border-4 border-white/20">
             <p class="font-bold">Jump & hit <span class="text-yellow-300 font-black">? BLOCKS</span> from below!</p>
-            <p class="text-[11px]">Answer 46 Intelligence Questions correctly to win.</p>
-            <p class="text-[10px] font-black uppercase bg-green-800/50 py-2 rounded-xl">PC: Arrows & Space | Mobile: On-Screen UI</p>
+            <p class="text-[11px]">Laptop: Arrow Keys/WASD & Space</p>
+            <p class="text-[11px]">Mobile: On-screen buttons</p>
         </div>
 
-        <button id="btn-start" class="px-16 py-6 bg-green-600 text-white loud-font rounded-full shadow-[0_10px_0_#14532d] hover:translate-y-1 active:translate-y-2 uppercase tracking-widest text-xl transition-all border-4 border-white">
+        <button id="btn-start" class="px-16 py-6 bg-green-600 text-white loud-font rounded-full shadow-[0_10px_0_#14532d] active:translate-y-2 uppercase tracking-widest text-xl transition-all border-4 border-white">
             DEPLOY UNIT
         </button>
     </div>
@@ -183,8 +187,8 @@
     </div>
 
     <!-- Mobile UI Controls -->
-    <div class="absolute inset-0 pointer-events-none z-30">
-        <div class="absolute bottom-10 left-10 flex gap-4 pointer-events-auto">
+    <div class="mobile-controls absolute inset-0 pointer-events-none z-30">
+        <div class="absolute bottom-10 left-[calc(1rem+var(--sal))] flex gap-4 pointer-events-auto">
             <div id="ctrl-left" class="control-btn w-20 h-20">
                 <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M15 19l-7-7 7-7"/></svg>
             </div>
@@ -192,7 +196,7 @@
                 <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="5" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
-        <div class="absolute bottom-10 right-10 pointer-events-auto">
+        <div class="absolute bottom-10 right-[calc(1rem+var(--sar))] pointer-events-auto">
             <div id="ctrl-jump" class="control-btn w-24 h-24 bg-green-600/30 border-green-600 shadow-xl">
                 <div class="text-white font-black text-2xl italic">JUMP</div>
             </div>
@@ -214,56 +218,55 @@ const KOREAN_WAR_QUESTIONS = [
     { q: "What geographical line served as the boundary between North and South Korea before and after the war?", a: "The 38th Parallel", o: ["The Yalu River", "The 17th Parallel", "The 38th Parallel", "The Kansas Line"] },
     { q: "Which nation provided the 'People's Volunteer Army' (PVA) to support North Korea?", a: "China", o: ["The Soviet Union", "China", "Japan", "Vietnam"] },
     { q: "Who was the President of the United States at the start of the Korean War?", a: "Harry S. Truman", o: ["Franklin D. Roosevelt", "Harry S. Truman", "Dwight D. Eisenhower", "John F. Kennedy"] },
-    { q: "What is the Korean War often called because it is frequently overshadowed by WWII and the Vietnam War?", a: "The Forgotten War", o: ["The Great War", "The Silent War", "The Forgotten War", "The Three-Year War"] },
-    { q: "What was the name of the last defensive pocket held by UN forces in the southeastern tip of Korea in August 1950?", a: "The Pusan Perimeter", o: ["The Seoul Sector", "The Pusan Perimeter", "The Iron Triangle", "The Chosin Reservoir"] },
-    { q: "Which US President was elected in 1952 after promising to visit Korea and end the conflict?", a: "Dwight D. Eisenhower", o: ["Richard Nixon", "Dwight D. Eisenhower", "Adlai Stevenson", "Harry Truman"] },
+    { q: "What is the Korean War often called?", a: "The Forgotten War", o: ["The Great War", "The Silent War", "The Forgotten War", "The Three-Year War"] },
+    { q: "What was the name of the last defensive pocket held by UN forces in August 1950?", a: "The Pusan Perimeter", o: ["The Seoul Sector", "The Pusan Perimeter", "The Iron Triangle", "The Chosin Reservoir"] },
+    { q: "Which US President was elected in 1952 after promising to end the conflict?", a: "Dwight D. Eisenhower", o: ["Richard Nixon", "Dwight D. Eisenhower", "Adlai Stevenson", "Harry Truman"] },
     { q: "Where was the final armistice agreement signed in 1953?", a: "Panmunjom", o: ["Seoul", "Pyongyang", "Panmunjom", "Kaesong"] },
     { q: "The 'Safe Conduct Passes' dropped by UN forces were known in Korean as:", a: "Ppira", o: ["Juche", "Ppira", "Hwarang", "Unam"] },
-    { q: "Which country provided the most significant amount of military equipment and tanks to the North Korean Army?", a: "The Soviet Union", o: ["China", "The Soviet Union", "Japan", "Great Britain"] },
+    { q: "Which country provided the most military equipment to North Korea initially?", a: "The Soviet Union", o: ["China", "The Soviet Union", "Japan", "Great Britain"] },
     { q: "What was the name of the primary North Korean ideology established by Kim Il Sung?", a: "Juche", o: ["Marxism", "Juche", "Maoism", "Ilminism"] },
-    { q: "Approximately how many total propaganda leaflets did the US-led forces drop during the war?", a: "2.5 billion", o: ["1 million", "100 million", "500 million", "2.5 billion"] },
+    { q: "Approximately how many total propaganda leaflets did the US-led forces drop?", a: "2.5 billion", o: ["1 million", "100 million", "500 million", "2.5 billion"] },
     
     // Medium Level
     { q: "What was the primary focus of the US 'NSC-68' document?", a: "A massive increase in military spending to counter Soviet expansion", o: ["Immediate peace negotiations", "A massive increase in military spending to counter Soviet expansion", "A plan to rebuild the Japanese economy", "The withdrawal of troops from Europe"] },
-    { q: "Why was the Soviet Union unable to veto the UN Security Council resolution to assist South Korea?", a: "They were boycotting the UN because it would not recognize communist China.", o: ["They were no longer a member of the UN.", "They were boycotting the UN because it would not recognize communist China.", "They had lost their veto power temporarily.", "They actually supported the resolution secretly."] },
-    { q: "Which speech is often blamed for giving the 'green light' to the North to invade by excluding Korea from the US defense perimeter?", a: "Dean Acheson’s National Press Club speech", o: ["The Truman Doctrine", "Dean Acheson’s National Press Club speech", "MacArthur’s 'No Substitute for Victory' speech", "The Cairo Declaration"] },
-    { q: "What term refers to the Korean War being a conflict where superpowers support opposing sides without fighting each other directly?", a: "Proxy War", o: ["Civil War", "Total War", "Proxy War", "Guerrilla War"] },
-    { q: "Why did China officially call its troops 'volunteers'?", a: "To avoid a formal declaration of war with the United States.", o: ["They were not paid for their service.", "To avoid a formal declaration of war with the United States.", "Because they were all civilian farmers.", "To show they were not under Mao's control."] },
-    { q: "What was the 'Lips and Teeth' theory?", a: "A Chinese security concept viewing North Korea as a critical buffer for China.", o: ["A medical theory about cold weather injuries.", "A Chinese security concept viewing North Korea as a critical buffer for China.", "A psychological warfare theme about hunger.", "A North Korean tactic for urban combat."] },
-    { q: "What was the 'sticking point' that delayed the armistice for two years (1951–1953)?", a: "The repatriation of prisoners of war (POWs)", o: ["The location of the border", "The repatriation of prisoners of war (POWs)", "The status of Taiwan", "The amount of war reparations"] },
-    { q: "Which battle is considered a major turning point in February 1951 where UN forces restored their morale?", a: "Chipyong-ni", o: ["Heartbreak Ridge", "Chipyong-ni", "Triangle Hill", "Pork Chop Hill"] },
-    { q: "The 'Bodo League' massacre involved the execution of suspected communists by which side?", a: "South Korean forces", o: ["North Korean forces", "South Korean forces", "The Chinese Volunteer Army", "The US Marines"] },
-    { q: "What was the official reason President Truman gave for firing General MacArthur?", a: "Insubordination and failure to respect civilian control of the military.", o: ["He lost the Battle of Chosin Reservoir.", "Insubordination and failure to respect civilian control of the military.", "He was too old for command.", "He refused to use nuclear weapons."] },
-    { q: "Which US agency was primarily responsible for 'black' (clandestine) propaganda during the war?", a: "The CIA", o: ["The State Department", "The FBI", "The CIA", "The Army Signal Corps"] },
-    { q: "What was the goal of 'Operation Strike'?", a: "To warn civilians of imminent bombing raids so they could flee.", o: ["To encourage industrial strikes in the North.", "To warn civilians of imminent bombing raids so they could flee.", "To launch a sudden ground assault on Pyongyang.", "To strike the Yalu River bridges."] },
-    { q: "How did the death of Joseph Stalin in March 1953 affect the war?", a: "His successors encouraged North Korea and China to accept peace terms.", o: ["It caused the Soviet Union to send more troops.", "His successors encouraged North Korea and China to accept peace terms.", "It led to a North Korean surrender.", "It resulted in a US invasion of the USSR."] },
-    { q: "What was the 'Pseudo-Kim Il Sung' theory used in UN propaganda?", a: "That the current leader was a fake 'Kim Sung Ju' masquerading as a hero.", o: ["That Kim was a Soviet robot.", "That the current leader was a fake 'Kim Sung Ju' masquerading as a hero.", "That Kim was secretly a capitalist.", "That Kim had already been killed in 1950."] },
-    { q: "Which US general took over the Eighth Army after Walton Walker died and is credited with restoring UN fighting spirit?", a: "Matthew Ridgway", o: ["Maxwell Taylor", "James Van Fleet", "Matthew Ridgway", "Mark Clark"] },
-    { q: "What was the significance of 'MiG Alley'?", a: "It was the northwestern area where jet-to-jet air combat occurred.", o: ["It was a supply route for North Korean tanks.", "It was the northwestern area where jet-to-jet air combat occurred.", "It was a nickname for the streets of Seoul.", "It was a famous propaganda leaflet theme."] },
-    { q: "What was the 'Rollback' policy suggested by MacArthur?", a: "Going beyond containment to destroy the North Korean regime and reunite Korea.", o: ["Withdrawing to the Pusan Perimeter.", "Going beyond containment to destroy the North Korean regime and reunite Korea.", "Using tanks to roll over enemy trenches.", "Rolling back the defense budget to 1945 levels."] },
-    { q: "Which battle involved US Marines fighting their way out of a massive Chinese encirclement in freezing temperatures?", a: "Chosin Reservoir", o: ["Inchon", "Chosin Reservoir", "Osan", "Pork Chop Hill"] },
-    { q: "What was the result of the 'Operation Little Switch' in April 1953?", a: "The exchange of sick and wounded prisoners.", o: ["The exchange of dead bodies.", "The exchange of sick and wounded prisoners.", "A temporary ceasefire for the New Year.", "The swapping of field generals."] },
-    { q: "How did the Korean War impact Japan's economy?", a: "US wartime spending 'jump-started' the economy, leading to rapid growth.", o: ["It destroyed Japanese factories.", "US wartime spending 'jump-started' the economy, leading to rapid growth.", "Japan was forced to pay for the UN's military costs.", "Japan was annexed by the United States."] },
+    { q: "Why was the Soviet Union unable to veto the UN resolution to assist South Korea?", a: "They were boycotting the UN because it would not recognize communist China.", o: ["They were no longer a member of the UN.", "They were boycotting the UN because it would not recognize communist China.", "They had lost their veto power temporarily.", "They supported the resolution secretly."] },
+    { q: "Which speech is often blamed for excluding Korea from the US defense perimeter?", a: "Dean Acheson’s National Press Club speech", o: ["The Truman Doctrine", "Dean Acheson’s National Press Club speech", "MacArthur’s 'No Substitute for Victory' speech", "The Cairo Declaration"] },
+    { q: "The Korean War is considered one of the first major Cold War...", a: "Proxy Wars", o: ["Total Wars", "Proxy Wars", "Civil Wars", "Guerrilla Wars"] },
+    { q: "Why did China officially call its troops 'volunteers'?", a: "To avoid a formal declaration of war with the United States.", o: ["They were not paid.", "To avoid a formal declaration of war with the United States.", "Because they were civilian farmers.", "To show they were not under Mao's control."] },
+    { q: "What was the 'Lips and Teeth' theory?", a: "A Chinese security concept viewing North Korea as a critical buffer for China.", o: ["A medical theory.", "A Chinese security concept viewing North Korea as a critical buffer for China.", "A psychological theme.", "A tactic for urban combat."] },
+    { q: "What was the 'sticking point' that delayed the armistice for two years?", a: "The repatriation of prisoners of war (POWs)", o: ["The border location", "The repatriation of prisoners of war (POWs)", "Taiwan status", "War reparations"] },
+    { q: "Which battle is a major turning point in Feb 1951 where UN morale was restored?", a: "Chipyong-ni", o: ["Heartbreak Ridge", "Chipyong-ni", "Triangle Hill", "Pork Chop Hill"] },
+    { q: "The 'Bodo League' massacre involved executions by which side?", a: "South Korean forces", o: ["North Korean forces", "South Korean forces", "Chinese Volunteer Army", "US Marines"] },
+    { q: "Why did President Truman fire General MacArthur?", a: "Insubordination and failure to respect civilian control of the military.", o: ["Losing at Chosin.", "Insubordination and failure to respect civilian control of the military.", "He was too old.", "Refusing to use nukes."] },
+    { q: "Which agency was responsible for 'black' (clandestine) propaganda?", a: "The CIA", o: ["State Department", "FBI", "The CIA", "Signal Corps"] },
+    { q: "What was the goal of 'Operation Strike'?", a: "To warn civilians of imminent bombing raids so they could flee.", o: ["Encourage strikes.", "To warn civilians of imminent bombing raids so they could flee.", "Ground assault.", "Destroy bridges."] },
+    { q: "How did the death of Joseph Stalin in March 1953 affect the war?", a: "His successors encouraged peace terms.", o: ["Sent more troops.", "His successors encouraged peace terms.", "North Korean surrender.", "US invasion of USSR."] },
+    { q: "What was the 'Pseudo-Kim Il Sung' theory used in UN propaganda?", a: "That the current leader was a fake masquerading as a hero.", o: ["He was a robot.", "That the current leader was a fake masquerading as a hero.", "He was a capitalist.", "He was killed in 1950."] },
+    { q: "Who took over the Eighth Army and is credited with restoring UN fighting spirit?", a: "Matthew Ridgway", o: ["Maxwell Taylor", "James Van Fleet", "Matthew Ridgway", "Mark Clark"] },
+    { q: "What was 'MiG Alley'?", a: "The area where jet-to-jet air combat occurred.", o: ["Supply route.", "The area where jet-to-jet air combat occurred.", "A street in Seoul.", "A leaflet theme."] },
+    { q: "What was the 'Rollback' policy suggested by MacArthur?", a: "Destroying the North regime and reuniting Korea.", o: ["Withdrawing.", "Destroying the North regime and reuniting Korea.", "Tank tactics.", "Budget cuts."] },
+    { q: "Which battle involved US Marines breaking out of an encirclement in freezing cold?", a: "Chosin Reservoir", o: ["Inchon", "Chosin Reservoir", "Osan", "Pork Chop Hill"] },
+    { q: "What was 'Operation Little Switch' in April 1953?", a: "The exchange of sick and wounded prisoners.", o: ["Exchanging dead bodies.", "The exchange of sick and wounded prisoners.", "New Year ceasefire.", "Swapping generals."] },
+    { q: "How did the Korean War impact Japan's economy?", a: "US spending 'jump-started' rapid economic growth.", o: ["Destroyed factories.", "US spending 'jump-started' rapid economic growth.", "Forced payments.", "US annexation."] },
     
     // Hard Level
-    { q: "Under 'Operation Nightingale,' the primary psychological message to enemy soldiers was:", a: "That they would receive excellent medical care and food as POWs.", o: ["That their leaders were lying.", "That they would receive excellent medical care and food as POWs.", "That they were about to be bombed.", "That the Soviet Union had abandoned them."] },
-    { q: "The '1st Radio Broadcasting and Leaflet Group' was also known by the nickname:", a: "The Ganders", o: ["The Hwarang", "The Sad Sacks", "The Ganders", "The Iron Men"] },
-    { q: "Which specific psywar plan was designed to distract from the Communist observance of 'May Day'?", a: "Plan Mist", o: ["Plan Blizzard", "Plan Mist", "Plan Eyewash", "Plan Nutcracker"] },
-    { q: "What was the mortality rate for American prisoners of war in North Korean/Chinese captivity?", a: "38%–43%", o: ["5%", "15%", "38%–43%", "70%"] },
-    { q: " 'Plan Rat Killer' was a military and psychological campaign directed at:", a: "Communist guerrillas/partisans remaining in South Korea.", o: ["Enemy officers who ran away.", "Communist guerrillas/partisans remaining in South Korea.", "North Korean farmers hiding rice.", "Infected areas where germ warfare was suspected."] },
-    { q: "The term 'Enemy Collapse Service' was the communist counterpart to the US term:", a: "Psychological Warfare", o: ["Counter-Intelligence", "Psychological Warfare", "Special Operations", "Strategic Bombing"] },
-    { q: "According to major economic studies, by the end of the war in 1953, South Korea's money in circulation had increased by:", a: "24–42 times", o: ["2 times", "5 times", "24–42 times", "100 times"] },
-    { q: "Which UN ally suffered the highest number of deaths (after the US) among the 16 nations that sent combat troops?", a: "The United Kingdom", o: ["Canada", "The United Kingdom", "Turkey", "Australia"] },
-    { q: "What was the primary reason many Chinese and North Korean POWs refused repatriation?", a: "Many were former Nationalists or people forced into service who feared execution at home.", o: ["They were offered money by the US.", "Many were former Nationalists or people forced into service who feared execution at home.", "They had forgotten the Korean language.", "They were 'brainwashed' by American movies."] },
-    { q: "Which specific leaflet operation was designed to convince North Korean farmers to hide their crops from communist collectors?", a: "Plan 52/19", o: ["Plan Think", "Plan 52/19", "Plan Farmer", "Plan Harvest Moon"] },
-    { q: "How did General Ridgway's preferred psychological warfare approach differ from standard theory?", a: "He advocated for showing realistic pictures of dead/disfigured enemy soldiers to inspire fear.", o: ["He wanted to use only radio.", "He advocated for showing realistic pictures of dead/disfigured enemy soldiers to inspire fear.", "He refused to use leaflets at all.", "He wanted to focus only on friendly morale."] },
-    { q: "The 'Mayer Agreement' of May 1953 concerned what aspect of the war?", a: "Repayment of loans made by South Korea to UN forces.", o: ["The final border line.", "Repayment of loans made by South Korea to UN forces.", "The exchange of female prisoners.", "The status of Soviet pilots."] },
-    { q: "Which specific psywar theme used the name of a Shakespearean character to denote distrust of communist superiors?", a: "Iago", o: ["Desdemona", "Iago", "Othello", "Hamlet"] },
-    { q: "In Chinese propaganda, what was the primary purpose of the song 'War Song of the Chinese People’s Volunteer Army'?", a: "To mobilize the masses, boost morale, and normalize the hardships of war.", o: ["To coordinate secret attacks.", "To mobilize the masses, boost morale, and normalize the hardships of war.", "To mock the American leaders.", "To signal a retreat."] },
-    { q: "What was 'Operation Glory'?", a: "The exchange of deceased combatants' remains after the armistice.", o: ["The final offensive in 1953.", "The exchange of deceased combatants' remains after the armistice.", "The nickname for the Inchon landing.", "A plan to drop gold on North Korean cities."] }
+    { q: "Under 'Operation Nightingale,' what was the primary message to enemy soldiers?", a: "That they would receive medical care and food as POWs.", o: ["Leaders were lying.", "That they would receive medical care and food as POWs.", "Upcoming bombing.", "Soviet abandonment."] },
+    { q: "The '1st Radio Broadcasting and Leaflet Group' nickname was:", a: "The Ganders", o: ["The Hwarang", "The Sad Sacks", "The Ganders", "The Iron Men"] },
+    { q: "Which psywar plan distracted from the Communist 'May Day' in 1952?", a: "Plan Mist", o: ["Plan Blizzard", "Plan Mist", "Plan Eyewash", "Plan Nutcracker"] },
+    { q: "What was the US POW mortality rate in North Korean/Chinese captivity?", a: "38%–43%", o: ["5%", "15%", "38%–43%", "70%"] },
+    { q: " 'Plan Rat Killer' was directed at:", a: "Communist guerrillas remaining in South Korea.", o: ["Officers who fled.", "Communist guerrillas remaining in South Korea.", "Farmers hiding rice.", "Germ warfare areas."] },
+    { q: "The term 'Enemy Collapse Service' was the communist equivalent to:", a: "Psychological Warfare", o: ["Counter-Intelligence", "Psychological Warfare", "Special Ops", "Strategic Bombing"] },
+    { q: "By 1953, South Korea's money in circulation had increased by how much?", a: "24–42 times", o: ["2 times", "5 times", "24–42 times", "100 times"] },
+    { q: "Which UN ally suffered the most deaths after the US?", a: "The United Kingdom", o: ["Canada", "The United Kingdom", "Turkey", "Australia"] },
+    { q: "Why did many Communist POWs refuse repatriation?", a: "They feared execution at home due to being former Nationalists.", o: ["Offered money.", "They feared execution at home due to being former Nationalists.", "Forgot the language.", "Brainwashed."] },
+    { q: "Which operation convinced North Korean farmers to hide crops from collectors?", a: "Plan 52/19", o: ["Plan Think", "Plan 52/19", "Plan Farmer", "Plan Harvest Moon"] },
+    { q: "General Ridgway's psywar approach focused on:", a: "Showing realistic pictures of dead enemy soldiers to inspire fear.", o: ["Radio only.", "Showing realistic pictures of dead enemy soldiers to inspire fear.", "No leaflets.", "Friendly morale only."] },
+    { q: "The 'Mayer Agreement' of May 1953 concerned:", a: "Repayment of loans made by South Korea to UN forces.", o: ["Final border.", "Repayment of loans made by South Korea to UN forces.", "Female prisoners.", "Soviet pilots."] },
+    { q: "Which Shakespearean character's name was used to denote distrust?", a: "Iago", o: ["Desdemona", "Iago", "Othello", "Hamlet"] },
+    { q: "The song 'War Song of the Chinese People’s Volunteer Army' was used for:", a: "Mobilizing the masses and normalizing hardships.", o: ["Secret attacks.", "Mobilizing the masses and normalizing hardships.", "Mocking leaders.", "Signalling retreat."] },
+    { q: "What was 'Operation Glory'?", a: "The exchange of deceased combatants' remains after the armistice.", o: ["Final offensive.", "The exchange of deceased combatants' remains after the armistice.", "Inchon nickname.", "Dropping gold."] }
 ];
 
-// Configuration Setup
 let auth, db, appId;
 let firebaseEnabled = false;
 
@@ -277,7 +280,7 @@ try {
         firebaseEnabled = true;
     }
 } catch (e) {
-    console.error("Cloud tracking unavailable.");
+    console.error("Cloud storage disabled.");
 }
 
 const canvas = document.getElementById('gameCanvas');
@@ -298,7 +301,7 @@ let state = {
 };
 
 const player = { 
-    x: 200, y: 0, w: 50, h: 75,
+    x: 200, y: 0, w: 44, h: 66,
     vx: 0, vy: 0, 
     speed: 8, jumpPower: -20, 
     grounded: false, facingRight: true,
@@ -308,9 +311,8 @@ const player = {
 
 let sessionDeck = [];
 let blocks = [];
-const touchInput = { left: false, right: false };
+const inputs = { left: false, right: false };
 
-// Double Randomization: Shuffle Master List and Options
 function shuffle(a) {
     let array = [...a];
     for (let i = array.length - 1; i > 0; i--) {
@@ -362,20 +364,17 @@ async function recordDeployment() {
 
 function initBlocks() {
     blocks = [];
-    // Generate long track of quiz blocks
-    for (let i = 0; i < 80; i++) {
+    for (let i = 0; i < 60; i++) {
         blocks.push({
-            x: 800 + (i * 550),
+            x: 800 + (i * 600),
             y: state.groundY - 240 - (Math.random() * 120),
             w: 80, h: 80,
             active: true,
             type: 'quiz'
         });
-        
-        // Random Platform Bricks
         if (Math.random() > 0.4) {
             blocks.push({
-                x: 1100 + (i * 550),
+                x: 1100 + (i * 600),
                 y: state.groundY - 140,
                 w: 80, h: 80,
                 active: true,
@@ -409,19 +408,17 @@ function handleJump() {
 
 function init() {
     window.addEventListener('resize', resize);
-    window.addEventListener('orientationchange', resize);
+    window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
     initTracking();
 
-    // Randomize Question Pool for the session
     sessionDeck = shuffle([...KOREAN_WAR_QUESTIONS]);
 
-    // Keyboard Input
     const handleKey = (e, isDown) => {
         if (!state.gameActive || state.paused) return;
         const key = e.key.toLowerCase();
-        if (key === 'arrowleft' || key === 'a') touchInput.left = isDown;
-        if (key === 'arrowright' || key === 'd') touchInput.right = isDown;
+        if (key === 'arrowleft' || key === 'a') { e.preventDefault(); inputs.left = isDown; }
+        if (key === 'arrowright' || key === 'd') { e.preventDefault(); inputs.right = isDown; }
         if (isDown && (key === ' ' || key === 'w' || key === 'arrowup')) {
             e.preventDefault();
             handleJump();
@@ -430,16 +427,15 @@ function init() {
     window.addEventListener('keydown', (e) => handleKey(e, true));
     window.addEventListener('keyup', (e) => handleKey(e, false));
 
-    // Touch Controls
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
         el.addEventListener('touchstart', (e) => { 
             e.preventDefault(); 
-            touchInput[key] = true; 
+            inputs[key] = true; 
         }, { passive: false });
         el.addEventListener('touchend', (e) => { 
             e.preventDefault(); 
-            touchInput[key] = false; 
+            inputs[key] = false; 
         }, { passive: false });
     };
     setupTouch('ctrl-left', 'left');
@@ -470,12 +466,11 @@ function triggerQuiz() {
     const feedback = document.getElementById('feedback-area');
     
     document.getElementById('question-text').innerText = q.q;
-    document.getElementById('stats-q-remaining').innerText = `DATA REQUISITION REMAINING: ${sessionDeck.length}`;
+    document.getElementById('stats-q-remaining').innerText = `DATA REQUISITIONS: ${sessionDeck.length}`;
     feedback.classList.add('hidden');
     container.classList.remove('hidden');
     container.innerHTML = '';
     
-    // Randomize choice order for the quiz modal
     const choices = shuffle([...q.o]);
     
     choices.forEach(opt => {
@@ -497,7 +492,7 @@ function triggerQuiz() {
                 feedback.className = "mt-6 p-5 rounded-[25px] border-4 border-green-500 bg-green-50";
                 document.getElementById('feedback-title').innerText = "VERIFIED";
                 document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-green-600";
-                document.getElementById('feedback-detail').innerText = "Data entry confirmed. Mission continuing.";
+                document.getElementById('feedback-detail').innerText = "Data intelligence verified. Ready for next phase.";
 
                 if (sessionDeck.length === 0) {
                     setTimeout(() => endGame(true), 1200);
@@ -514,11 +509,10 @@ function triggerQuiz() {
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
                 feedback.className = "mt-6 p-5 rounded-[25px] border-4 border-red-500 bg-red-50";
-                document.getElementById('feedback-title').innerText = "DATA CORRUPTED";
+                document.getElementById('feedback-title').innerText = "CORRUPTED";
                 document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-red-600";
-                document.getElementById('feedback-detail').innerText = `Correction: ${q.a}. Unit re-evaluating.`;
+                document.getElementById('feedback-detail').innerText = `Fact: ${q.a}. Re-queueing mission.`;
 
-                // Re-queue the missed question later in the session
                 const missedQ = sessionDeck.shift();
                 sessionDeck.splice(Math.min(3, sessionDeck.length), 0, missedQ); 
 
@@ -544,17 +538,14 @@ function resume() {
 
 function update() {
     if (state.gameStarted && state.gameActive && !state.paused) {
-        // Horizontal Movement
-        if (touchInput.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.25; }
-        else if (touchInput.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.25; }
+        if (inputs.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.25; }
+        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.25; }
         else { player.vx *= 0.85; player.frame = 0; }
 
-        // Gravity
         player.vy += 1.0; 
         player.x += player.vx;
         player.y += player.vy;
 
-        // Ground Floor
         if (player.y + player.h > state.groundY) { 
             player.y = state.groundY - player.h;
             player.vy = 0; 
@@ -562,14 +553,10 @@ function update() {
             player.jumpsAvailable = 2;
         }
 
-        // Hit Detection (Mario Blocks)
         blocks.forEach(b => {
             if (!b.active && b.type === 'quiz') return;
-            
             if (player.x < b.x + b.w && player.x + player.w > b.x && 
                 player.y < b.y + b.h && player.y + player.h > b.y) {
-                
-                // Head Bump Detection
                 if (player.vy < 0 && player.y > b.y + b.h - 35) {
                     player.vy = 5;
                     if (b.type === 'quiz' && b.active) {
@@ -577,102 +564,79 @@ function update() {
                         triggerQuiz();
                     }
                 } 
-                // Landing on platform
                 else if (player.vy > 0 && player.y + player.h < b.y + 35) {
                     player.y = b.y - player.h;
                     player.vy = 0;
                     player.grounded = true;
                     player.jumpsAvailable = 2;
                 }
-                // Wall bumping
                 else if (player.vx > 0 && player.x + player.w < b.x + 25) { player.x = b.x - player.w; }
                 else if (player.vx < 0 && player.x > b.x + b.w - 25) { player.x = b.x + b.w; }
             }
         });
 
         if (player.x < 0) player.x = 0;
-        
-        // Dynamic Camera
         let targetCamX = -player.x + (state.viewportW * 0.25);
         state.cameraX += (targetCamX - state.cameraX) * 0.15;
         if (state.cameraX > 0) state.cameraX = 0;
     }
-
     render();
     requestAnimationFrame(update);
 }
 
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Background Sky
     ctx.fillStyle = "#5c94fc";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
-    // Scenery: Clouds
+    // Background
     ctx.fillStyle = "rgba(255,255,255,0.4)";
-    for(let i=0; i<20; i++) {
+    for(let i=0; i<15; i++) {
         ctx.beginPath(); ctx.ellipse(400 + i*900, 180, 100, 50, 0, 0, Math.PI*2); ctx.fill();
     }
     
     ctx.save();
     ctx.translate(state.cameraX, 0);
     
-    // Ground Grass and Dirt
-    ctx.fillStyle = "#16a34a"; 
-    ctx.fillRect(-5000, state.groundY, 80000, 30);
-    ctx.fillStyle = "#5c4033"; 
-    ctx.fillRect(-5000, state.groundY + 30, 80000, 150);
+    // Level
+    ctx.fillStyle = "#16a34a"; ctx.fillRect(-5000, state.groundY, 80000, 30);
+    ctx.fillStyle = "#5c4033"; ctx.fillRect(-5000, state.groundY + 30, 80000, 150);
     
-    // Level Bricks
     blocks.forEach(b => { 
         if (!b.active && b.type === 'quiz') {
-            ctx.fillStyle = '#6b7280'; 
-            ctx.beginPath(); 
+            ctx.fillStyle = '#6b7280'; ctx.beginPath(); 
             if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 12);
             else ctx.rect(b.x, b.y, b.w, b.h);
             ctx.fill();
             return;
         }
-        
         if (b.type === 'quiz') {
-            ctx.fillStyle = '#fbbf24'; 
-            ctx.beginPath(); 
+            ctx.fillStyle = '#fbbf24'; ctx.beginPath(); 
             if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 12);
             else ctx.rect(b.x, b.y, b.w, b.h);
             ctx.fill();
-            ctx.fillStyle = '#0f172a';
-            ctx.font = 'black 56px Inter'; ctx.textAlign = 'center';
+            ctx.fillStyle = '#0f172a'; ctx.font = 'black 50px Inter'; ctx.textAlign = 'center';
             ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 18);
         } else {
-            ctx.fillStyle = '#15803d'; 
-            ctx.beginPath(); 
+            ctx.fillStyle = '#15803d'; ctx.beginPath(); 
             if (ctx.roundRect) ctx.roundRect(b.x, b.y, b.w, b.h, 6);
             else ctx.rect(b.x, b.y, b.w, b.h);
             ctx.fill();
         }
     });
     
-    // Player Character Design (Boy)
+    // Boy
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
-    
     const bounce = Math.sin(player.frame * 2) * 6;
-    ctx.fillStyle = "#4b2c20"; // Hair
-    ctx.fillRect(-22, -45 + bounce, 44, 25);
-    ctx.fillStyle = "#ffdbac"; // Skin
-    ctx.fillRect(-20, -20 + bounce, 40, 35);
-    ctx.fillStyle = "#000"; // Eyes
-    ctx.fillRect(8, -12 + bounce, 5, 5);
-    ctx.fillStyle = "#16a34a"; // Military Shirt
-    ctx.fillRect(-22, 15 + bounce, 44, 30);
-    ctx.fillStyle = "#1e3a8a"; // Blue Pants
-    ctx.fillRect(-22, 25 + bounce, 44, 15);
-    ctx.fillRect(-22, 40, 18, 20); // Leg Left
-    ctx.fillRect(4, 40, 18, 20);  // Leg Right
+    ctx.fillStyle = "#4b2c20"; ctx.fillRect(-18, -40 + bounce, 36, 20);
+    ctx.fillStyle = "#ffdbac"; ctx.fillRect(-18, -20 + bounce, 36, 30);
+    ctx.fillStyle = "#000"; ctx.fillRect(8, -12 + bounce, 5, 5);
+    ctx.fillStyle = "#16a34a"; ctx.fillRect(-20, 10 + bounce, 40, 30);
+    ctx.fillStyle = "#1e3a8a"; ctx.fillRect(-20, 25 + bounce, 40, 15);
+    ctx.fillRect(-20, 40, 16, 18); ctx.fillRect(4, 40, 16, 18);
     ctx.restore();
-    
     ctx.restore();
 }
 
@@ -683,7 +647,6 @@ function endGame(victory) {
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-// 180 Second Countdown
 setInterval(() => {
     if (state.gameActive && !state.paused && state.timer > 0) {
         state.timer--;
