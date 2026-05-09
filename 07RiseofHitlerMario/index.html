@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>History Mastery: Rise of Hitler</title>
+    <title>History Mastery: Super Mario Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
@@ -25,7 +25,7 @@
 
         body { 
             margin: 0; 
-            background: #020617; 
+            background: #5c94fc; /* Classic Mario Sky Blue */
             font-family: 'Inter', sans-serif; 
             overflow: hidden; 
             color: white; 
@@ -39,7 +39,6 @@
             position: relative; 
             width: 100%; 
             height: 100%; 
-            background: #0f172a;
             overflow: hidden;
         }
 
@@ -47,26 +46,23 @@
             display: block; 
             width: 100%;
             height: 100%;
-            background: #020617;
-            cursor: pointer;
         }
 
         .control-btn {
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: 3px solid rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(5px);
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             pointer-events: auto;
-            transition: all 0.1s ease;
+            transition: transform 0.1s;
         }
 
         .control-btn:active {
-            background: rgba(255, 255, 255, 0.3);
-            transform: scale(0.9);
-            border-color: #fbbf24;
+            transform: scale(0.85);
+            background: rgba(255, 255, 255, 0.4);
         }
 
         .option-btn {
@@ -78,11 +74,11 @@
             text-align: center;
             padding: 1rem 1.5rem;
             width: 100%;
-            border-radius: 16px;
-            font-weight: 700;
-            font-size: 0.95rem;
+            border-radius: 20px;
+            font-weight: 800;
+            font-size: 1rem;
             line-height: 1.2;
-            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
         }
 
         #hud {
@@ -91,35 +87,11 @@
             padding-right: calc(1rem + var(--sar));
         }
 
-        /* Responsive UI for Desktop */
-        @media (min-width: 1024px) {
-            .mobile-only-controls {
-                opacity: 0.3; /* Fade out on desktop but keep for accessibility */
-                transition: opacity 0.3s;
-            }
-            .mobile-only-controls:hover {
-                opacity: 1;
-            }
-        }
-        
-        /* Focus Hint for Laptop */
-        #focus-hint {
-            position: absolute;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.5);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 10px;
-            color: #94a3b8;
-            pointer-events: none;
-            display: none;
-        }
-
-        /* Ensure Quiz is visible and centered */
-        #quiz-overlay {
-            z-index: 1000 !important;
+        /* Screen overlays */
+        .overlay-screen {
+            background: rgba(0, 0, 0, 0.85);
+            backdrop-filter: blur(10px);
+            z-index: 100;
         }
     </style>
 </head>
@@ -127,91 +99,93 @@
 
 <div id="game-container">
     <!-- Start Screen -->
-    <div id="start-screen" class="absolute inset-0 z-50 bg-slate-950/95 flex flex-col items-center justify-center p-6 text-center">
-        <h1 class="text-5xl md:text-7xl font-black text-yellow-500 italic mb-2 tracking-tighter uppercase">Rise of Hitler</h1>
-        <p class="text-blue-400 font-bold text-xs tracking-widest mb-10 uppercase">History Revision Platformer</p>
+    <div id="start-screen" class="absolute inset-0 z-[110] flex flex-col items-center justify-center p-6 text-center bg-blue-600">
+        <div class="mb-4 bg-yellow-400 p-4 rounded-3xl shadow-xl rotate-[-2deg] border-4 border-white">
+            <h1 class="text-4xl md:text-6xl font-black text-blue-900 italic tracking-tighter uppercase">Rise of Hitler</h1>
+        </div>
+        <p class="text-white font-bold text-sm tracking-widest mb-10 uppercase drop-shadow-md">SUPER REVISION BROS</p>
         
-        <div class="mb-10 text-slate-400 text-sm space-y-3 max-w-md bg-slate-900/50 p-6 rounded-3xl border border-slate-800">
-            <p>Jump and hit <b class="text-yellow-500">? Blocks</b> from below to reveal history questions.</p>
-            <p>Incorrect answers damage <b class="text-red-500">Historical Integrity</b> (Lives).</p>
-            <p class="pt-4 text-xs font-black text-white border-t border-slate-800 uppercase">Computer: Arrows/WASD & Space</p>
-            <p class="text-[10px] uppercase">Mobile: Use On-Screen Buttons</p>
+        <div class="mb-10 text-white text-sm space-y-4 max-w-md bg-white/10 p-6 rounded-3xl border border-white/20">
+            <p>Run, jump, and hit <b class="text-yellow-400">? Blocks</b> from below to reveal history questions!</p>
+            <p>Incorrect answers reduce your <b class="text-red-400">Hearts</b>.</p>
+            <p class="text-xs font-black uppercase bg-blue-800 py-2 rounded-lg">PC: Arrows/WASD & Space | Mobile: UI Buttons</p>
         </div>
 
-        <button id="btn-start" class="px-16 py-5 bg-yellow-500 text-slate-950 font-black rounded-2xl shadow-2xl uppercase tracking-widest text-lg active:scale-95 transition-transform">
+        <button id="btn-start" class="px-16 py-6 bg-yellow-400 text-blue-900 font-black rounded-full shadow-[0_8px_0_#ca8a04] hover:shadow-[0_4px_0_#ca8a04] hover:translate-y-1 uppercase tracking-widest text-xl transition-all">
             Start Mission
         </button>
     </div>
 
     <!-- HUD -->
     <div id="hud" class="absolute top-0 left-0 w-full flex justify-between items-start pointer-events-none z-20">
-        <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Integrity</p>
-            <p id="stats-lives" class="text-xl font-black text-red-500">5</p>
+        <div class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20">
+            <p class="text-[10px] uppercase font-black text-white/60">Integrity</p>
+            <p id="stats-lives" class="text-xl font-black text-red-500">❤️❤️❤️❤️❤️</p>
         </div>
-        <div class="bg-black/60 backdrop-blur-md px-6 py-2 rounded-xl border border-white/10 text-center">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Stability</p>
-            <p id="stats-timer" class="text-xl font-black text-blue-400">180s</p>
+        <div class="bg-black/40 backdrop-blur-md px-6 py-2 rounded-2xl border border-white/20 text-center">
+            <p class="text-[10px] uppercase font-black text-white/60">Time Remaining</p>
+            <p id="stats-timer" class="text-xl font-black text-yellow-400">180s</p>
         </div>
-        <div class="bg-black/60 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-right">
-            <p class="text-[10px] uppercase font-bold text-slate-400">Mastery</p>
-            <p id="stats-score" class="text-xl font-black text-yellow-500">0</p>
+        <div class="bg-black/40 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/20 text-right">
+            <p class="text-[10px] uppercase font-black text-white/60">Mastery Score</p>
+            <p id="stats-score" class="text-xl font-black text-green-400">0</p>
         </div>
     </div>
 
     <canvas id="gameCanvas"></canvas>
-    <div id="focus-hint">Click game area to enable keyboard</div>
 
     <!-- Quiz Overlay -->
-    <div id="quiz-overlay" class="hidden absolute inset-0 flex items-center justify-center bg-slate-950/95 p-4 backdrop-blur-sm">
-        <div class="w-full max-w-2xl bg-slate-900 border-2 border-yellow-500/30 rounded-3xl p-8 shadow-2xl">
+    <div id="quiz-overlay" class="hidden absolute inset-0 z-[150] flex items-center justify-center p-4 bg-black/90 backdrop-blur-md">
+        <div class="w-full max-w-2xl bg-slate-900 border-4 border-yellow-400 rounded-[40px] p-8 shadow-2xl overflow-hidden">
             <div class="flex justify-between items-center mb-6">
-                <span class="text-yellow-500 text-xs font-black uppercase tracking-widest">Historical Fact Check</span>
-                <span id="quiz-status" class="text-slate-500 text-[10px] uppercase">Analysis Active</span>
+                <span class="bg-yellow-400 text-blue-900 text-[10px] px-3 py-1 rounded-full font-black uppercase tracking-widest">History Challenge</span>
+                <span id="quiz-status" class="text-white/40 text-[10px] uppercase font-bold tracking-widest">Awaiting Answer...</span>
             </div>
-            <h3 id="question-text" class="text-xl md:text-2xl font-bold mb-8 text-white leading-tight"></h3>
+            <h3 id="question-text" class="text-xl md:text-3xl font-black mb-8 text-white leading-tight"></h3>
             <div id="options-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
             
-            <div id="feedback-area" class="hidden mt-8 p-6 rounded-2xl border-l-4">
-                <p id="feedback-title" class="font-black uppercase text-sm mb-1"></p>
-                <p id="feedback-detail" class="text-sm text-slate-300"></p>
+            <div id="feedback-area" class="hidden mt-8 p-6 rounded-3xl border-4">
+                <p id="feedback-title" class="font-black uppercase text-lg mb-1"></p>
+                <p id="feedback-detail" class="text-sm text-white/80 font-bold"></p>
             </div>
         </div>
     </div>
 
     <!-- End Screen -->
-    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center bg-slate-950 p-8 text-center">
-        <h2 id="end-status" class="text-5xl font-black mb-2 italic uppercase tracking-tighter"></h2>
-        <div class="w-20 h-1 bg-yellow-500 mb-10 rounded-full"></div>
+    <div id="end-screen" class="hidden absolute inset-0 z-[200] flex flex-col items-center justify-center p-8 text-center bg-blue-900">
+        <h2 id="end-status" class="text-6xl font-black mb-4 italic uppercase tracking-tighter text-white"></h2>
+        <div class="w-32 h-2 bg-yellow-400 mb-10 rounded-full"></div>
         <div class="mb-12">
-            <p class="text-slate-500 text-xs uppercase font-bold tracking-widest mb-2">Total Mastery Points</p>
-            <div class="text-8xl font-black text-white" id="final-score">0</div>
+            <p class="text-white/60 text-xs uppercase font-black tracking-widest mb-2">Final Revision Score</p>
+            <div class="text-9xl font-black text-yellow-400 drop-shadow-2xl" id="final-score">0</div>
         </div>
-        <button id="btn-restart" class="px-16 py-5 bg-white text-slate-950 font-black rounded-2xl uppercase tracking-widest text-lg shadow-2xl active:scale-95 transition-transform">
-            Try Again
+        <button id="btn-restart" class="px-16 py-6 bg-white text-blue-900 font-black rounded-full shadow-[0_8px_0_#cbd5e1] uppercase tracking-widest text-xl transition-all active:translate-y-1 active:shadow-none">
+            Play Again
         </button>
     </div>
 
     <!-- Mobile UI Controls -->
-    <div class="mobile-only-controls absolute inset-0 pointer-events-none z-30">
-        <div class="absolute bottom-10 left-10 flex gap-6">
-            <div id="ctrl-left" class="control-btn w-20 h-20">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
+    <div class="absolute inset-0 pointer-events-none z-30">
+        <!-- Directional Pad -->
+        <div class="absolute bottom-10 left-10 flex gap-4 pointer-events-auto">
+            <div id="ctrl-left" class="control-btn w-20 h-20 active:bg-white/40">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M15 19l-7-7 7-7"/></svg>
             </div>
-            <div id="ctrl-right" class="control-btn w-20 h-20">
-                <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+            <div id="ctrl-right" class="control-btn w-20 h-20 active:bg-white/40">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M9 5l7 7-7 7"/></svg>
             </div>
         </div>
-        <div class="absolute bottom-10 right-10">
-            <div id="ctrl-jump" class="control-btn w-24 h-24 bg-yellow-500/20 border-yellow-500/40">
-                <svg class="w-12 h-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M5 15l7-7 7 7"/></svg>
+        <!-- Jump Button -->
+        <div class="absolute bottom-10 right-10 pointer-events-auto">
+            <div id="ctrl-jump" class="control-btn w-24 h-24 bg-yellow-400/30 border-yellow-400 shadow-lg active:bg-yellow-400/50">
+                <div class="text-white font-black text-3xl">JUMP</div>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-const QUEST_BANK = [
+const QUESTIONS = [
     { q: "Who was the first President of the Weimar Republic?", a: "Friedrich Ebert", o: ["Friedrich Ebert", "Paul von Hindenburg", "Gustav Stresemann", "Franz von Papen"] },
     { q: "The Dolchstoss theory claimed that the German army was:", a: "betrayed by politicians and civilians at home", o: ["defeated fairly by Allied tactics", "betrayed by politicians and civilians at home", "weakened by military leadership", "abandoned by Austria-Hungary"] },
     { q: "What event helped trigger the worldwide economic depression in 1929?", a: "the Wall Street Crash", o: ["the Ruhr occupation", "the Wall Street Crash", "the Munich Putsch", "the Reichstag Fire"] },
@@ -241,15 +215,17 @@ let state = {
 };
 
 const player = { 
-    x: 100, y: 0, w: 32, h: 48,
+    x: 150, y: 0, w: 40, h: 60,
     vx: 0, vy: 0, 
-    speed: 7, jumpPower: -16, 
+    speed: 7, jumpPower: -18, 
     grounded: false, facingRight: true,
-    jumpsAvailable: 2
+    jumpsAvailable: 2,
+    frame: 0
 };
 
 let sessionDeck = [];
 let blocks = [];
+let groundBlocks = [];
 
 function shuffle(a) {
     let array = [...a];
@@ -262,13 +238,28 @@ function shuffle(a) {
 
 function initBlocks() {
     blocks = [];
+    groundBlocks = [];
+    // Background scenery/level generation
     for (let i = 0; i < 40; i++) {
+        // Question Blocks
         blocks.push({
-            x: 600 + (i * 450),
-            y: state.groundY - 140 - (Math.random() * 80),
-            w: 64, h: 64,
-            active: true
+            x: 800 + (i * 500),
+            y: state.groundY - 180 - (Math.random() * 100),
+            w: 70, h: 70,
+            active: true,
+            type: 'quiz'
         });
+        
+        // Random Solid Brick Platforms
+        if (Math.random() > 0.6) {
+            blocks.push({
+                x: 1000 + (i * 500),
+                y: state.groundY - 120,
+                w: 70, h: 70,
+                active: true,
+                type: 'brick'
+            });
+        }
     }
 }
 
@@ -277,7 +268,7 @@ function resize() {
     state.viewportH = window.innerHeight;
     canvas.width = state.viewportW;
     canvas.height = state.viewportH;
-    state.groundY = state.viewportH - 60;
+    state.groundY = state.viewportH - 80;
     
     if (!state.gameStarted) {
         player.y = state.groundY - player.h;
@@ -301,71 +292,43 @@ function init() {
     window.addEventListener('orientationchange', () => setTimeout(resize, 200));
     resize();
 
-    // High Compatibility Keyboard Listeners (Computer)
+    // Universal Keyboard Listeners
     const handleKey = (e, isDown) => {
         if (!state.gameActive || state.paused) return;
         const key = e.key.toLowerCase();
-        
         if (key === 'arrowleft' || key === 'a') inputs.left = isDown;
         if (key === 'arrowright' || key === 'd') inputs.right = isDown;
-        
         if (isDown && (key === ' ' || key === 'w' || key === 'arrowup')) {
             e.preventDefault();
             handleJump();
-        }
-        
-        // Prevent scrolling with arrows
-        if (isDown && (key === 'arrowdown' || key === 'arrowleft' || key === 'arrowright')) {
-            e.preventDefault();
         }
     };
 
     window.addEventListener('keydown', (e) => handleKey(e, true));
     window.addEventListener('keyup', (e) => handleKey(e, false));
 
-    // Ensure keyboard focus hint
-    canvas.addEventListener('mousedown', () => {
-        window.focus();
-        document.getElementById('focus-hint').style.display = 'none';
-    });
-
-    // Mobile UI setup
+    // Touch controls
     const setupTouch = (id, key) => {
         const el = document.getElementById(id);
-        el.addEventListener('touchstart', (e) => { 
-            e.preventDefault(); 
-            inputs[key] = true; 
-        }, { passive: false });
-        el.addEventListener('touchend', (e) => { 
-            e.preventDefault(); 
-            inputs[key] = false; 
-        }, { passive: false });
-        el.addEventListener('touchcancel', (e) => { 
-            inputs[key] = false; 
-        });
+        el.addEventListener('touchstart', (e) => { e.preventDefault(); inputs[key] = true; }, {passive: false});
+        el.addEventListener('touchend', (e) => { e.preventDefault(); inputs[key] = false; }, {passive: false});
     };
     setupTouch('ctrl-left', 'left');
     setupTouch('ctrl-right', 'right');
-    document.getElementById('ctrl-jump').addEventListener('touchstart', (e) => { 
-        e.preventDefault(); 
-        handleJump(); 
-    }, { passive: false });
+    document.getElementById('ctrl-jump').addEventListener('touchstart', (e) => { e.preventDefault(); handleJump(); }, {passive: false});
 
-    // Start Mission
     document.getElementById('btn-start').onclick = () => {
         document.getElementById('start-screen').classList.add('hidden');
-        sessionDeck = shuffle([...QUEST_BANK]);
+        sessionDeck = shuffle([...QUESTIONS]);
         state.gameStarted = true;
         state.gameActive = true;
-        if (window.innerWidth > 1024) document.getElementById('focus-hint').style.display = 'block';
     };
 
     document.getElementById('btn-restart').onclick = () => location.reload();
-
     requestAnimationFrame(update);
 }
 
-function triggerQuiz() {
+function triggerQuiz(block) {
     state.paused = true;
     const q = sessionDeck[0];
     const modal = document.getElementById('quiz-overlay');
@@ -377,42 +340,46 @@ function triggerQuiz() {
     container.classList.remove('hidden');
     container.innerHTML = '';
     
-    shuffle(q.o).forEach(opt => {
+    // Randomize choices
+    const choices = shuffle([...q.o]);
+    
+    choices.forEach(opt => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn bg-slate-800 text-white border-2 border-slate-700 active:bg-blue-600'; 
+        btn.className = 'option-btn bg-white text-blue-900 border-4 border-blue-200 active:bg-yellow-400 active:border-yellow-600 transition-colors'; 
         btn.innerText = opt;
         btn.onclick = () => {
             Array.from(container.children).forEach(b => b.disabled = true);
             if (opt === q.a) {
-                state.score += 500;
+                state.score += 1000;
                 document.getElementById('stats-score').innerText = state.score;
                 sessionDeck.shift();
-                if (sessionDeck.length === 0) sessionDeck = shuffle([...QUEST_BANK]);
+                if (sessionDeck.length === 0) sessionDeck = shuffle([...QUESTIONS]);
                 
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
-                feedback.className = "mt-8 p-6 rounded-2xl border-l-4 border-green-500 bg-green-500/10";
-                document.getElementById('feedback-title').innerText = "DATA VERIFIED";
-                document.getElementById('feedback-title').className = "font-black uppercase text-sm mb-1 text-green-400";
-                document.getElementById('feedback-detail').innerText = "Correct entry. Historical stability maintained.";
+                feedback.className = "mt-8 p-6 rounded-[30px] border-4 border-green-500 bg-green-500/10";
+                document.getElementById('feedback-title').innerText = "EXCELLENT!";
+                document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-green-400";
+                document.getElementById('feedback-detail').innerText = "Stability increased. Mission continuing...";
                 
-                setTimeout(() => resume(), 1000);
+                setTimeout(() => resume(), 1200);
             } else {
                 state.lives--;
-                document.getElementById('stats-lives').innerText = state.lives;
+                updateLivesHUD();
                 
                 feedback.classList.remove('hidden');
                 container.classList.add('hidden');
-                feedback.className = "mt-8 p-6 rounded-2xl border-l-4 border-red-500 bg-red-500/10";
-                document.getElementById('feedback-title').innerText = "SYSTEM ERROR";
-                document.getElementById('feedback-title').className = "font-black uppercase text-sm mb-1 text-red-400";
-                document.getElementById('feedback-detail').innerText = `Incorrect. Fact: ${q.a}. Re-queueing simulation...`;
+                feedback.className = "mt-8 p-6 rounded-[30px] border-4 border-red-500 bg-red-500/10";
+                document.getElementById('feedback-title').innerText = "OUCH!";
+                document.getElementById('feedback-title').className = "font-black uppercase text-xl mb-1 text-red-400";
+                document.getElementById('feedback-detail').innerText = `Incorrect entry. Fact: ${q.a}`;
                 
+                // Keep the missed question at the top for learning
                 const missedQ = sessionDeck.shift();
-                sessionDeck.push(missedQ);
+                sessionDeck.splice(2, 0, missedQ); // Re-insert a few questions later
 
                 setTimeout(() => {
-                    if (state.lives <= 0) endGame("MISSION FAILED", "Historical integrity compromised.");
+                    if (state.lives <= 0) endGame("GAME OVER", "The timeline collapsed.");
                     else resume();
                 }, 2000);
             }
@@ -422,20 +389,23 @@ function triggerQuiz() {
     modal.classList.remove('hidden');
 }
 
+function updateLivesHUD() {
+    document.getElementById('stats-lives').innerText = '❤️'.repeat(Math.max(0, state.lives)) + '🖤'.repeat(Math.max(0, 5 - state.lives));
+}
+
 function resume() {
     document.getElementById('quiz-overlay').classList.add('hidden');
     state.paused = false;
-    window.focus(); // Re-focus window for keyboard
 }
 
 function update() {
     if (state.gameStarted && state.gameActive && !state.paused) {
         // Horizontal Movement
-        if (inputs.right) { player.vx = player.speed; player.facingRight = true; }
-        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; }
-        else player.vx *= 0.8;
+        if (inputs.right) { player.vx = player.speed; player.facingRight = true; player.frame += 0.2; }
+        else if (inputs.left) { player.vx = -player.speed; player.facingRight = false; player.frame += 0.2; }
+        else { player.vx *= 0.8; player.frame = 0; }
 
-        // Gravity & Velocity
+        // Physics
         player.vy += 0.9; 
         player.x += player.vx;
         player.y += player.vy;
@@ -448,33 +418,38 @@ function update() {
             player.jumpsAvailable = 2;
         }
 
-        // ? Block collision
+        // Block collision
         blocks.forEach(b => {
-            if (!b.active) return;
+            if (!b.active && b.type === 'quiz') return;
+            
             if (player.x < b.x + b.w && player.x + player.w > b.x && 
                 player.y < b.y + b.h && player.y + player.h > b.y) {
                 
-                // Hitting from bottom (Jump hit) - The Mario mechanic
-                if (player.vy < 0 && player.y > b.y + b.h - 20) {
-                    b.active = false;
-                    player.vy = 4; 
-                    triggerQuiz();
+                // Head Bump (Hitting bottom)
+                if (player.vy < 0 && player.y > b.y + b.h - 30) {
+                    player.vy = 4;
+                    if (b.type === 'quiz' && b.active) {
+                        b.active = false;
+                        triggerQuiz(b);
+                    }
                 } 
-                // Landing on top (Platform behavior)
-                else if (player.vy > 0 && player.y + player.h < b.y + 25) {
+                // Landing on Top
+                else if (player.vy > 0 && player.y + player.h < b.y + 30) {
                     player.y = b.y - player.h;
                     player.vy = 0;
                     player.grounded = true;
                     player.jumpsAvailable = 2;
                 }
+                // Side bumping
+                else if (player.vx > 0 && player.x + player.w < b.x + 20) { player.x = b.x - player.w; }
+                else if (player.vx < 0 && player.x > b.x + b.w - 20) { player.x = b.x + b.w; }
             }
         });
 
-        // Map limits
         if (player.x < 0) player.x = 0;
         
-        // Smooth Camera Follow
-        let targetCamX = -player.x + (state.viewportW * 0.25);
+        // Camera Follow
+        let targetCamX = -player.x + (state.viewportW * 0.3);
         state.cameraX += (targetCamX - state.cameraX) * 0.1;
         if (state.cameraX > 0) state.cameraX = 0;
     }
@@ -486,77 +461,96 @@ function update() {
 function render() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Smooth background gradient
-    const grd = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    grd.addColorStop(0, "#0f172a");
-    grd.addColorStop(1, "#020617");
-    ctx.fillStyle = grd;
+    // Background: Sky
+    ctx.fillStyle = "#5c94fc";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Clouds/Scenery (Static for simplicity)
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    for(let i=0; i<10; i++) {
+        ctx.beginPath(); ctx.arc(200 + i*600, 200, 50, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(250 + i*600, 180, 60, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); ctx.arc(300 + i*600, 200, 50, 0, Math.PI*2); ctx.fill();
+    }
     
     ctx.save();
     ctx.translate(state.cameraX, 0);
     
-    // Ground
-    ctx.fillStyle = "#1e293b";
-    ctx.fillRect(-1000, state.groundY, 50000, 100);
-    ctx.strokeStyle = "#334155";
-    ctx.lineWidth = 4;
-    ctx.beginPath();
-    ctx.moveTo(-1000, state.groundY);
-    ctx.lineTo(40000, state.groundY);
-    ctx.stroke();
+    // Ground: Grass/Dirt
+    ctx.fillStyle = "#88d800"; // Grass top
+    ctx.fillRect(-2000, state.groundY, 50000, 20);
+    ctx.fillStyle = "#c84c0c"; // Dirt bottom
+    ctx.fillRect(-2000, state.groundY + 20, 50000, 100);
 
-    // ? Blocks
+    // Blocks
     blocks.forEach(b => { 
-        if (!b.active) return;
-        ctx.fillStyle = '#fbbf24';
-        ctx.beginPath();
-        ctx.roundRect(b.x, b.y, b.w, b.h, 14);
-        ctx.fill();
+        if (!b.active && b.type === 'quiz') {
+            ctx.fillStyle = '#737373'; // Spent block
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 10); ctx.fill();
+            return;
+        }
         
-        ctx.fillStyle = '#0f172a';
-        ctx.font = 'bold 36px Inter'; 
-        ctx.textAlign = 'center';
-        ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 13);
+        if (b.type === 'quiz') {
+            ctx.fillStyle = '#fbbf24'; // Question block
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 10); ctx.fill();
+            ctx.strokeStyle = '#92400e'; ctx.lineWidth = 4; ctx.stroke();
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'black 48px Inter'; ctx.textAlign = 'center';
+            ctx.fillText('?', b.x + b.w/2, b.y + b.h/2 + 15);
+        } else {
+            ctx.fillStyle = '#c84c0c'; // Brick block
+            ctx.beginPath(); ctx.roundRect(b.x, b.y, b.w, b.h, 5); ctx.fill();
+            ctx.strokeStyle = '#000'; ctx.lineWidth = 2; ctx.stroke();
+        }
     });
     
-    // Player Character
+    // Player Character (Boy Design)
     ctx.save();
     ctx.translate(player.x + player.w / 2, player.y + player.h / 2);
     if (!player.facingRight) ctx.scale(-1, 1);
     
-    // Face/Skin
-    ctx.fillStyle = "#ffdbac";
-    ctx.fillRect(-14, -24, 28, 24);
-    // Eyes
-    ctx.fillStyle = "black";
-    ctx.fillRect(4, -18, 4, 4);
-    // Torso
-    ctx.fillStyle = "#3b82f6";
-    ctx.fillRect(-16, 0, 32, 24);
-    // Legs
-    ctx.fillStyle = "#0f172a";
-    ctx.fillRect(-16, 24, 14, 12);
-    ctx.fillRect(2, 24, 14, 12);
-    ctx.restore();
+    // Animation bounce
+    const bounce = Math.sin(player.frame) * 3;
     
+    // Hair
+    ctx.fillStyle = "#4b2c20";
+    ctx.beginPath(); ctx.roundRect(-22, -32 + bounce, 44, 25, 10); ctx.fill();
+    // Face
+    ctx.fillStyle = "#ffdbac";
+    ctx.fillRect(-18, -15 + bounce, 36, 30);
+    // Eyes
+    ctx.fillStyle = "#000";
+    ctx.fillRect(8, -8 + bounce, 4, 4);
+    // Shirt
+    ctx.fillStyle = "#ef4444"; // Red shirt
+    ctx.fillRect(-20, 15 + bounce, 40, 25);
+    // Blue Overalls/Pants
+    ctx.fillStyle = "#1d4ed8";
+    ctx.fillRect(-20, 30 + bounce, 40, 15);
+    ctx.fillRect(-20, 45, 15, 15); // Left leg
+    ctx.fillRect(5, 45, 15, 15);  // Right leg
+    // Shoes
+    ctx.fillStyle = "#000";
+    ctx.fillRect(-22, 55, 18, 8);
+    ctx.fillRect(4, 55, 18, 8);
+
+    ctx.restore();
     ctx.restore();
 }
 
 function endGame(status, msg) {
     state.gameActive = false;
     document.getElementById('end-status').innerText = status;
-    document.getElementById('end-status').className = `text-5xl font-black mb-2 italic uppercase tracking-tighter ${status.includes('COMPLETE') ? 'text-green-500' : 'text-red-500'}`;
     document.getElementById('final-score').innerText = state.score;
     document.getElementById('end-screen').classList.remove('hidden');
 }
 
-// Session Timer
+// 180 Second Timer
 setInterval(() => {
     if (state.gameActive && !state.paused && state.timer > 0) {
         state.timer--;
         document.getElementById('stats-timer').innerText = state.timer + "s";
-        if (state.timer <= 0) endGame("MISSION COMPLETE", "Time stability reached.");
+        if (state.timer <= 0) endGame("TIME'S UP!", "Session ended.");
     }
 }, 1000);
 
