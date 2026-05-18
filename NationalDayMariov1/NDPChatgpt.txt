@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+<title>SG National Day Mario Quiz</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  overflow: hidden;
+  background: #87ceeb;
+  touch-action: none;
+}
+
+canvas {
+  display: block;
+  width: 100vw;
+  height: 100vh;
+  background: linear-gradient(#78cfff 0%, #dff6ff 68%, #36a852 68%);
+}
+
+#hud {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  right: 8px;
+  z-index: 5;
+  display: flex;
+  justify-content: space-between;
+  gap: 5px;
+  font-weight: bold;
+  font-size: 13px;
+}
+
+.badge {
+  background: rgba(255,255,255,0.92);
+  border: 2px solid #e60012;
+  border-radius: 10px;
+  padding: 6px 8px;
+}
+
+#questionBox {
+  position: fixed;
+  inset: 0;
+  display: none;
+  z-index: 10;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  background: rgba(0,0,0,0.72);
+}
+
+#card {
+  width: min(720px, 96vw);
+  background: white;
+  border: 5px solid #e60012;
+  border-radius: 18px;
+  padding: 18px;
+  box-shadow: 0 0 24px black;
+}
+
+#qText {
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1.35;
+  margin-bottom: 14px;
+}
+
+#feedback {
+  display: none;
+  margin: 10px 0;
+  padding: 12px;
+  border-radius: 12px;
+  background: #ffe3e3;
+  border: 2px solid #e60012;
+  font-weight: bold;
+  color: #111;
+}
+
+.option {
+  width: 100%;
+  margin: 7px 0;
+  padding: 12px;
+  font-size: 16px;
+  font-weight: bold;
+  border: 2px solid #111;
+  border-radius: 12px;
+  background: #f4f4f4;
+}
+
+.option:active {
+  transform: scale(0.98);
+  background: #ffe9e9;
+}
+
+#controls {
+  position: fixed;
+  bottom: 12px;
+  left: 0;
+  right: 0;
+  z-index: 6;
+  display: flex;
+  justify-content: space-between;
+  padding: 0 16px;
+}
+
+.ctrlGroup {
+  display: flex;
+  gap: 12px;
+}
+
+.ctrl {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid #111;
+  background: rgba(255,255,255,0.88);
+  font-size: 26px;
+  font-weight: bold;
+}
+
+#startScreen, #endScreen {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e60012;
+  color: white;
+  text-align: center;
+  padding: 22px;
+}
+
+#endScreen { display: none; }
+
+.panel {
+  max-width: 680px;
+  background: rgba(0,0,0,0.28);
+  border: 4px solid white;
+  border-radius: 20px;
+  padding: 24px;
+}
+
+.bigBtn {
+  font-size: 22px;
+  padding: 14px 24px;
+  border-radius: 14px;
+  border: 3px solid white;
+  background: white;
+  color: #e60012;
+  font-weight: bold;
+}
+
+#majulah {
+  font-size: 44px;
+  font-weight: 900;
+  letter-spacing: 2px;
+}
+</style>
+</head>
+
+<body>
+
+<canvas id="game"></canvas>
+
+<div id="hud">
+  <div class="badge">⏱ <span id="time">180</span>s</div>
+  <div class="badge">⭐ <span id="score">0</span></div>
+  <div class="badge">❤️ <span id="lives">5</span></div>
+  <div class="badge">❓ <span id="qCount">0</span>/50</div>
+</div>
+
+<div id="questionBox">
+  <div id="card">
+    <div id="qText"></div>
+    <div id="feedback"></div>
+    <div id="options"></div>
+  </div>
+</div>
+
+<div id="controls">
+  <div class="ctrlGroup">
+    <button class="ctrl" id="left">◀</button>
+    <button class="ctrl" id="right">▶</button>
+  </div>
+  <button class="ctrl" id="jump">⬆</button>
+</div>
+
+<div id="startScreen">
+  <div class="panel">
+    <h1>🇸🇬 SG National Day Mario Quiz</h1>
+    <p>Jump, hit the blocks, answer Singapore MCQs.</p>
+    <p>Wrong answer? Correct answer will be shown, then try again.</p>
+    <button class="bigBtn" onclick="startGame()">START GAME</button>
+  </div>
+</div>
+
+<div id="endScreen">
+  <div class="panel">
+    <div id="majulah">MAJULAH SINGAPURA</div>
+    <h2 id="finalScore"></h2>
+    <p id="finalMsg"></p>
+    <button class="bigBtn" onclick="location.reload()">PLAY AGAIN</button>
+  </div>
+</div>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+resize();
+window.addEventListener("resize", resize);
+
+const questions = [
+{q:"What happened on 9 August 1965?",a:"Singapore became independent",o:["Singapore joined ASEAN fully","Singapore opened Changi Airport","Singapore started MRT service"]},
+{q:"What is Singapore’s national anthem called?",a:"Majulah Singapura",o:["Stand Up Singapore","Count On Me Singapore","We Are Singapore"]},
+{q:"What does “Majulah Singapura” mean?",a:"Onward Singapore",o:["Beloved Singapore","United Singapore","Victorious Singapore"]},
+{q:"Who composed Singapore’s national anthem?",a:"Zubir Said",o:["S. Rajaratnam","Yusof Ishak","Lee Kuan Yew"]},
+{q:"Who wrote Singapore’s National Pledge?",a:"S. Rajaratnam",o:["Zubir Said","Yusof Ishak","Goh Keng Swee"]},
+{q:"What do the five stars on the flag represent?",a:"Five national ideals",o:["Five major islands","Five early leaders","Five defence groups"]},
+{q:"What does the crescent moon represent?",a:"A young nation rising",o:["A rich nation growing","A peaceful island state","A strong army forming"]},
+{q:"Which pair of colours appears on Singapore’s flag?",a:"Red and white",o:["Blue and white","Red and yellow","Green and white"]},
+{q:"Who was Singapore’s first President?",a:"Yusof Ishak",o:["Benjamin Sheares","Wee Kim Wee","Tony Tan"]},
+{q:"Who was Singapore’s first Prime Minister?",a:"Lee Kuan Yew",o:["Goh Chok Tong","Lee Hsien Loong","David Marshall"]},
+{q:"Which old name is linked to Singapore?",a:"Temasek",o:["Batavia","Ayutthaya","Angkor"]},
+{q:"What does “Singapura” commonly mean?",a:"Lion City",o:["Garden City","Island City","Harbour City"]},
+{q:"Which flower is Singapore’s national flower?",a:"Vanda Miss Joaquim",o:["Red hibiscus flower","White jasmine flower","Yellow frangipani"]},
+{q:"Which icon has a lion head and fish body?",a:"The Merlion",o:["The Sang Nila","The Temasek Tiger","The Marina Dragon"]},
+{q:"What does the Merlion’s fish body suggest?",a:"Fishing village origins",o:["Mountain village origins","Farming village origins","Forest village origins"]},
+{q:"Which event reminds Singaporeans about national defence?",a:"Total Defence Day",o:["Racial Harmony Day","National Day Parade","Youth Day Holiday"]},
+{q:"How many pillars are in Total Defence?",a:"Six pillars",o:["Four pillars","Five pillars","Seven pillars"]},
+{q:"Which Total Defence pillar is most linked to fake news and scams?",a:"Digital Defence",o:["Military Defence","Social Defence","Economic Defence"]},
+{q:"Which Total Defence pillar is most linked to racial harmony?",a:"Social Defence",o:["Digital Defence","Military Defence","Civil Defence"]},
+{q:"What does NDP stand for?",a:"National Day Parade",o:["National Defence Plan","National Digital Project","National Dance Party"]},
+{q:"What usually appears near the end of NDP?",a:"Fireworks above the city",o:["Snow falling on Marina","Giant ducks in the sky","Laser sharks in water"]},
+{q:"Which song is strongly linked to National Day?",a:"Home",o:["Yellow","Dynamite","Roar"]},
+{q:"Which National Day item do many students secretly like?",a:"Funpack surprise items",o:["Extra homework pages","Longer morning assembly","More exam revision"]},
+{q:"What is the most Singaporean way to reserve a hawker seat?",a:"Place tissue paper there",o:["Place gold bar there","Place school bag there","Place maths file there"]},
+{q:"What does “chope seat” usually mean?",a:"Reserve a seat first",o:["Clean a seat first","Paint a seat first","Move a seat first"]},
+{q:"What does “kiasu” usually describe?",a:"Fear of losing out",o:["Love of quiet places","Habit of walking slowly","Fear of spicy food"]},
+{q:"What does “lah” usually add in Singlish?",a:"Local expression tone",o:["Formal essay style","British accent sound","Scientific explanation"]},
+{q:"What might a Singaporean mean by “can or not?”",a:"Is this possible?",o:["Is this expensive?","Is this overseas?","Is this delicious?"]},
+{q:"What does “shiok” usually mean?",a:"Very satisfying",o:["Very confusing","Very expensive","Very dangerous"]},
+{q:"Which food is strongly linked to Singapore?",a:"Chicken rice",o:["Cheese taco","Beef lasagne","Salmon sushi"]},
+{q:"Which dish is often eaten with kaya and butter?",a:"Toast",o:["Prata","Noodles","Satay"]},
+{q:"What drink might students call “Milo peng”?",a:"Iced Milo",o:["Hot Milo","Milo cake","Milo powder"]},
+{q:"Which place is linked to many local food stalls?",a:"Hawker centre",o:["Airport runway","School hall","Library shelf"]},
+{q:"What is the classic Singaporean question before eating?",a:"Eat already?",o:["Run already?","Sleep already?","Study already?"]},
+{q:"Which MRT line is usually shown in red?",a:"North South Line",o:["Circle Line","Downtown Line","East West Line"]},
+{q:"Which MRT line is usually shown in green?",a:"East West Line",o:["Circle Line","Downtown Line","North East Line"]},
+{q:"What does ERP mainly try to manage?",a:"Road congestion",o:["School canteen queues","MRT platform noise","Hawker tray return"]},
+{q:"What happens when ERP charges rise?",a:"Drivers complain fast",o:["Students cheer loudly","Trains become free","Buses fly higher"]},
+{q:"Which airport is Singapore famous for?",a:"Changi Airport",o:["Seletar Airport","Kallang Airport","Paya Lebar Airbase"]},
+{q:"What is Jewel Changi famous for?",a:"Indoor waterfall",o:["Indoor mountain","Indoor volcano","Indoor snowstorm"]},
+{q:"Which agency builds many public flats?",a:"HDB",o:["LTA","PUB","MFA"]},
+{q:"Which agency manages Singapore’s water supply?",a:"PUB",o:["HDB","LTA","ICA"]},
+{q:"Which agency handles immigration checkpoints?",a:"ICA",o:["HDB","PUB","LTA"]},
+{q:"Which agency manages public transport planning?",a:"LTA",o:["PUB","ICA","MFA"]},
+{q:"What is NEWater linked to?",a:"Recycled water",o:["Imported petrol","Underground trains","Floating gardens"]},
+{q:"Why is water security important for Singapore?",a:"Limited natural water",o:["Too many big lakes","Too much mountain snow","Too many waterfalls"]},
+{q:"Which day reminds students to respect different communities?",a:"Racial Harmony Day",o:["Total Defence Day","Youth Day Holiday","Teachers’ Day concert"]},
+{q:"Which wartime event happened on 15 February 1942?",a:"Fall of Singapore",o:["Merger with Malaysia","Opening of Changi","First NDP held"]},
+{q:"What is NS commonly known as?",a:"National Service",o:["National Stadium","National Song","National Science"]},
+{q:"Which phrase best captures National Day?",a:"Shared home and future",o:["Long weekend and shopping","Homework and worksheets","Exams and corrections"]}
+];
+
+let shuffledQuestions = [];
+let currentQuestion = null;
+let asking = false;
+let fireworks = [];
+
+const player = { x:80, y:0, w:38, h:52, vx:0, vy:0, speed:5.2, jump:-14, grounded:false };
+
+let groundY, blocks = [], cameraX = 0;
+let score = 0, lives = 5, qAnswered = 0, timeLeft = 180;
+let gameStarted = false, gameOver = false, timerInterval;
+
+const keys = { left:false, right:false, jump:false };
+
+function shuffle(arr) {
+  return arr.map(value => ({value, sort:Math.random()}))
+            .sort((a,b) => a.sort - b.sort)
+            .map(item => item.value);
+}
+
+function makeWorld() {
+  groundY = canvas.height * 0.7;
+  blocks = [];
+  for (let i = 0; i < 50; i++) {
+    blocks.push({ x:250 + i * 210, y:groundY - 150 - (i % 3) * 22, w:48, h:48, used:false });
+  }
+  player.y = groundY - player.h;
+}
+
+function startGame() {
+  document.getElementById("startScreen").style.display = "none";
+  gameStarted = true;
+  shuffledQuestions = shuffle([...questions]);
+  makeWorld();
+
+  timerInterval = setInterval(() => {
+    if (!asking && !gameOver) {
+      timeLeft--;
+      document.getElementById("time").textContent = timeLeft;
+      if (timeLeft <= 0) endGame();
+    }
+  }, 1000);
+}
+
+function drawBackground() {
+  ctx.fillStyle = "#ffffff";
+  ctx.font = "bold 30px Arial";
+  ctx.fillText("🇸🇬 Happy National Day Singapore 🇸🇬", 35, 85);
+
+  ctx.fillStyle = "#e60012";
+  for (let i = 0; i < 9; i++) {
+    let x = i * 260 - (cameraX * 0.3 % 260);
+    ctx.fillRect(x, groundY - 58, 84, 58);
+    ctx.fillStyle = "#fff";
+    ctx.fillRect(x + 10, groundY - 43, 18, 18);
+    ctx.fillRect(x + 48, groundY - 43, 18, 18);
+    ctx.fillStyle = "#e60012";
+  }
+
+  ctx.fillStyle = "#36a852";
+  ctx.fillRect(0, groundY, canvas.width, canvas.height - groundY);
+}
+
+function drawBlocks() {
+  for (const b of blocks) {
+    const bx = b.x - cameraX;
+    if (bx < -80 || bx > canvas.width + 80) continue;
+
+    ctx.fillStyle = b.used ? "#999" : "#ffcc00";
+    ctx.fillRect(bx, b.y, b.w, b.h);
+    ctx.strokeStyle = "#111";
+    ctx.lineWidth = 3;
+    ctx.strokeRect(bx, b.y, b.w, b.h);
+
+    ctx.fillStyle = "#111";
+    ctx.font = "bold 29px Arial";
+    ctx.fillText(b.used ? "✓" : "?", bx + 14, b.y + 34);
+  }
+}
+
+function drawPlayer() {
+  const px = player.x - cameraX;
+
+  ctx.fillStyle = "#ffcc99";
+  ctx.fillRect(px + 8, player.y - 12, 24, 18);
+  ctx.fillStyle = "#e60012";
+  ctx.fillRect(px + 3, player.y - 22, 32, 11);
+  ctx.fillRect(px, player.y, player.w, player.h);
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(px + 7, player.y + 8, 24, 12);
+  ctx.fillStyle = "#111";
+  ctx.fillRect(px + 7, player.y + 25, 9, 24);
+  ctx.fillRect(px + 22, player.y + 25, 9, 24);
+}
+
+function update() {
+  if (!gameStarted || gameOver || asking) return;
+
+  player.vx = 0;
+  if (keys.left) player.vx = -player.speed;
+  if (keys.right) player.vx = player.speed;
+
+  if (keys.jump && player.grounded) {
+    player.vy = player.jump;
+    player.grounded = false;
+  }
+
+  player.vy += 0.7;
+  player.x += player.vx;
+  player.y += player.vy;
+
+  if (player.y + player.h >= groundY) {
+    player.y = groundY - player.h;
+    player.vy = 0;
+    player.grounded = true;
+  }
+
+  if (player.x < 0) player.x = 0;
+  cameraX = Math.max(0, player.x - canvas.width * 0.35);
+
+  for (const b of blocks) {
+    if (b.used) continue;
+
+    const hit =
+      player.x < b.x + b.w &&
+      player.x + player.w > b.x &&
+      player.y < b.y + b.h &&
+      player.y + player.h > b.y;
+
+    if (hit && player.vy < 0) {
+      b.used = true;
+      player.vy = 5;
+      askQuestion();
+      break;
+    }
+  }
+}
+
+function askQuestion() {
+  if (qAnswered >= 50) {
+    endGame();
+    return;
+  }
+
+  asking = true;
+  currentQuestion = shuffledQuestions[qAnswered];
+
+  document.getElementById("qText").textContent = currentQuestion.q;
+  document.getElementById("feedback").style.display = "none";
+  document.getElementById("feedback").textContent = "";
+
+  showOptions();
+  document.getElementById("questionBox").style.display = "flex";
+}
+
+function showOptions() {
+  const optionsDiv = document.getElementById("options");
+  optionsDiv.innerHTML = "";
+
+  const allOptions = shuffle([
+    { text: currentQuestion.a, correct: true },
+    ...currentQuestion.o.map(x => ({ text:x, correct:false }))
+  ]);
+
+  allOptions.forEach(opt => {
+    const btn = document.createElement("button");
+    btn.className = "option";
+    btn.textContent = opt.text;
+    btn.onclick = () => answer(opt.correct);
+    optionsDiv.appendChild(btn);
+  });
+}
+
+function answer(correct) {
+  if (correct) {
+    score += 10;
+    qAnswered++;
+
+    document.getElementById("score").textContent = score;
+    document.getElementById("qCount").textContent = qAnswered;
+    document.getElementById("questionBox").style.display = "none";
+    asking = false;
+
+    if (qAnswered >= 50) endGame();
+  } else {
+    lives--;
+
+    document.getElementById("lives").textContent = lives;
+    document.getElementById("feedback").style.display = "block";
+    document.getElementById("feedback").innerHTML =
+      "❌ Not quite. Correct answer: <br><span style='font-size:22px;color:#e60012;'>" +
+      currentQuestion.a +
+      "</span><br>Try the same question again.";
+
+    showOptions();
+
+    if (lives <= 0) {
+      setTimeout(endGame, 1200);
+    }
+  }
+}
+
+function createFirework() {
+  const x = Math.random() * canvas.width;
+  const y = Math.random() * canvas.height * 0.45;
+  for (let i = 0; i < 35; i++) {
+    fireworks.push({
+      x, y,
+      vx: Math.cos(i) * Math.random() * 5,
+      vy: Math.sin(i) * Math.random() * 5,
+      life: 60,
+      color: Math.random() > 0.5 ? "#ffffff" : "#ffcc00"
+    });
+  }
+}
+
+function drawFireworks() {
+  if (!gameOver) return;
+
+  if (Math.random() < 0.08) createFirework();
+
+  fireworks.forEach(p => {
+    ctx.fillStyle = p.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.03;
+    p.life--;
+  });
+
+  fireworks = fireworks.filter(p => p.life > 0);
+}
+
+function endGame() {
+  gameOver = true;
+  clearInterval(timerInterval);
+
+  document.getElementById("questionBox").style.display = "none";
+  document.getElementById("endScreen").style.display = "flex";
+  document.getElementById("finalScore").textContent = `Score: ${score} / 500`;
+
+  if (score >= 420) {
+    document.getElementById("finalMsg").textContent = "Solid lah. You are very Singapore-ready.";
+  } else if (score >= 280) {
+    document.getElementById("finalMsg").textContent = "Not bad. Replay once and become more power.";
+  } else {
+    document.getElementById("finalMsg").textContent = "Can improve. Try again and chope a better score.";
+  }
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  drawBackground();
+  drawBlocks();
+  drawPlayer();
+  drawFireworks();
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+loop();
+
+window.addEventListener("keydown", e => {
+  if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") keys.left = true;
+  if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") keys.right = true;
+  if (e.key === " " || e.key === "ArrowUp" || e.key.toLowerCase() === "w") keys.jump = true;
+});
+
+window.addEventListener("keyup", e => {
+  if (e.key === "ArrowLeft" || e.key.toLowerCase() === "a") keys.left = false;
+  if (e.key === "ArrowRight" || e.key.toLowerCase() === "d") keys.right = false;
+  if (e.key === " " || e.key === "ArrowUp" || e.key.toLowerCase() === "w") keys.jump = false;
+});
+
+function hold(button, key) {
+  button.addEventListener("touchstart", e => {
+    e.preventDefault();
+    keys[key] = true;
+  });
+  button.addEventListener("touchend", e => {
+    e.preventDefault();
+    keys[key] = false;
+  });
+  button.addEventListener("mousedown", () => keys[key] = true);
+  button.addEventListener("mouseup", () => keys[key] = false);
+  button.addEventListener("mouseleave", () => keys[key] = false);
+}
+
+hold(document.getElementById("left"), "left");
+hold(document.getElementById("right"), "right");
+hold(document.getElementById("jump"), "jump");
+</script>
+
+</body>
+</html>
