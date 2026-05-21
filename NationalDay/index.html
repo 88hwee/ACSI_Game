@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super SG Mario - National Day Edition</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts for Retro Style -->
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Share Tech Mono', monospace;
+            background-color: #0c0f1d;
+            user-select: none;
+            overflow-x: hidden;
+        }
+        .retro-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        /* Pixel art borders */
+        .pixel-border {
+            border: 4px solid #fff;
+            box-shadow: 0px 4px 0px #000, 0px -4px 0px #000, 4px 0px 0px #000, -4px 0px 0px #000;
+        }
+        .pixel-border-red {
+            border: 4px solid #ef4444;
+            box-shadow: 0px 4px 0px #000, 0px -4px 0px #000, 4px 0px 0px #000, -4px 0px 0px #000;
+        }
+        .pixel-btn {
+            position: relative;
+            transition: all 0.1s ease;
+        }
+        .pixel-btn:active {
+            transform: translateY(4px);
+        }
+        /* Parallax Background Layers */
+        .bg-sky {
+            background: linear-gradient(to bottom, #5c94fc 0%, #b8dbfd 100%);
+        }
+        /* Animation keyframes for scrolling background */
+        @keyframes scrollBg {
+            0% { background-position: 0 0; }
+            100% { background-position: -1000px 0; }
+        }
+        .scroll-layer-1 {
+            animation: scrollBg 40s linear infinite;
+        }
+        .scroll-layer-2 {
+            animation: scrollBg 20s linear infinite;
+        }
+        .scroll-layer-3 {
+            animation: scrollBg 8s linear infinite;
+        }
+        .paused-anim {
+            animation-play-state: paused !important;
+        }
+        /* Mario Jump Animation */
+        @keyframes marioJump {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-90px); }
+            100% { transform: translateY(0); }
+        }
+        .mario-jumping {
+            animation: marioJump 0.4s ease-out;
+        }
+        /* Star Power Flash */
+        @keyframes starFlash {
+            0% { filter: hue-rotate(0deg) brightness(1.2); }
+            100% { filter: hue-rotate(360deg) brightness(1.5); }
+        }
+        .star-power-active {
+            animation: starFlash 1s linear infinite;
+        }
+        /* Floating coin animation */
+        @keyframes coinFloat {
+            0% { transform: translateY(0) scale(1); opacity: 1; }
+            100% { transform: translateY(-60px) scale(1.2); opacity: 0; }
+        }
+        .coin-anim {
+            animation: coinFloat 0.5s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-2 sm:p-4 text-white">
+
+    <!-- Sound Controller Toggle at top-right -->
+    <button id="soundToggle" class="absolute top-4 right-4 z-50 bg-black/70 hover:bg-black p-3 rounded-full border border-white/20 transition-all flex items-center justify-center">
+        <svg id="soundOnIcon" class="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L7.75 9H4.5v6h3.25L12 18.75z"/></svg>
+        <svg id="soundOffIcon" class="w-6 h-6 text-gray-500 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" /></svg>
+    </button>
+
+    <!-- Main Container Card -->
+    <div class="w-full max-w-4xl bg-gray-900 rounded-3xl overflow-hidden shadow-2xl border-4 border-red-600 flex flex-col relative">
+        
+        <!-- ================= START SCREEN ================= -->
+        <div id="startScreen" class="flex flex-col items-center justify-center p-6 text-center min-h-[550px] relative z-10 bg-sky">
+            <!-- Retro Cloud Background elements -->
+            <div class="absolute top-10 left-10 opacity-30 select-none">☁️</div>
+            <div class="absolute top-20 right-20 opacity-30 select-none">☁️</div>
+            
+            <div class="mb-4 flex flex-col items-center">
+                <!-- Retro Flag styling -->
+                <div class="flex items-center space-x-2 bg-red-600 text-white font-bold px-4 py-2 rounded-lg border-2 border-white shadow-lg mb-2 transform -rotate-2">
+                    <span>🇸🇬 NATIONAL DAY EDITION 🇸🇬</span>
+                </div>
+                <h1 class="text-3xl sm:text-5xl font-black retro-font tracking-wider text-red-600 drop-shadow-[0_4px_0_rgba(255,255,255,1)] mb-1">
+                    SUPER SG MARIO
+                </h1>
+                <p class="text-xl sm:text-2xl font-bold text-blue-900 tracking-wide mt-2">THE ULTIMATE 50-QUESTION TRIVIA RUNNER</p>
+            </div>
+
+            <!-- Mascot Showcase -->
+            <div class="flex justify-center items-end space-x-12 my-6">
+                <!-- Red Shirt Mario SVG -->
+                <div class="w-20 h-20 animate-bounce">
+                    <svg viewBox="0 0 64 64" class="w-full h-full drop-shadow-md">
+                        <!-- Red Cap -->
+                        <rect x="16" y="4" width="32" height="8" fill="#ef4444"/>
+                        <rect x="20" y="0" width="24" height="4" fill="#ef4444"/>
+                        <!-- Hair & Face -->
+                        <rect x="12" y="12" width="36" height="12" fill="#fbcfe8"/>
+                        <rect x="12" y="12" width="12" height="12" fill="#78350f"/>
+                        <!-- Eyes -->
+                        <rect x="36" y="12" width="4" height="4" fill="#000"/>
+                        <!-- Mustache -->
+                        <rect x="36" y="20" width="16" height="4" fill="#000"/>
+                        <!-- Red Shirt & White Overalls (Singapore style!) -->
+                        <rect x="16" y="28" width="32" height="24" fill="#ffffff"/>
+                        <rect x="20" y="28" width="8" height="24" fill="#ef4444"/>
+                        <rect x="36" y="28" width="8" height="24" fill="#ef4444"/>
+                        <!-- Belt/Buttons (Yellow Star style) -->
+                        <rect x="24" y="36" width="4" height="4" fill="#facc15"/>
+                        <rect x="36" y="36" width="4" height="4" fill="#facc15"/>
+                        <!-- Feet -->
+                        <rect x="16" y="52" width="12" height="8" fill="#78350f"/>
+                        <rect x="36" y="52" width="12" height="8" fill="#78350f"/>
+                    </svg>
+                </div>
+                <!-- Merlion Ally SVG -->
+                <div class="w-20 h-20">
+                    <svg viewBox="0 0 64 64" class="w-full h-full drop-shadow-md">
+                        <!-- Crown / Mane -->
+                        <path d="M12 28 Q 16 8, 32 8 Q 48 8, 52 28" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+                        <!-- Face -->
+                        <rect x="20" y="20" width="24" height="24" fill="#f1f5f9" rx="6"/>
+                        <!-- Eyes -->
+                        <rect x="24" y="26" width="4" height="4" fill="#ef4444"/>
+                        <rect x="36" y="26" width="4" height="4" fill="#ef4444"/>
+                        <!-- Nose -->
+                        <polygon points="32,30 28,34 36,34" fill="#cbd5e1"/>
+                        <!-- Fish Tail (Bottom) -->
+                        <path d="M20 44 C 20 60, 44 60, 44 44" fill="#38bdf8" stroke="#0284c7" stroke-width="2"/>
+                        <!-- Tail fin -->
+                        <path d="M44 48 L 56 56 L 52 44 Z" fill="#38bdf8"/>
+                    </svg>
+                </div>
+            </div>
+
+            <!-- Rules Card -->
+            <div class="bg-black/70 p-4 rounded-xl border-2 border-red-500 max-w-lg mb-6 text-left">
+                <h3 class="text-red-400 font-bold text-center retro-font text-sm mb-3">MISSION INSTRUCTIONS</h3>
+                <ul class="space-y-2 text-sm sm:text-base text-gray-200">
+                    <li class="flex items-start">🔴 <span class="ml-2">Answer **50 Singapore trivia questions** as fast as you can.</span></li>
+                    <li class="flex items-start">⚡ <span class="ml-2">You have a strict **2-minute** (120s) countdown timer.</span></li>
+                    <li class="flex items-start">⭐ <span class="ml-2">Get **5 correct in a row** to trigger invincible **Star Power** (2x score!).</span></li>
+                    <li class="flex items-start">⚠️ <span class="ml-2">Wrong answers deduct **3 seconds** and break your streak!</span></li>
+                </ul>
+            </div>
+
+            <button id="startGameBtn" class="pixel-btn pixel-border-red bg-red-600 hover:bg-red-700 text-white font-black text-xl px-10 py-4 retro-font tracking-wider rounded transition-all transform hover:scale-105">
+                START MISSION
+            </button>
+            <p class="text-xs text-blue-900 font-bold mt-4 retro-font">PROVE YOUR LOCAL KNOWLEDGE!</p>
+        </div>
+
+        <!-- ================= PLAYING SCREEN ================= -->
+        <div id="gameScreen" class="hidden flex-col bg-gray-950">
+            <!-- HUD (Mario Status Bar) -->
+            <div class="bg-black text-white px-4 py-3 border-b-4 border-gray-800 grid grid-cols-4 text-center text-xs sm:text-sm md:text-base tracking-wider retro-font font-bold">
+                <div>
+                    <div class="text-red-500 mb-1">MARIO</div>
+                    <div id="hudScore">000000</div>
+                </div>
+                <div>
+                    <div class="text-yellow-400 mb-1">COINS</div>
+                    <div id="hudCoins">🪙 x0</div>
+                </div>
+                <div>
+                    <div class="text-green-400 mb-1">STREAK</div>
+                    <div id="hudStreak">⭐ x0</div>
+                </div>
+                <div>
+                    <div class="text-cyan-400 mb-1">TIME</div>
+                    <div id="hudTime" class="text-red-500">120s</div>
+                </div>
+            </div>
+
+            <!-- Platformer Scrolling Animation Area -->
+            <div class="h-44 bg-sky relative overflow-hidden border-b-4 border-orange-800">
+                
+                <!-- Sky Decor: Moving clouds -->
+                <div class="absolute inset-0 scroll-layer-1 flex justify-around items-start opacity-40 select-none pt-4" style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22100%22 height=%2250%22><path d=%22M10 30 Q 20 15 35 20 Q 50 10 70 25 Q 85 20 95 30 Z%22 fill=%22white%22/></svg>') repeat-x; background-size: 300px 100px;"></div>
+
+                <!-- Skyline Decor (Marina Bay Sands, Flyer, Gardens by the Bay) -->
+                <div class="absolute bottom-6 inset-x-0 h-28 scroll-layer-2 opacity-50 flex items-end select-none" style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22400%22 height=%22100%22 viewBox=%220 0 400 100%22><rect x=%2220%22 y=%2240%22 width=%2230%22 height=%2260%22 fill=%22%23475569%22/><rect x=%2260%22 y=%2240%22 width=%2230%22 height=%2260%22 fill=%22%23475569%22/><rect x=%22100%22 y=%2240%22 width=%2230%22 height=%2260%22 fill=%22%23475569%22/><path d=%22M10 40 L 140 40 L 140 50 L 10 50 Z%22 fill=%22%23334155%22/><circle cx=%22200%22 cy=%2250%22 r=%2235%22 stroke=%22%23475569%22 stroke-width=%224%22 fill=%22none%22/><path d=%22M250 80 Q 270 50 280 80 Q 290 40 310 80%22 stroke=%22%23475569%22 stroke-width=%226%22 fill=%22none%22/></svg>') repeat-x; background-size: 400px 100px;"></div>
+
+                <!-- Near Ground Assets (Trees & Bushes) -->
+                <div class="absolute bottom-6 inset-x-0 h-10 scroll-layer-3 flex items-end select-none" style="background: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22200%22 height=%2240%22><path d=%22M10 40 Q 25 15 40 40 Q 55 20 70 40%22 fill=%22%2315803d%22/><path d=%22M120 40 Q 135 10 150 40 Q 165 15 180 40%22 fill=%22%2316a34a%22/></svg>') repeat-x; background-size: 200px 40px;"></div>
+
+                <!-- The Ground/Platfrom -->
+                <div class="absolute bottom-0 inset-x-0 h-6 bg-amber-800" style="background: repeating-linear-gradient(90deg, #78350f, #78350f 12px, #451a03 12px, #451a03 24px);"></div>
+
+                <!-- Mario Character -->
+                <div id="marioSprite" class="absolute bottom-6 left-12 w-14 h-14 transition-all z-20">
+                    <svg viewBox="0 0 64 64" class="w-full h-full">
+                        <!-- Red Cap -->
+                        <rect x="16" y="4" width="32" height="8" fill="#ef4444"/>
+                        <rect x="20" y="0" width="24" height="4" fill="#ef4444"/>
+                        <!-- Hair & Face -->
+                        <rect x="12" y="12" width="36" height="12" fill="#fbcfe8"/>
+                        <rect x="12" y="12" width="12" height="12" fill="#78350f"/>
+                        <!-- Eyes -->
+                        <rect x="36" y="12" width="4" height="4" fill="#000"/>
+                        <!-- Mustache -->
+                        <rect x="36" y="20" width="16" height="4" fill="#000"/>
+                        <!-- Red Shirt & White Overalls -->
+                        <rect x="16" y="28" width="32" height="24" fill="#ffffff"/>
+                        <rect x="20" y="28" width="8" height="24" fill="#ef4444"/>
+                        <rect x="36" y="28" width="8" height="24" fill="#ef4444"/>
+                        <!-- Buttons -->
+                        <rect x="24" y="36" width="4" height="4" fill="#facc15"/>
+                        <rect x="36" y="36" width="4" height="4" fill="#facc15"/>
+                        <!-- Shoes -->
+                        <rect x="16" y="52" width="12" height="8" fill="#78350f"/>
+                        <rect x="36" y="52" width="12" height="8" fill="#78350f"/>
+                    </svg>
+                    <!-- Coin pop-up animation location -->
+                    <div id="coinPop" class="absolute -top-10 left-4 text-2xl hidden select-none">🪙</div>
+                </div>
+
+                <!-- Flagpole (Shows how close they are to 50 questions) -->
+                <div id="flagpole" class="absolute bottom-6 right-[-100px] w-12 h-36 transition-all duration-1000 z-10 flex flex-col justify-between items-center">
+                    <!-- Custom Flag SVG -->
+                    <svg viewBox="0 0 40 30" class="w-10 h-8 self-end">
+                        <rect width="40" height="15" fill="#ef4444"/>
+                        <rect y="15" width="40" height="15" fill="#ffffff"/>
+                        <!-- Moon & stars representation simplified -->
+                        <circle cx="8" cy="7" r="4" fill="#ffffff"/>
+                        <circle cx="10" cy="7" r="4" fill="#ef4444"/>
+                    </svg>
+                    <!-- Pole -->
+                    <div class="w-2 h-full bg-slate-300"></div>
+                </div>
+
+                <!-- Enemy Monster Encounter Box -->
+                <div id="enemySprite" class="absolute bottom-6 right-16 w-12 h-12 transition-all z-20">
+                    <svg viewBox="0 0 64 64" class="w-full h-full">
+                        <!-- Goomba with Singapore Flag design (Red on top, White bottom) -->
+                        <path d="M10 40 C 10 10, 54 10, 54 40 Z" fill="#b91c1c"/>
+                        <path d="M10 40 L 54 40 L 54 48 L 10 48 Z" fill="#f8fafc"/>
+                        <!-- Eyes -->
+                        <rect x="20" y="24" width="6" height="10" fill="#000"/>
+                        <rect x="38" y="24" width="6" height="10" fill="#000"/>
+                        <rect x="22" y="26" width="2" height="6" fill="#fff"/>
+                        <rect x="40" y="26" width="2" height="6" fill="#fff"/>
+                        <!-- Angry eyebrows -->
+                        <path d="M16 18 L 28 24 M48 18 L 36 24" stroke="#000" stroke-width="4"/>
+                        <!-- Feet -->
+                        <ellipse cx="22" cy="54" rx="10" ry="6" fill="#451a03"/>
+                        <ellipse cx="42" cy="54" rx="10" ry="6" fill="#451a03"/>
+                    </svg>
+                </div>
+
+                <!-- Floating Trivia block above enemy -->
+                <div id="mysteryBlock" class="absolute bottom-24 right-18 w-10 h-10 bg-yellow-500 rounded border-2 border-orange-700 animate-pulse flex items-center justify-center font-bold text-yellow-900 retro-font text-lg z-10 shadow-md">
+                    ?
+                </div>
+            </div>
+
+            <!-- Quiz Play Area -->
+            <div class="p-4 sm:p-6 flex flex-col items-center">
+                
+                <!-- Progress & Current Question Info -->
+                <div class="w-full flex justify-between items-center text-sm mb-4 text-gray-400 border-b border-gray-800 pb-2">
+                    <span class="flex items-center">
+                        <span class="inline-block w-3 h-3 bg-red-600 rounded-full mr-2"></span>
+                        Q: <strong class="text-white text-lg ml-1" id="currentQNum">1</strong>/50
+                    </span>
+                    <span class="bg-gray-800 px-3 py-1 rounded text-red-400 font-bold" id="progressPct">Progress: 0%</span>
+                </div>
+
+                <!-- The Question Display -->
+                <div class="w-full min-h-[90px] flex items-center justify-center bg-gray-900 border-2 border-red-500 rounded-2xl p-4 mb-6 shadow-inner">
+                    <p id="questionText" class="text-center text-lg sm:text-xl font-bold text-white tracking-wide leading-relaxed">
+                        Loading Singapore Trivia Challenge...
+                    </p>
+                </div>
+
+                <!-- Answer Options Grid -->
+                <div class="w-full grid grid-cols-1 md:grid-cols-2 gap-4 mb-4" id="optionsContainer">
+                    <!-- Buttons will be injected here dynamically -->
+                </div>
+
+                <!-- Score multiplier / Invincibility notification bar -->
+                <div id="starAlert" class="w-full bg-gradient-to-r from-yellow-500 via-amber-400 to-yellow-500 text-black py-2 px-4 rounded-xl font-bold retro-font text-xs text-center border-2 border-black hidden shadow-lg animate-pulse">
+                    ✨ INVINCI-STAR POWER ACTIVE! DOUBLE POINTS! ✨
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= GAME OVER / VICTORY MODAL ================= -->
+        <div id="endModal" class="hidden fixed inset-0 z-50 bg-black/90 flex flex-col items-center justify-center p-4">
+            <div class="bg-gray-900 rounded-3xl p-6 sm:p-8 max-w-xl w-full text-center border-4 border-yellow-500 pixel-border relative">
+                
+                <!-- Confetti particles placeholder / Trophy Icon -->
+                <div class="text-6xl mb-4 animate-bounce" id="endEmoji">🏆</div>
+                
+                <h2 id="endTitle" class="text-2xl sm:text-4xl font-black retro-font text-yellow-500 mb-2">MISSION ACCOMPLISHED!</h2>
+                <p id="endSub" class="text-md sm:text-lg text-white mb-6">You've successfully run through Singapore trivia history!</p>
+                
+                <!-- Score Breakdown -->
+                <div class="bg-black/60 rounded-2xl p-4 sm:p-6 mb-6 border border-gray-800 space-y-3 text-left">
+                    <div class="flex justify-between border-b border-white/10 pb-2">
+                        <span class="text-gray-400">Total Score:</span>
+                        <span id="finalScore" class="font-bold text-yellow-400 retro-font text-lg">000000</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/10 pb-2">
+                        <span class="text-gray-400">Correct Answers:</span>
+                        <span id="finalCorrect" class="font-bold text-green-400 text-lg">0 / 50</span>
+                    </div>
+                    <div class="flex justify-between border-b border-white/10 pb-2">
+                        <span class="text-gray-400">Accuracy Rate:</span>
+                        <span id="finalAccuracy" class="font-bold text-blue-400 text-lg">0%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Your National Rank:</span>
+                        <span id="finalRank" class="font-bold text-red-500 retro-font text-sm sm:text-base">Maju Lah General</span>
+                    </div>
+                </div>
+
+                <!-- Call to Actions -->
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <button id="restartBtn" class="pixel-btn pixel-border bg-red-600 hover:bg-red-700 text-white font-black px-6 py-3 retro-font text-sm rounded">
+                        TRY AGAIN 🔄
+                    </button>
+                    <button id="closeEndModal" class="pixel-btn pixel-border bg-gray-700 hover:bg-gray-800 text-white font-black px-6 py-3 retro-font text-sm rounded">
+                        MAIN MENU 🏠
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Instructions / Footer -->
+    <footer class="mt-6 text-center text-xs text-gray-500 tracking-wider">
+        🇸🇬 Super SG Mario Quiz for National Day — Made for Singapore's next generation 🇸🇬
+    </footer>
+
+    <!-- Game Logic & Sound Effects -->
+    <script>
+        // 50 Highly engaging, youth-optimized Singapore National Day & cultural questions
+        const questions = [
+            {
+                q: "What colors are featured on the Singapore National Flag?",
+                a: ["Red and White", "Red and Gold", "Red, White and Blue", "White and Blue"],
+                correct: 0
+            },
+            {
+                q: "What animal represents Singapore's Merlion statue half-body?",
+                a: ["Lion & Fish", "Lion & Mermaid", "Tiger & Fish", "Dragon & Sea Turtle"],
+                correct: 0
+            },
+            {
+                q: "In what historic year did Singapore declare Independence?",
+                a: ["1965", "1959", "1963", "1971"],
+                correct: 0
+            },
+            {
+                q: "What is the official title of Singapore's National Anthem?",
+                a: ["Majulah Singapura", "Home", "Count on Me Singapore", "Our Singapore"],
+                correct: 0
+            },
+            {
+                q: "What is Singapore's beautiful National Flower?",
+                a: ["Vanda Miss Joaquim", "Hibiscus", "Orchid Lily", "Rafflesia"],
+                correct: 0
+            },
+            {
+                q: "On which date does Singapore celebrate its National Day annually?",
+                a: ["9 August", "8 August", "31 August", "1 July"],
+                correct: 0
+            },
+            {
+                q: "What do the five stars on the Singapore Flag represent?",
+                a: ["Democracy, Peace, Progress, Justice, Equality", "Hope, Courage, Strength, Unity, Honor", "Five original states", "Faith, Friendship, Harmony, Peace, Love"],
+                correct: 0
+            },
+            {
+                q: "What does the crescent moon on the Singapore flag symbolize?",
+                a: ["A young nation on the rise", "The primary religion of the land", "Peace and tranquil nights", "Traditional celestial heritage"],
+                correct: 0
+            },
+            {
+                q: "What does the national phrase 'Majulah Singapura' translate to in English?",
+                a: ["Onward Singapore", "Love Singapore", "Strong Singapore", "United Singapore"],
+                correct: 0
+            },
+            {
+                q: "What is the nickname of the iconic architectural dome shapes of the Esplanade?",
+                a: ["The Durians", "The Pineapples", "The Jackfruit", "The Spiky Shells"],
+                correct: 0
+            },
+            {
+                q: "What is Singapore's primary rapid mass transit train system called?",
+                a: ["MRT", "LRT", "MTR", "SBS"],
+                correct: 0
+            },
+            {
+                q: "Which world-renowned airport hub is located in the east of Singapore?",
+                a: ["Changi Airport", "Seletar Airport", "Paya Lebar Hub", "Sembawang Terminal"],
+                correct: 0
+            },
+            {
+                q: "Which iconic Singapore hotel features a boat-shaped rooftop Sands Skypark?",
+                a: ["Marina Bay Sands", "Raffles Hotel", "Fullerton Hotel", "Swissotel"],
+                correct: 0
+            },
+            {
+                q: "What is the name of the highest natural hill/peak in Singapore?",
+                a: ["Bukit Timah Hill", "Mount Faber", "Bukit Batok Hill", "Fort Canning Hill"],
+                correct: 0
+            },
+            {
+                q: "Which island resort in the south of Singapore houses Universal Studios?",
+                a: ["Sentosa", "Pulau Ubin", "Lazarus Island", "St. John's Island"],
+                correct: 0
+            },
+            {
+                q: "Which famous local breakfast features fragrant coconut rice, sambal, and egg?",
+                a: ["Nasi Lemak", "Chicken Rice", "Laksa", "Roti Prata"],
+                correct: 0
+            },
+            {
+                q: "What color do attendees and participants primarily wear at the National Day Parade?",
+                a: ["Red", "Blue", "Green", "Gold"],
+                correct: 0
+            },
+            {
+                q: "What is the friendly blue elephant mascot who encourages water saving in Singapore?",
+                a: ["Water Wally", "Singa the Lion", "Captain Green", "Sharity Elephant"],
+                correct: 0
+            },
+            {
+                q: "Who was Singapore's first Prime Minister?",
+                a: ["Lee Kuan Yew", "Goh Chok Tong", "Lee Hsien Loong", "Yusof Ishak"],
+                correct: 0
+            },
+            {
+                q: "What animal is Singapore's historic 'Courtesy Campaign' mascot, Singa?",
+                a: ["A Lion", "A Tiger", "An Otter", "A Bear"],
+                correct: 0
+            },
+            {
+                q: "Which MRT Line is designated by the vibrant Green color on our transit maps?",
+                a: ["East West Line", "North South Line", "Circle Line", "Downtown Line"],
+                correct: 0
+            },
+            {
+                q: "Which MRT Line is represented by the bright Red color on transit maps?",
+                a: ["North South Line", "East West Line", "North East Line", "Thomson-East Coast Line"],
+                correct: 0
+            },
+            {
+                q: "Which major park in Singapore features massive, high-tech Supertrees?",
+                a: ["Gardens by the Bay", "Bishan-Ang Mo Kio Park", "East Coast Park", "Jurong Lake Gardens"],
+                correct: 0
+            },
+            {
+                q: "What is Singapore's designated national language according to the Constitution?",
+                a: ["Malay", "English", "Mandarin", "Tamil"],
+                correct: 0
+            },
+            {
+                q: "How many official languages does Singapore recognize?",
+                a: ["Four", "Three", "Two", "Five"],
+                correct: 0
+            },
+            {
+                q: "When ordering local kopitiam tea, what does asking for 'Teh Peng' get you?",
+                a: ["Iced Milk Tea", "Hot Black Tea", "Tea with Ginger", "Sugar-free Hot Tea"],
+                correct: 0
+            },
+            {
+                q: "What is the name of the bridge near Marina Bay shaped like a double-helix DNA?",
+                a: ["The Helix Bridge", "The Jubilee Bridge", "Benjamin Sheares Bridge", "Cavenagh Bridge"],
+                correct: 0
+            },
+            {
+                q: "What is Singapore's international country dial code?",
+                a: ["+65", "+60", "+85", "+44"],
+                correct: 0
+            },
+            {
+                q: "What is the name of the younger, friendly Merlion-cub mascot created in 2018?",
+                a: ["Merli", "Leo", "SgLion", "Nila"],
+                correct: 0
+            },
+            {
+                q: "Which major shopping street in Singapore is famous for Christmas lights and retail?",
+                a: ["Orchard Road", "Bugis Street", "Chinatown Road", "Serangoon Road"],
+                correct: 0
+            },
+            {
+                q: "Which historical fort is a major military museum attraction located on Sentosa?",
+                a: ["Fort Siloso", "Fort Canning", "Fort Pasir Panjang", "Changi Fort"],
+                correct: 0
+            },
+            {
+                q: "What sweet, creamy, pandan-flavored jam is traditionally spread on toast?",
+                a: ["Kaya", "Pandan Butter", "Durian Curd", "Peanut Sambal"],
+                correct: 0
+            },
+            {
+                q: "How many active volcanic mountains are naturally located inside Singapore?",
+                a: ["Zero", "One", "Two", "Three"],
+                correct: 0
+            },
+            {
+                q: "What is the official currency used in Singapore?",
+                a: ["Singapore Dollar", "Singapore Ringgit", "Singapore Peso", "Singapore Yuan"],
+                correct: 0
+            },
+            {
+                q: "Which colorful East Coast neighborhood is famous for Peranakan shophouses?",
+                a: ["Katong / Joo Chiat", "Tampines", "Woodlands", "Jurong West"],
+                correct: 0
+            },
+            {
+                q: "Where is the popular open-air youth skatepark located near Orchard Road?",
+                a: ["Somerset", "Dhoby Ghaut", "Newton", "Redhill"],
+                correct: 0
+            },
+            {
+                q: "What is Singapore's oldest and historic reservoir?",
+                a: ["MacRitchie Reservoir", "Bedok Reservoir", "Marina Reservoir", "Lower Seletar Reservoir"],
+                correct: 0
+            },
+            {
+                q: "What is Singapore's popular affectionate nickname worldwide?",
+                a: ["The Little Red Dot", "The Green Leaf", "The Emerald Isle", "The Golden Gate"],
+                correct: 0
+            },
+            {
+                q: "In what calendar month is the Singapore National Day Parade held?",
+                a: ["August", "September", "June", "July"],
+                correct: 0
+            },
+            {
+                q: "What is traditional kopitiam hot coffee styled with condensed milk called?",
+                a: ["Kopi", "Kopi O", "Kopi C", "Kopi Siew Dai"],
+                correct: 0
+            },
+            {
+                q: "Which river flows directly through our downtown central business district?",
+                a: ["Singapore River", "Kallang River", "Rochor River", "Geylang River"],
+                correct: 0
+            },
+            {
+                q: "What famous waterfront platform has hosted multiple NDP events?",
+                a: ["The Float @ Marina Bay", "Sentosa Beach Cove", "Keppel Bay Deck", "Clarke Quay Quay side"],
+                correct: 0
+            },
+            {
+                q: "What does 'Chope' mean in Singaporean street lingo?",
+                a: ["Reserve a seat", "Eat quickly", "Pay the bill", "Order food"],
+                correct: 0
+            },
+            {
+                q: "What pocket item is famously placed on kopitiam tables to 'chope' a seat?",
+                a: ["A tissue packet", "An umbrella", "A coin", "A handphone"],
+                correct: 0
+            },
+            {
+                q: "What giant scenic observation wheel stands proudly near the Marina waterfront?",
+                a: ["Singapore Flyer", "SG Eye", "Marina Star", "Merlion Wheel"],
+                correct: 0
+            },
+            {
+                q: "Which northern reserve area of Singapore is famous for the Night Safari?",
+                a: ["Mandai", "Lim Chu Kang", "Sembawang", "Punggol"],
+                correct: 0
+            },
+            {
+                q: "What is the core target value highlighted in the National Pledge?",
+                a: ["Unity", "Wealth", "Power", "Expansion"],
+                correct: 0
+            },
+            {
+                q: "Which vibrant heritage quarter is home to Kampong Glam and Masjid Sultan?",
+                a: ["Malay Heritage Quarter", "Little India District", "Chinatown Streets", "Katong Hub"],
+                correct: 0
+            },
+            {
+                q: "Who is the Prime Minister of Singapore (in office as of 2026)?",
+                a: ["Lawrence Wong", "Lee Hsien Loong", "Goh Chok Tong", "Tharman Shanmugaratnam"],
+                correct: 0
+            },
+            {
+                q: "What classic design element is featured on the vintage kopitiam cups?",
+                a: ["Green floral patterns", "Red stars", "A Merlion print", "A Singapore Flag motif"],
+                correct: 0
+            }
+        ];
+
+        // Shuffle questions helper
+        function shuffleArray(array) {
+            let shuffled = [...array];
+            for (let i = shuffled.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+            }
+            return shuffled;
+        }
+
+        // --- SOUND EFFECTS (Web Audio API Synthesizer) ---
+        let audioCtx = null;
+        let soundMuted = false;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+        }
+
+        function playSound(type) {
+            if (soundMuted) return;
+            initAudio();
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'jump') {
+                // Classic Mario Jump slide
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(600, now + 0.15);
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.15);
+                osc.start(now);
+                osc.stop(now + 0.15);
+            } else if (type === 'coin') {
+                // High double tone
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(987.77, now); // B5
+                osc.frequency.setValueAtTime(1318.51, now + 0.08); // E6
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.35);
+                osc.start(now);
+                osc.stop(now + 0.35);
+            } else if (type === 'stomp') {
+                // Low crunch sound
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(120, now);
+                osc.frequency.linearRampToValueAtTime(30, now + 0.12);
+                gain.gain.setValueAtTime(0.25, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.12);
+                osc.start(now);
+                osc.stop(now + 0.12);
+            } else if (type === 'powerup') {
+                // Arpeggio rising
+                const notes = [330, 392, 659, 523, 587, 784];
+                notes.forEach((freq, index) => {
+                    const oscSeq = audioCtx.createOscillator();
+                    const gainSeq = audioCtx.createGain();
+                    oscSeq.type = 'square';
+                    oscSeq.connect(gainSeq);
+                    gainSeq.connect(audioCtx.destination);
+                    oscSeq.frequency.setValueAtTime(freq, now + index * 0.06);
+                    gainSeq.gain.setValueAtTime(0.1, now + index * 0.06);
+                    gainSeq.gain.linearRampToValueAtTime(0.01, now + index * 0.06 + 0.08);
+                    oscSeq.start(now + index * 0.06);
+                    oscSeq.stop(now + index * 0.06 + 0.08);
+                });
+            } else if (type === 'wrong') {
+                // Sad slide
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(300, now);
+                osc.frequency.linearRampToValueAtTime(100, now + 0.3);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0.01, now + 0.3);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            } else if (type === 'victory') {
+                // Happy little triumphant tune
+                const fanfare = [523.25, 523.25, 523.25, 523.25, 659.25, 587.33, 523.25, 659.25, 783.99]; // C5 C5 C5 C5 E5 D5 C5 E5 G5
+                const timing = [0, 0.1, 0.2, 0.3, 0.5, 0.6, 0.7, 0.8, 1.0];
+                fanfare.forEach((freq, idx) => {
+                    const oscV = audioCtx.createOscillator();
+                    const gainV = audioCtx.createGain();
+                    oscV.type = 'triangle';
+                    oscV.connect(gainV);
+                    gainV.connect(audioCtx.destination);
+                    oscV.frequency.setValueAtTime(freq, now + timing[idx]);
+                    gainV.gain.setValueAtTime(0.15, now + timing[idx]);
+                    gainV.gain.linearRampToValueAtTime(0.01, now + timing[idx] + 0.15);
+                    oscV.start(now + timing[idx]);
+                    oscV.stop(now + timing[idx] + 0.2);
+                });
+            }
+        }
+
+        // --- GAME STATE ---
+        let currentQuestionsList = [];
+        let questionIndex = 0;
+        let score = 0;
+        let coins = 0;
+        let streak = 0;
+        let timeLeft = 120; // 2 minutes
+        let timerId = null;
+        let isStarPower = false;
+        let starPowerTimer = null;
+        let totalCorrect = 0;
+
+        // UI Selectors
+        const startScreen = document.getElementById('startScreen');
+        const gameScreen = document.getElementById('gameScreen');
+        const endModal = document.getElementById('endModal');
+        const startGameBtn = document.getElementById('startGameBtn');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const currentQNum = document.getElementById('currentQNum');
+        const progressPct = document.getElementById('progressPct');
+
+        const hudScore = document.getElementById('hudScore');
+        const hudCoins = document.getElementById('hudCoins');
+        const hudStreak = document.getElementById('hudStreak');
+        const hudTime = document.getElementById('hudTime');
+        const starAlert = document.getElementById('starAlert');
+
+        const endEmoji = document.getElementById('endEmoji');
+        const endTitle = document.getElementById('endTitle');
+        const endSub = document.getElementById('endSub');
+        const finalScore = document.getElementById('finalScore');
+        const finalCorrect = document.getElementById('finalCorrect');
+        const finalAccuracy = document.getElementById('finalAccuracy');
+        const finalRank = document.getElementById('finalRank');
+
+        const restartBtn = document.getElementById('restartBtn');
+        const closeEndModal = document.getElementById('closeEndModal');
+        const soundToggle = document.getElementById('soundToggle');
+        const soundOnIcon = document.getElementById('soundOnIcon');
+        const soundOffIcon = document.getElementById('soundOffIcon');
+
+        // Animation references
+        const marioSprite = document.getElementById('marioSprite');
+        const coinPop = document.getElementById('coinPop');
+        const enemySprite = document.getElementById('enemySprite');
+        const mysteryBlock = document.getElementById('mysteryBlock');
+        const flagpole = document.getElementById('flagpole');
+
+        const bgLayers = document.querySelectorAll('.scroll-layer-1, .scroll-layer-2, .scroll-layer-3');
+
+        // Initialize/Configure events on load
+        window.onload = function () {
+            // Sound controller click handlers
+            soundToggle.addEventListener('click', () => {
+                soundMuted = !soundMuted;
+                if (soundMuted) {
+                    soundOnIcon.classList.add('hidden');
+                    soundOffIcon.classList.remove('hidden');
+                } else {
+                    soundOnIcon.classList.remove('hidden');
+                    soundOffIcon.classList.add('hidden');
+                    initAudio();
+                }
+            });
+
+            startGameBtn.addEventListener('click', startGame);
+            restartBtn.addEventListener('click', startGame);
+            closeEndModal.addEventListener('click', resetToMenu);
+        };
+
+        // --- GAME LOOP INITS ---
+        function startGame() {
+            // Start synth audio context via user click
+            initAudio();
+            playSound('jump');
+
+            // Reset scores
+            score = 0;
+            coins = 0;
+            streak = 0;
+            timeLeft = 120;
+            questionIndex = 0;
+            totalCorrect = 0;
+            isStarPower = false;
+            starAlert.classList.add('hidden');
+            marioSprite.classList.remove('star-power-active');
+
+            // Load and shuffle questions
+            currentQuestionsList = shuffleArray(questions);
+
+            // Interface shift
+            startScreen.classList.add('hidden');
+            endModal.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            gameScreen.classList.add('flex');
+
+            // Reset scrolling animations speed
+            bgLayers.forEach(layer => layer.classList.remove('paused-anim'));
+
+            updateHUD();
+            displayQuestion();
+
+            // Start countdown timer loop
+            if (timerId) clearInterval(timerId);
+            timerId = setInterval(() => {
+                timeLeft--;
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    endGame(false); // Time out
+                }
+                updateHUD();
+            }, 1000);
+        }
+
+        function updateHUD() {
+            hudScore.textContent = String(score).padStart(6, '0');
+            hudCoins.textContent = `🪙 x${coins}`;
+            hudStreak.textContent = `⭐ x${streak}`;
+            hudTime.textContent = `${timeLeft}s`;
+
+            if (timeLeft <= 15) {
+                hudTime.className = "text-red-500 font-black animate-pulse";
+            } else {
+                hudTime.className = "text-white";
+            }
+
+            // Flagpole animation position based on question progress
+            const pct = (questionIndex / 50) * 100;
+            // Place flagpole dynamically coming in from right side
+            if (questionIndex >= 42) {
+                const rightPos = 100 - ((questionIndex - 42) * 12);
+                flagpole.style.right = `${rightPos}px`;
+            } else {
+                flagpole.style.right = `-100px`;
+            }
+        }
+
+        // --- QUESTION HANDLER ---
+        function displayQuestion() {
+            if (questionIndex >= 50) {
+                endGame(true); // Completed all questions
+                return;
+            }
+
+            const current = currentQuestionsList[questionIndex];
+            currentQNum.textContent = questionIndex + 1;
+            progressPct.textContent = `Progress: ${Math.round((questionIndex / 50) * 100)}%`;
+            questionText.textContent = current.q;
+
+            // Generate option buttons
+            optionsContainer.innerHTML = '';
+            
+            // Build original indexed options so we can identify the correct choice
+            let optionsWithIndices = current.a.map((text, idx) => ({ text, originalIdx: idx }));
+            // Shuffle option display order
+            let shuffledOptions = shuffleArray(optionsWithIndices);
+
+            shuffledOptions.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "pixel-btn pixel-border bg-gray-800 hover:bg-gray-700 active:bg-gray-900 text-left p-4 rounded-xl font-bold text-sm sm:text-base transition-all duration-100 flex items-center justify-between group";
+                btn.innerHTML = `
+                    <span>${opt.text}</span>
+                    <span class="opacity-0 group-hover:opacity-100 transition-opacity ml-2 text-red-500 retro-font text-xs">SELECT!</span>
+                `;
+                btn.addEventListener('click', () => checkAnswer(opt.originalIdx === current.correct, btn));
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        // --- ANSWER CHECKING & INTERACTION ANIMATIONS ---
+        function checkAnswer(isCorrect, clickedBtn) {
+            // Temporarily disable buttons to prevent double-clicking
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            if (isCorrect) {
+                clickedBtn.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+                clickedBtn.classList.add('bg-green-600', 'border-green-400');
+                
+                streak++;
+                totalCorrect++;
+                const multiplier = isStarPower ? 2 : 1;
+                coins += 1 * multiplier;
+                score += 1000 * streak * multiplier;
+
+                // Check for Star Power activation
+                if (streak >= 5 && !isStarPower) {
+                    activateStarPower();
+                }
+
+                // Animate Mario platformer jump and enemy stomping
+                triggerJumpAndStomp();
+            } else {
+                clickedBtn.classList.remove('bg-gray-800', 'hover:bg-gray-700');
+                clickedBtn.classList.add('bg-red-600', 'border-red-400');
+                
+                // Break streak & punish time
+                streak = 0;
+                timeLeft = Math.max(0, timeLeft - 3); // Deduct 3 seconds
+                deactivateStarPower();
+
+                // Animate Mario sliding back / getting hit
+                triggerMarioHit();
+            }
+
+            updateHUD();
+
+            // Short delay to allow animation and visual feedback
+            setTimeout(() => {
+                questionIndex++;
+                displayQuestion();
+                updateHUD();
+            }, 550);
+        }
+
+        // --- PLATFORMER ANIMATION ACTIONS ---
+        function triggerJumpAndStomp() {
+            playSound('jump');
+            marioSprite.classList.add('mario-jumping');
+
+            // Trigger coin popping animation
+            coinPop.classList.remove('hidden');
+            coinPop.classList.add('coin-anim');
+
+            // Stomp/hit timing
+            setTimeout(() => {
+                playSound('coin');
+                // Flash mystery block as hit
+                mysteryBlock.style.transform = 'translateY(-12px)';
+                mysteryBlock.classList.remove('bg-yellow-500');
+                mysteryBlock.classList.add('bg-gray-600', 'text-gray-400');
+                mysteryBlock.textContent = 'o';
+            }, 180);
+
+            setTimeout(() => {
+                playSound('stomp');
+                // Squash enemy
+                enemySprite.style.transform = 'scaleY(0.2) translateY(80px)';
+            }, 300);
+
+            // Clean up animation classes & reset elements
+            setTimeout(() => {
+                marioSprite.classList.remove('mario-jumping');
+                coinPop.classList.add('hidden');
+                coinPop.classList.remove('coin-anim');
+
+                // Return enemy and mystery block back to normal
+                enemySprite.style.transform = 'scaleY(1) translateY(0)';
+                mysteryBlock.style.transform = 'translateY(0)';
+                mysteryBlock.classList.remove('bg-gray-600', 'text-gray-400');
+                mysteryBlock.classList.add('bg-yellow-500');
+                mysteryBlock.textContent = '?';
+            }, 500);
+        }
+
+        function triggerMarioHit() {
+            playSound('wrong');
+            // Flash Mario Red-ish to indicate hit
+            marioSprite.style.filter = 'invert(20%) sepia(95%) saturate(7000%) hue-rotate(0deg)';
+            
+            // Shake screen effect
+            gameScreen.classList.add('animate-shake');
+            setTimeout(() => {
+                gameScreen.classList.remove('animate-shake');
+            }, 200);
+
+            setTimeout(() => {
+                marioSprite.style.filter = 'none';
+            }, 400);
+        }
+
+        // --- STAR POWER ACTIVE MODE ---
+        function activateStarPower() {
+            isStarPower = true;
+            playSound('powerup');
+            starAlert.classList.remove('hidden');
+            marioSprite.classList.add('star-power-active');
+
+            // High-speed visual parallax
+            bgLayers.forEach(layer => {
+                layer.style.animationDuration = '2s'; // Fast
+            });
+
+            // Auto turn off Star Power after 10 seconds unless extended
+            if (starPowerTimer) clearTimeout(starPowerTimer);
+            starPowerTimer = setTimeout(() => {
+                deactivateStarPower();
+            }, 10000);
+        }
+
+        function deactivateStarPower() {
+            isStarPower = false;
+            starAlert.classList.add('hidden');
+            marioSprite.classList.remove('star-power-active');
+
+            // Reset standard speed visual parallax
+            document.querySelector('.scroll-layer-1').style.animationDuration = '40s';
+            document.querySelector('.scroll-layer-2').style.animationDuration = '20s';
+            document.querySelector('.scroll-layer-3').style.animationDuration = '8s';
+        }
+
+        // --- GAME OVER & PERFORMANCE RATING ---
+        function endGame(isVictory) {
+            clearInterval(timerId);
+            deactivateStarPower();
+            bgLayers.forEach(layer => layer.classList.add('paused-anim'));
+
+            // Calculate metrics
+            const accuracy = Math.round((totalCorrect / 50) * 100);
+            
+            // Set stats inside modal
+            finalScore.textContent = String(score).padStart(6, '0');
+            finalCorrect.textContent = `${totalCorrect} / 50`;
+            finalAccuracy.textContent = `${accuracy}%`;
+
+            // Calculate Custom Singapore-themed Ranks based on performance
+            let rank = "";
+            let medalEmoji = "🥉";
+            if (isVictory && accuracy >= 90) {
+                rank = "National Day Legend (Gold Star)";
+                medalEmoji = "👑";
+                playSound('victory');
+            } else if (isVictory && accuracy >= 70) {
+                rank = "Majulah Commander (Silver Star)";
+                medalEmoji = "🥈";
+                playSound('victory');
+            } else if (totalCorrect >= 35) {
+                rank = "Merlion Protector (Bronze Star)";
+                medalEmoji = "🦁";
+                playSound('victory');
+            } else if (totalCorrect >= 20) {
+                rank = "Kampong Cadet";
+                medalEmoji = "🏠";
+                playSound('wrong');
+            } else {
+                rank = "Singapore Novice (Keep Learning!)";
+                medalEmoji = "🎒";
+                playSound('wrong');
+            }
+
+            endEmoji.textContent = medalEmoji;
+            finalRank.textContent = rank;
+
+            if (isVictory) {
+                endTitle.textContent = "MISSION ACCOMPLISHED!";
+                endTitle.className = "text-2xl sm:text-4xl font-black retro-font text-yellow-500 mb-2";
+                endSub.textContent = "Excellent work! Mario made it safely to the National Day Parade!";
+            } else {
+                endTitle.textContent = "GAME OVER!";
+                endTitle.className = "text-2xl sm:text-4xl font-black retro-font text-red-500 mb-2";
+                endSub.textContent = "Time ran out! Try again and answer faster to complete the parade trail.";
+            }
+
+            // Display modal
+            endModal.classList.remove('hidden');
+        }
+
+        function resetToMenu() {
+            endModal.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
