@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Super SG Mario - National Day Quest</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&family=Press+Start+2P&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+            background-color: #111827;
+        }
+        .retro-font {
+            font-family: 'Press Start 2P', cursive;
+        }
+        /* Shake animation for wrong answers */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-8px); }
+            75% { transform: translateX(8px); }
+        }
+        .shake-element {
+            animation: shake 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-center min-h-screen text-white relative">
+
+    <!-- Background Elements (Singapore Theme Stars & Crescent) -->
+    <div class="absolute inset-0 bg-gradient-to-b from-[#EF3340] to-red-950 opacity-20 pointer-events-none"></div>
+
+    <!-- Main Game Container -->
+    <div class="relative w-full max-w-4xl h-[600px] bg-slate-900 border-4 border-red-500 rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+        
+        <!-- TOP HUD -->
+        <div class="flex items-center justify-between p-4 bg-red-600/90 backdrop-blur border-b-4 border-red-700 z-10">
+            <div class="flex items-center space-x-6">
+                <div>
+                    <div class="text-xs uppercase opacity-75 retro-font text-[9px]">SG MERITS</div>
+                    <div class="text-2xl font-black retro-font text-yellow-300" id="hud-score">000000</div>
+                </div>
+                <div>
+                    <div class="text-xs uppercase opacity-75 retro-font text-[9px]">QUESTS</div>
+                    <div class="text-xl font-bold text-white flex items-center">
+                        <span id="hud-answered" class="text-yellow-300">0</span>
+                        <span class="opacity-50 mx-1">/</span>
+                        <span class="text-sm">50</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Festive Title Banner -->
+            <div class="hidden md:flex flex-col items-center">
+                <span class="retro-font text-white text-[10px] animate-pulse">SG NATIONAL DAY SPECIAL</span>
+                <span class="text-xs text-yellow-300 font-bold tracking-wider">MARIO QUEST 120s</span>
+            </div>
+
+            <!-- Timer and Audio Controls -->
+            <div class="flex items-center space-x-4">
+                <div class="text-right">
+                    <div class="text-xs uppercase opacity-75 retro-font text-[9px]">TIME LEFT</div>
+                    <div class="text-2xl font-black text-red-100 flex items-center justify-end" id="hud-timer-container">
+                        <span class="retro-font text-red-200 animate-pulse text-xl mr-1 font-mono" id="hud-timer">120</span>s
+                    </div>
+                </div>
+                <button id="btn-audio" class="p-2 bg-red-700 hover:bg-red-800 border-2 border-red-500 rounded-lg transition-all transform active:scale-95" title="Toggle Sound">
+                    <svg id="icon-audio" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L8.25 9H4.5A1.5 1.5 0 003 10.5v3a1.5 1.5 0 001.5 1.5h3.75L12 18.75z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Timer progress bar -->
+        <div class="w-full bg-slate-800 h-2 z-10">
+            <div id="hud-timer-bar" class="bg-gradient-to-r from-yellow-400 via-red-500 to-red-600 h-full w-full transition-all duration-1000"></div>
+        </div>
+
+        <!-- GAME AREA / CANVAS -->
+        <div class="relative flex-grow w-full bg-[#5c94fc] overflow-hidden">
+            <canvas id="gameCanvas" class="block w-full h-full"></canvas>
+
+            <!-- On-Screen HUD Overlay for Quick Prompts -->
+            <div id="floating-tutorial" class="absolute bottom-4 left-4 bg-black/60 backdrop-blur text-white text-xs px-3 py-2 rounded-lg pointer-events-none flex flex-col space-y-1 border border-white/10">
+                <div><strong class="text-yellow-400">← / →</strong> : Run Left / Right</div>
+                <div><strong class="text-yellow-400">Spacebar</strong> : Jump / Hit SG Block</div>
+            </div>
+
+            <!-- Mobile Touch Controls overlay -->
+            <div class="absolute bottom-4 right-4 flex space-x-2 md:hidden">
+                <button id="touch-left" class="w-12 h-12 bg-black/50 border border-white/30 rounded-full flex items-center justify-center text-xl active:bg-red-600/80">◀</button>
+                <button id="touch-right" class="w-12 h-12 bg-black/50 border border-white/30 rounded-full flex items-center justify-center text-xl active:bg-red-600/80">▶</button>
+                <button id="touch-jump" class="w-14 h-14 bg-red-600/80 border-2 border-white rounded-full flex items-center justify-center font-bold active:bg-red-500">JUMP</button>
+            </div>
+        </div>
+
+        <!-- START MODAL -->
+        <div id="start-screen" class="absolute inset-0 bg-slate-950/95 backdrop-blur flex flex-col items-center justify-center p-6 text-center z-30 transition-all duration-300">
+            <!-- Red-White Singapore Theme Header -->
+            <div class="bg-red-600 border-4 border-white p-4 rounded-2xl max-w-lg shadow-2xl relative mb-6 transform -rotate-1">
+                <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-yellow-400 text-slate-950 px-4 py-1 rounded-full font-bold text-xs shadow border-2 border-white">
+                    NATIONAL DAY QUEST
+                </div>
+                <h1 class="text-white font-black text-2xl md:text-3xl retro-font tracking-tight mt-2 drop-shadow-lg">
+                    SUPER SG MARIO
+                </h1>
+                <p class="text-yellow-200 text-xs md:text-sm font-semibold tracking-wide mt-2">
+                    Can You Answer 50 Singaporean Secrets in 120s?
+                </p>
+            </div>
+
+            <div class="max-w-md bg-slate-900 border-2 border-red-500/40 rounded-xl p-5 mb-6 text-left text-sm text-slate-300 space-y-3 shadow-inner">
+                <p class="flex items-start">
+                    <span class="text-red-500 mr-2 text-lg">★</span>
+                    <span>Use <strong class="text-white">Arrow keys</strong> to run left and right. Press <strong class="text-white">Spacebar</strong> to jump.</span>
+                </p>
+                <p class="flex items-start">
+                    <span class="text-red-500 mr-2 text-lg">★</span>
+                    <span>Hit floating <strong class="text-yellow-400">SG Crest Blocks</strong> with your head to trigger a national trivia challenge.</span>
+                </p>
+                <p class="flex items-start">
+                    <span class="text-red-500 mr-2 text-lg">★</span>
+                    <span class="text-red-300 font-semibold">Careful! Incorrect answers are returned to your queue exactly TWO questions later.</span>
+                </p>
+                <p class="flex items-start">
+                    <span class="text-red-500 mr-2 text-lg">★</span>
+                    <span>Correct answers reward points and extra speed to beat the 120-second timer!</span>
+                </p>
+            </div>
+
+            <button id="btn-start" class="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 border-b-8 border-red-800 rounded-xl text-lg font-bold tracking-wider hover:scale-105 active:scale-95 active:border-b-2 transition-all shadow-lg flex items-center space-x-2">
+                <span>START MAJULAH CHALLENGE</span>
+                <span class="text-yellow-300">🇸🇬</span>
+            </button>
+        </div>
+
+        <!-- QUESTION MODAL (OVERLAY ON CANVAS) -->
+        <div id="question-screen" class="hidden absolute inset-0 bg-slate-950/90 backdrop-blur-sm flex flex-col items-center justify-center p-6 z-20">
+            <div id="question-box" class="w-full max-w-xl bg-slate-900 border-4 border-red-500 rounded-2xl overflow-hidden shadow-2xl flex flex-col transform transition-all duration-300 scale-95 opacity-0">
+                <!-- Question Header -->
+                <div class="bg-red-600 p-4 border-b-2 border-red-700 flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-xl">🇸🇬</span>
+                        <span class="font-bold text-sm tracking-widest text-white retro-font text-[10px]">SG QUEST CHALLENGE</span>
+                    </div>
+                    <div class="bg-slate-950 px-3 py-1 rounded-full text-xs text-yellow-300 font-bold border border-yellow-300/30">
+                        Remaining: <span id="modal-remaining">50</span>
+                    </div>
+                </div>
+
+                <!-- Banner alerting if this was a wrong answer recurring -->
+                <div id="modal-retry-banner" class="hidden bg-yellow-500/15 border-b border-yellow-500/30 text-yellow-300 text-xs text-center py-1.5 font-semibold px-4">
+                    ⚠️ THIS IS A SECURED RECURRING QUEST! PAY ATTENTION!
+                </div>
+
+                <!-- Question Body -->
+                <div class="p-6 flex-grow flex flex-col justify-center">
+                    <h2 id="modal-question-text" class="text-lg md:text-xl font-bold text-white mb-6 leading-relaxed">
+                        What does the word "Chope" mean in the context of Singapore coffee shops?
+                    </h2>
+
+                    <!-- 4 Multiple Choice Grid -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="modal-choices">
+                        <button class="choice-btn px-4 py-3 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-red-500 text-left rounded-xl transition-all duration-150 flex items-center space-x-3 group active:scale-98">
+                            <span class="bg-slate-950 text-yellow-400 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm group-hover:bg-red-600 group-hover:text-white transition-colors">A</span>
+                            <span class="text-sm font-semibold flex-grow">Reserve a table with packet tissue</span>
+                        </button>
+                        <!-- Other buttons dynamically rendered/updated in JS -->
+                    </div>
+                </div>
+
+                <!-- Feedback Banner -->
+                <div id="modal-feedback" class="h-10 border-t border-slate-800 bg-slate-950 flex items-center justify-center text-xs font-semibold uppercase tracking-wider">
+                    Choose the correct option before heading forward!
+                </div>
+            </div>
+        </div>
+
+        <!-- GAME OVER / VICTORY OVERLAY -->
+        <div id="end-screen" class="hidden absolute inset-0 bg-slate-950/98 backdrop-blur flex flex-col items-center justify-center p-6 text-center z-30 transition-all duration-300">
+            <!-- Icon/Visual -->
+            <div id="end-icon" class="text-7xl mb-4 animate-bounce">🇸🇬</div>
+
+            <!-- Title -->
+            <h1 id="end-title" class="text-3xl md:text-4xl font-black text-red-500 retro-font tracking-tight mb-2">
+                MISSION ACCOMPLISHED!
+            </h1>
+            <p id="end-subtitle" class="text-yellow-300 font-bold text-lg mb-6">
+                You are a True-Blue Certified Singaporean!
+            </p>
+
+            <!-- Stats Box -->
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4 max-w-lg bg-slate-900 border border-slate-800 rounded-2xl p-6 mb-8 text-center">
+                <div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Final Score</div>
+                    <div class="text-2xl font-black text-yellow-400 font-mono" id="end-score">0</div>
+                </div>
+                <div>
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Time Left</div>
+                    <div class="text-2xl font-black text-white font-mono" id="end-time">0s</div>
+                </div>
+                <div class="col-span-2 md:col-span-1">
+                    <div class="text-xs text-slate-400 uppercase tracking-wider mb-1">Questions Solved</div>
+                    <div class="text-2xl font-black text-emerald-400 font-mono" id="end-accuracy">0/50</div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                <button id="btn-restart" class="px-8 py-4 bg-gradient-to-r from-red-600 to-red-500 hover:from-red-500 hover:to-red-400 border-b-4 border-red-800 hover:border-b-2 rounded-xl font-bold tracking-wider hover:scale-105 active:scale-95 transition-all shadow-lg text-white">
+                    PLAY AGAIN 🇸🇬
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Extra decoration below canvas -->
+    <div class="text-center mt-4 text-xs text-slate-500">
+        Made with ♥ for Singapore's National Day celebration! All rights reserved.
+    </div>
+
+    <!-- SOUND & GAME ENGINE LOGIC -->
+    <script>
+        // ----------------- QUESTIONS DATA -----------------
+        const ORIGINAL_QUESTIONS = [
+            { id: 1, q: "What does the Singlish word 'Chope' mean?", c: ["To reserve a seat (often with tissue packets)", "To shout loudly in public", "To pay money at the counter", "To cut in front of a queue"], a: 0 },
+            { id: 2, q: "What color is the East West MRT Line on maps?", c: ["Red", "Purple", "Green", "Yellow"], a: 2 },
+            { id: 3, q: "Which primary ingredient gives Kaya its authentic taste and green color?", c: ["Avocado & honey", "Pandan leaves & coconut milk", "Green tea & butter", "Celery & condensed milk"], a: 1 },
+            { id: 4, q: "Which legendary monument has a lion head and a fish body?", c: ["Sentosa Dragon", "Changi Vortex", "The Merlion", "Singa the Courteous Lion"], a: 2 },
+            { id: 5, q: "How many stars are present on the Singapore National Flag?", c: ["Four stars", "Five stars", "Six stars", "Three stars"], a: 1 },
+            { id: 6, q: "What is the mascot designed to teach courtesy to Singaporeans?", c: ["Water Wally", "Captain Green", "Singa the Lion", "Nila"], a: 2 },
+            { id: 7, q: "Where can you visit Singapore's famous iconic 'Dragon Playground'?", c: ["Marine Parade", "Tampines", "Toa Payoh", "Bedok"], a: 2 },
+            { id: 8, q: "What does 'Siam' mean in Singlish?", c: ["To buy local coffee", "To get out of the way / Move aside", "To eat too much chili", "To call someone a cheat"], a: 1 },
+            { id: 9, q: "Which 24-hour retail shopping mall is located in Little India?", c: ["Mustafa Centre", "Tekka Centre", "City Square Mall", "Sheng Siong Plaza"], a: 0 },
+            { id: 10, q: "What is the colloquial term for taking away food/drink?", c: ["Tabao", "Dabao", "Bungkus", "Both Dabao & Bungkus are used"], a: 3 },
+            { id: 11, q: "What is the Singapore National Flower?", c: ["Vanda Miss Joaquim", "Hibiscus Rosa-sinensis", "Rafflesia Arnoldii", "White Orchid"], a: 0 },
+            { id: 12, q: "What year did Singapore gain independence?", c: ["1959", "1963", "1965", "1972"], a: 2 },
+            { id: 13, q: "On which date do we celebrate National Day?", c: ["8 August", "9 August", "10 August", "31 August"], a: 1 },
+            { id: 14, q: "Who was Singapore's first Prime Minister?", c: ["Yusof Ishak", "Goh Chok Tong", "Lee Kuan Yew", "S. Rajaratnam"], a: 2 },
+            { id: 15, q: "What is the name of the Singapore National Anthem?", c: ["Negaraku", "Majulah Singapura", "Home", "Singapura Sunny Island"], a: 1 },
+            { id: 16, q: "In which official language must the National Anthem be sung?", c: ["English", "Mandarin", "Malay", "Tamil"], a: 2 },
+            { id: 17, q: "What do the 5 stars on our national flag represent?", c: ["Our 5 main island territories", "Democracy, Peace, Progress, Justice, Equality", "The 5 founding leaders of the republic", "Food, Safety, Cleanliness, Education, Housing"], a: 1 },
+            { id: 18, q: "What does the crescent moon on the flag represent?", c: ["The night sky over Singapore", "Islamic traditions of the land", "A young nation on the rise", "A peaceful ocean surrounding the island"], a: 2 },
+            { id: 19, q: "How many digits are in a modern Singapore postal code?", c: ["4 digits", "5 digits", "6 digits", "7 digits"], a: 2 },
+            { id: 20, q: "What does 'ERP' stand for on our roads?", c: ["Electronic Road Pricing", "Emergency Road Patrol", "Easy Route Planner", "Estimated Revenue Protection"], a: 0 },
+            { id: 21, q: "Where can you view the magnificent 40-meter tall indoor Rain Vortex?", c: ["Gardens by the Bay", "Marina Bay Sands", "Jewel Changi Airport", "Sentosa Island Sky"], a: 2 },
+            { id: 22, q: "What is the classic local ice cream vendor street snack?", c: ["Ice cream inside a freshly cut coconut", "Ice cream wrapped in dynamic rainbow bread or wafer", "Fried ice cream rolls on a metal plate", "Ice cream topped with durian paste in a cup"], a: 1 },
+            { id: 23, q: "Which MRT station is the interchange closest to Sentosa's gateway?", c: ["Raffles Place", "HarbourFront", "Outram Park", "Dhoby Ghaut"], a: 1 },
+            { id: 24, q: "What does the automotive permit 'COE' stand for?", c: ["Certificate of Engine", "Car Ownership Entry", "Certificate of Entitlement", "Cost of Environmentalism"], a: 2 },
+            { id: 25, q: "What does the Singlish word 'Kaypoh' mean?", c: ["A busybody / nosy person", "A person who is always afraid of losing out", "A friendly neighbor", "An expensive dish of chicken rice"], a: 0 },
+            { id: 26, q: "What is the highest natural point in Singapore?", c: ["Mount Faber", "Bukit Timah Hill", "Fort Canning Hill", "Jurong Hill"], a: 1 },
+            { id: 27, q: "Which estate was developed as Singapore's very first satellite town?", c: ["Ang Mo Kio", "Toa Payoh", "Queenstown", "Jurong"], a: 2 },
+            { id: 28, q: "What does 'Kiasu' mean in local context?", c: ["Afraid of ghosts", "Afraid of losing out", "Afraid of dying", "Afraid of falling down"], a: 1 },
+            { id: 29, q: "What does 'Kiasee' mean in local context?", c: ["Afraid of water", "Afraid of losing face", "Afraid of dying", "Afraid of heights"], a: 2 },
+            { id: 30, q: "What is the common local term for a coffee shop?", c: ["Kopitiam", "Mamashop", "Sarabat Stall", "Pasar Malam"], a: 0 },
+            { id: 31, q: "If you order 'Kopi C', what unique ingredient do you get?", c: ["Condensed milk", "Evaporated milk & sugar", "Fresh goat milk", "Coconut milk sugar-free"], a: 1 },
+            { id: 32, q: "Which architectural marvel is affectionately nicknamed 'The Durian'?", c: ["The Esplanade", "The ArtScience Museum", "Marina Bay Sands", "The Helix Bridge"], a: 0 },
+            { id: 33, q: "What is the pedestrian bridge designed like a DNA double helix?", c: ["Jubilee Bridge", "Helix Bridge", "Cavenagh Bridge", "Benjamin Sheares Bridge"], a: 1 },
+            { id: 34, q: "What is the maximum penalty for importing chewing gum for resale?", c: ["A soft warning letter", "A $500 fine", "Up to $100,000 fine or jail time", "Community service for 2 years"], a: 2 },
+            { id: 35, q: "Which mascot teaches Singaporeans about saving water?", c: ["Water Wally", "Captain Green", "Smiley Squirrel", "Sharity Elephant"], a: 0 },
+            { id: 36, q: "In Singlish, what is 'Bo Chio' referring to?", c: ["Having no energy", "Not being invited to an outing", "Eating food that is not spicy", "Forgetting your wallet"], a: 1 },
+            { id: 37, q: "Which island south of Singapore is legendary for its turtle origins?", c: ["Pulau Ubin", "Kusu Island", "Lazarus Island", "St. John's Island"], a: 1 },
+            { id: 38, q: "What does the term 'Ang Moh' literally translate to?", c: ["Red head / hair", "White ghost", "Foreign merchant", "Big nose"], a: 0 },
+            { id: 39, q: "Which Singapore Botanic Gardens site is a UNESCO World Heritage Site?", c: ["National Orchid Garden", "Singapore Botanic Gardens", "Gardens by the Bay", "MacRitchie Reservoir Forest"], a: 1 },
+            { id: 40, q: "What is the local pancake filled with peanuts/coconut called?", c: ["Roti Prata", "Min Jiangkueh", "Kueh Lapis", "Apam Balik"], a: 1 },
+            { id: 41, q: "What does the word 'Sabo' mean?", c: ["To help a friend in need", "To sabotage or play a prank on someone", "To order food on behalf of others", "To speak very softly"], a: 1 },
+            { id: 42, q: "What local shaved ice dessert has red bean, sweet corn, and colorful syrups?", c: ["Cendol", "Ice Kacang", "Cheng Tng", "Tau Huay"], a: 1 },
+            { id: 43, q: "What does 'Alamak' express?", c: ["A hearty greeting", "Shock, alarm, or dismay", "An agreement on a good price", "A hunger craving"], a: 1 },
+            { id: 44, q: "What does 'Makan' mean?", c: ["Sleep", "Eat / Drink", "Play football", "Go home"], a: 1 },
+            { id: 45, q: "Which heritage area is famous for colorful shophouses and Peranakan culture?", c: ["Joo Chiat / Katong", "Tiong Bahru", "Clarke Quay", "Chinatown"], a: 0 },
+            { id: 46, q: "What local food dish is made from steamed white radish cakes fried with eggs?", c: ["Roti Prata", "Chai Tow Kway (Fried Carrot Cake)", "Char Kway Teow", "Hokkien Mee"], a: 1 },
+            { id: 47, q: "What does 'Paiseh' mean?", c: ["To feel extremely embarrassed, shy, or sorry", "To feel proud of an achievement", "To be extremely angry", "To want to eat dessert"], a: 0 },
+            { id: 48, q: "What is the popular national military tea beverage pulled with condensed milk?", c: ["Teh C", "Teh Tarik", "Teh O", "Teh Halia"], a: 1 },
+            { id: 49, q: "Which beach on Sentosa hosts the Wings of Time night show?", c: ["Palawan Beach", "Siloso Beach", "Tanjong Beach", "Sensoryscape"], a: 1 },
+            { id: 50, q: "Which state fund is primarily responsible for investing Singapore's reserves?", c: ["Temasek Holdings", "GIC", "CPF Board", "MAS"], a: 1 }
+        ];
+
+        // ----------------- WEBAUDIO RETRO SYNTHESIZER -----------------
+        class RetroAudio {
+            constructor() {
+                this.ctx = null;
+                this.muted = false;
+                this.bgmTimer = null;
+            }
+
+            init() {
+                if (this.ctx) return;
+                const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+                if (AudioContextClass) {
+                    this.ctx = new AudioContextClass();
+                }
+            }
+
+            playTone(freq, type, duration, vol = 0.1) {
+                if (this.muted || !this.ctx) return;
+                try {
+                    this.init();
+                    if (this.ctx.state === 'suspended') {
+                        this.ctx.resume();
+                    }
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, this.ctx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {
+                    console.error("Audio error", e);
+                }
+            }
+
+            playJump() {
+                this.playTone(150, 'triangle', 0.1, 0.15);
+                setTimeout(() => this.playTone(300, 'triangle', 0.15, 0.15), 50);
+            }
+
+            playHitBlock() {
+                this.playTone(100, 'sawtooth', 0.08, 0.2);
+                setTimeout(() => this.playTone(220, 'square', 0.1, 0.15), 40);
+            }
+
+            playCorrect() {
+                this.playTone(330, 'square', 0.1, 0.15);
+                setTimeout(() => this.playTone(440, 'square', 0.1, 0.15), 100);
+                setTimeout(() => this.playTone(660, 'square', 0.3, 0.15), 200);
+            }
+
+            playWrong() {
+                this.playTone(180, 'sawtooth', 0.15, 0.2);
+                setTimeout(() => this.playTone(130, 'sawtooth', 0.3, 0.2), 120);
+            }
+
+            playVictory() {
+                const notes = [261, 329, 392, 523, 659, 783, 1046];
+                notes.forEach((note, i) => {
+                    setTimeout(() => {
+                        this.playTone(note, 'square', 0.25, 0.15);
+                    }, i * 150);
+                });
+            }
+
+            playBgmSnippet() {
+                if (this.muted || !this.ctx) return;
+                const tempo = 240;
+                const C4 = 261.63, D4 = 293.66, E4 = 329.63, F4 = 349.23, G4 = 392.00, A4 = 440.00, B4 = 493.88, C5 = 523.25;
+                const melody = [
+                    G4, G4, A4, B4, D4, B4, A4, G4, A4, A4, B4, C5, B4, A4, G4, F4
+                ];
+                melody.forEach((freq, idx) => {
+                    setTimeout(() => {
+                        if (!game.playing || this.muted) return;
+                        this.playTone(freq, 'sine', 0.2, 0.05);
+                    }, idx * tempo);
+                });
+            }
+
+            startBgm() {
+                this.stopBgm();
+                this.playBgmSnippet();
+                this.bgmTimer = setInterval(() => {
+                    this.playBgmSnippet();
+                }, 8000);
+            }
+
+            stopBgm() {
+                if (this.bgmTimer) {
+                    clearInterval(this.bgmTimer);
+                    this.bgmTimer = null;
+                }
+            }
+        }
+
+        const audio = new RetroAudio();
+
+        // ----------------- GAME CONFIG & ENGINE -----------------
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+
+        // Responsive canvas scaling with default size boundaries
+        function resizeCanvas() {
+            const w = canvas.parentElement ? canvas.parentElement.clientWidth : 800;
+            const h = canvas.parentElement ? canvas.parentElement.clientHeight : 400;
+            canvas.width = w > 0 ? w : 800;
+            canvas.height = h > 0 ? h : 400;
+        }
+        window.addEventListener("resize", resizeCanvas);
+        resizeCanvas();
+
+        const game = {
+            playing: false,
+            score: 0,
+            timeLeft: 120,
+            timerInterval: null,
+            questions: [],
+            currentQIdx: 0,
+            answeredCount: 0,
+            cameraX: 0,
+            bgX: 0,
+            
+            // Physics / Player State
+            player: {
+                x: 100,
+                y: 350,
+                vx: 0,
+                vy: 0,
+                width: 32,
+                height: 48,
+                grounded: false,
+                facing: 'right',
+                animFrame: 0,
+                jumpHeld: false
+            },
+
+            // Controller State
+            keys: {
+                left: false,
+                right: false,
+                space: false
+            },
+
+            // Level Elements
+            blocks: [],
+            groundY: 480,
+            platforms: [],
+
+            // Start a brand new run
+            start() {
+                audio.init();
+                this.score = 0;
+                this.timeLeft = 120;
+                this.answeredCount = 0;
+                this.currentQIdx = 0;
+                
+                // Shuffle original questions
+                this.questions = [...ORIGINAL_QUESTIONS].sort(() => Math.random() - 0.5);
+                this.questions.forEach(q => q.hasSeen = false);
+
+                // Initialize platforms & first batch of blocks
+                this.blocks = [];
+                this.platforms = [];
+                this.cameraX = 0;
+                this.bgX = 0;
+
+                this.player.x = 100;
+                this.player.y = 350;
+                this.player.vx = 0;
+                this.player.vy = 0;
+
+                this.buildLevel();
+
+                document.getElementById("start-screen").classList.add("hidden");
+                document.getElementById("end-screen").classList.add("hidden");
+                document.getElementById("question-screen").classList.add("hidden");
+
+                this.playing = true;
+                this.updateHUD();
+
+                // Start clocks & loops
+                clearInterval(this.timerInterval);
+                this.timerInterval = setInterval(() => {
+                    if (this.playing) {
+                        this.timeLeft--;
+                        this.updateHUD();
+                        if (this.timeLeft <= 0) {
+                            this.endGame(false, "Time's Up!");
+                        }
+                    }
+                }, 1000);
+
+                audio.startBgm();
+                requestAnimationFrame((t) => this.loop(t));
+            },
+
+            // Populate initial layout of physical blocks
+            buildLevel() {
+                // Build a super wide starter ground (15,000px) so Mario never runs out of solid footing!
+                this.platforms.push({ x: -200, y: this.groundY, w: 15000, h: 200 });
+
+                // Continuously place question blocks floating above ground at interval intervals
+                for (let i = 0; i < 60; i++) {
+                    const blockX = 250 + i * 180;
+                    const blockY = this.groundY - 110 - (i % 2) * 50; 
+                    
+                    this.blocks.push({
+                        id: i,
+                        x: blockX,
+                        y: blockY,
+                        width: 42,
+                        height: 42,
+                        state: 'active',
+                        bounceOffset: 0,
+                        bounceDir: 0
+                    });
+
+                    // Place a guiding platform under alternating blocks
+                    if (i % 3 === 1) {
+                        this.platforms.push({
+                            x: blockX - 40,
+                            y: this.groundY - 70,
+                            w: 120,
+                            h: 15
+                        });
+                    }
+                }
+            },
+
+            // Render HUD metrics
+            updateHUD() {
+                document.getElementById("hud-score").innerText = String(this.score).padStart(6, '0');
+                document.getElementById("hud-answered").innerText = this.answeredCount;
+                document.getElementById("hud-timer").innerText = this.timeLeft;
+                
+                const percent = Math.max(0, (this.timeLeft / 120) * 100);
+                document.getElementById("hud-timer-bar").style.width = percent + "%";
+
+                if (this.timeLeft < 30) {
+                    document.getElementById("hud-timer-container").classList.add("text-red-500");
+                } else {
+                    document.getElementById("hud-timer-container").classList.remove("text-red-500");
+                }
+            },
+
+            // Loop and Physics Update
+            loop(timestamp) {
+                if (!this.playing) return;
+
+                this.updatePhysics();
+                this.render();
+
+                requestAnimationFrame((t) => this.loop(t));
+            },
+
+            updatePhysics() {
+                const p = this.player;
+
+                // Move Inputs
+                let moveForce = 0.55;
+                let maxSpeed = 5.5;
+                let friction = 0.85;
+
+                if (this.keys.left) {
+                    p.vx -= moveForce;
+                    p.facing = 'left';
+                    p.animFrame += 0.15;
+                } else if (this.keys.right) {
+                    p.vx += moveForce;
+                    p.facing = 'right';
+                    p.animFrame += 0.15;
+                } else {
+                    p.vx *= friction;
+                    p.animFrame = 0;
+                }
+
+                // Gravity
+                p.vy += 0.6;
+
+                // Clamp Horiz Speed
+                if (p.vx > maxSpeed) p.vx = maxSpeed;
+                if (p.vx < -maxSpeed) p.vx = -maxSpeed;
+
+                // Update position
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Keep player within left boundary
+                if (p.x < 10) {
+                    p.x = 10;
+                    p.vx = 0;
+                }
+
+                // ABYSS RESCUE SHIELD: If Mario drops past the bottom viewport, pop him back up!
+                if (p.y > this.groundY + 150) {
+                    p.x = Math.max(100, p.x - 200); // Safety setback
+                    p.y = this.groundY - 120; // High safe fall
+                    p.vx = 0;
+                    p.vy = 0;
+                }
+
+                // Collision with all physical platforms
+                p.grounded = false;
+                this.platforms.forEach(plat => {
+                    if (p.x + p.width > plat.x && p.x < plat.x + plat.w) {
+                        if (p.y + p.height >= plat.y && p.y + p.height - p.vy <= plat.y + 12) {
+                            p.y = plat.y - p.height;
+                            p.vy = 0;
+                            p.grounded = true;
+                        }
+                    }
+                });
+
+                // Jump trigger
+                if (this.keys.space && p.grounded) {
+                    p.vy = -12;
+                    p.grounded = false;
+                    audio.playJump();
+                }
+
+                // Camera follow player
+                let targetCam = p.x - canvas.width * 0.35;
+                this.cameraX += (targetCam - this.cameraX) * 0.1;
+                if (this.cameraX < 0) this.cameraX = 0;
+
+                // Spawn endless blocks forward if the player runs extremely far
+                if (p.x > this.blocks[this.blocks.length - 10].x) {
+                    this.extendLevel();
+                }
+
+                // Handle Question Block Hit Detection
+                this.blocks.forEach(block => {
+                    if (block.bounceDir !== 0) {
+                        block.bounceOffset += block.bounceDir * 2;
+                        if (block.bounceOffset <= -12) {
+                            block.bounceDir = 1;
+                        } else if (block.bounceOffset >= 0) {
+                            block.bounceOffset = 0;
+                            block.bounceDir = 0;
+                        }
+                    }
+
+                    if (block.state !== 'spent') {
+                        if (p.x + p.width - 4 > block.x && p.x + 4 < block.x + block.width) {
+                            if (p.y <= block.y + block.height && p.y - p.vy >= block.y + block.height - 12) {
+                                p.y = block.y + block.height;
+                                p.vy = 2;
+
+                                block.bounceOffset = 0;
+                                block.bounceDir = -1;
+
+                                audio.playHitBlock();
+                                this.triggerQuestion(block);
+                            }
+                        }
+                    }
+                });
+            },
+
+            // Continuously extend the platform level and solid floor infinitely
+            extendLevel() {
+                const len = this.blocks.length;
+                const lastBlockX = this.blocks[len - 1].x;
+
+                // Extend the physical solid red floor as well to match!
+                this.platforms.push({ x: lastBlockX - 500, y: this.groundY, w: 8000, h: 200 });
+
+                for (let i = 0; i < 20; i++) {
+                    const blockX = lastBlockX + (i + 1) * 180;
+                    const blockY = this.groundY - 110 - (i % 2) * 50;
+                    this.blocks.push({
+                        id: len + i,
+                        x: blockX,
+                        y: blockY,
+                        width: 42,
+                        height: 42,
+                        state: 'active',
+                        bounceOffset: 0,
+                        bounceDir: 0
+                    });
+
+                    if (i % 3 === 1) {
+                        this.platforms.push({
+                            x: blockX - 40,
+                            y: this.groundY - 70,
+                            w: 120,
+                            h: 15
+                        });
+                    }
+                }
+            },
+
+            // Pause action and open the trivia overlay
+            triggerQuestion(block) {
+                if (this.questions.length === 0) {
+                    this.endGame(true, "All Quests Completed!");
+                    return;
+                }
+
+                this.playing = false;
+                this.activeBlock = block;
+
+                const q = this.questions[this.currentQIdx];
+
+                const screen = document.getElementById("question-screen");
+                const box = document.getElementById("question-box");
+                const qText = document.getElementById("modal-question-text");
+                const choicesDiv = document.getElementById("modal-choices");
+                const remText = document.getElementById("modal-remaining");
+                const retryBanner = document.getElementById("modal-retry-banner");
+                const feedbackText = document.getElementById("modal-feedback");
+
+                remText.innerText = this.questions.length;
+                qText.innerText = q.q;
+
+                if (q.hasSeen) {
+                    retryBanner.classList.remove("hidden");
+                } else {
+                    retryBanner.classList.add("hidden");
+                }
+
+                feedbackText.innerText = "CHOOSE CAREFULLY TO CONTINUE!";
+                feedbackText.className = "h-10 border-t border-slate-800 bg-slate-950 flex items-center justify-center text-xs font-semibold uppercase tracking-wider text-slate-400";
+
+                choicesDiv.innerHTML = "";
+
+                q.c.forEach((choice, index) => {
+                    const btn = document.createElement("button");
+                    btn.className = "choice-btn px-4 py-3 bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-red-500 text-left rounded-xl transition-all duration-150 flex items-center space-x-3 group active:scale-95";
+                    
+                    const prefix = ["A", "B", "C", "D"][index];
+                    btn.innerHTML = `
+                        <span class="bg-slate-950 text-yellow-400 w-8 h-8 rounded-lg flex items-center justify-center font-bold text-sm group-hover:bg-red-600 group-hover:text-white transition-colors">${prefix}</span>
+                        <span class="text-xs md:text-sm font-semibold flex-grow text-slate-200">${choice}</span>
+                    `;
+
+                    btn.onclick = () => this.handleAnswer(index, btn);
+                    choicesDiv.appendChild(btn);
+                });
+
+                screen.classList.remove("hidden");
+                setTimeout(() => {
+                    box.classList.remove("scale-95", "opacity-0");
+                    box.classList.add("scale-100", "opacity-100");
+                }, 50);
+            },
+
+            // Handle choice submission
+            handleAnswer(choiceIndex, btnElement) {
+                const q = this.questions[this.currentQIdx];
+                const box = document.getElementById("question-box");
+                const feedbackText = document.getElementById("modal-feedback");
+                const allButtons = document.querySelectorAll(".choice-btn");
+
+                allButtons.forEach(btn => btn.disabled = true);
+
+                if (choiceIndex === q.a) {
+                    audio.playCorrect();
+                    btnElement.classList.add("border-emerald-500", "bg-emerald-950/40");
+                    feedbackText.innerText = "✓ CORRECT! SG BONUS GAINED!";
+                    feedbackText.className = "h-10 border-t border-emerald-800 bg-emerald-950 text-emerald-400 flex items-center justify-center text-xs font-semibold uppercase tracking-wider";
+                    
+                    this.score += 200;
+                    this.answeredCount++;
+                    this.activeBlock.state = 'spent';
+
+                    this.questions.splice(this.currentQIdx, 1);
+
+                    if (this.questions.length === 0) {
+                        setTimeout(() => this.endGame(true, "VICTORY! ALL QUESTS COMPLETED"), 1200);
+                        return;
+                    }
+
+                    if (this.currentQIdx >= this.questions.length) {
+                        this.currentQIdx = 0;
+                    }
+
+                    this.player.vy = -6;
+
+                } else {
+                    audio.playWrong();
+                    btnElement.classList.add("border-red-500", "bg-red-950/40");
+                    box.classList.add("shake-element");
+                    feedbackText.innerText = "✗ INCORRECT! WILL RETURN 2 QUESTIONS LATER!";
+                    feedbackText.className = "h-10 border-t border-red-800 bg-red-950 text-red-400 flex items-center justify-center text-xs font-semibold uppercase tracking-wider animate-pulse";
+
+                    this.activeBlock.state = 'wrong';
+
+                    const failedQuestion = this.questions.splice(this.currentQIdx, 1)[0];
+                    failedQuestion.hasSeen = true;
+
+                    const targetIdx = Math.min(this.questions.length, 2);
+                    this.questions.splice(targetIdx, 0, failedQuestion);
+
+                    setTimeout(() => {
+                        box.classList.remove("shake-element");
+                    }, 400);
+                }
+
+                setTimeout(() => {
+                    box.classList.remove("scale-100", "opacity-100");
+                    box.classList.add("scale-95", "opacity-0");
+                    document.getElementById("question-screen").classList.add("hidden");
+                    
+                    this.playing = true;
+                    this.updateHUD();
+                    requestAnimationFrame((t) => this.loop(t));
+                }, 1400);
+            },
+
+            // Draw Parallax city skyline & characters
+            render() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                // 1. SKY BACKGROUND
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                skyGrad.addColorStop(0, "#2a080c");
+                skyGrad.addColorStop(1, "#5c1118");
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Drifting clouds
+                ctx.fillStyle = "rgba(255, 255, 255, 0.05)";
+                for (let i = 0; i < 5; i++) {
+                    const cloudX = ((i * 300 - this.cameraX * 0.1) % (canvas.width + 200)) - 100;
+                    const cloudY = 60 + (i % 2) * 40;
+                    ctx.beginPath();
+                    ctx.arc(cloudX, cloudY, 30, 0, Math.PI * 2);
+                    ctx.arc(cloudX + 25, cloudY - 10, 35, 0, Math.PI * 2);
+                    ctx.arc(cloudX + 50, cloudY, 25, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // 2. PARALLAX SILHOUETTE SKYLINE
+                ctx.fillStyle = "#1e0508";
+                const mbsOffset = -this.cameraX * 0.15;
+                
+                for (let i = 0; i < 4; i++) {
+                    const startX = (i * 350 + mbsOffset) % (canvas.width + 300) - 100;
+                    ctx.fillRect(startX, 240, 30, 150);
+                    ctx.fillRect(startX + 45, 240, 30, 150);
+                    ctx.fillRect(startX + 90, 240, 30, 150);
+                    ctx.beginPath();
+                    ctx.ellipse(startX + 60, 240, 80, 12, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    
+                    ctx.beginPath();
+                    ctx.arc(startX + 220, 260, 45, 0, Math.PI * 2, true);
+                    ctx.lineWidth = 4;
+                    ctx.strokeStyle = "rgba(239, 51, 64, 0.15)";
+                    ctx.stroke();
+                }
+
+                // 3. GROUND PLATFORMS & DECORATIONS
+                ctx.save();
+                ctx.translate(-this.cameraX, 0);
+
+                this.platforms.forEach(plat => {
+                    ctx.fillStyle = "#EF3340";
+                    ctx.fillRect(plat.x, plat.y, plat.w, plat.h);
+                    
+                    ctx.fillStyle = "#FFFFFF";
+                    ctx.fillRect(plat.x, plat.y, plat.w, 4);
+
+                    ctx.fillStyle = "#a81620";
+                    for (let xPos = plat.x; xPos < plat.x + plat.w; xPos += 40) {
+                        ctx.fillRect(xPos, plat.y + 10, 2, plat.h);
+                        ctx.fillRect(xPos + 20, plat.y + 25, 2, plat.h);
+                    }
+                });
+
+                // 4. DRAW QUESTION BLOCKS (SG CREST THEMED)
+                this.blocks.forEach(block => {
+                    const blockY = block.y + block.bounceOffset;
+
+                    if (block.state === 'spent') {
+                        ctx.fillStyle = "#94a3b8";
+                        ctx.fillRect(block.x, blockY, block.width, block.height);
+                        ctx.strokeStyle = "#475569";
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(block.x, blockY, block.width, block.height);
+
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(block.x + 12, blockY + 22);
+                        ctx.lineTo(block.x + 20, blockY + 30);
+                        ctx.lineTo(block.x + 30, blockY + 12);
+                        ctx.stroke();
+
+                    } else if (block.state === 'wrong') {
+                        const pulse = Math.sin(Date.now() * 0.01) * 2;
+                        ctx.fillStyle = "#ef4444";
+                        ctx.fillRect(block.x - pulse, blockY - pulse, block.width + pulse * 2, block.height + pulse * 2);
+                        ctx.strokeStyle = "#991b1b";
+                        ctx.lineWidth = 3;
+                        ctx.strokeRect(block.x - pulse, blockY - pulse, block.width + pulse * 2, block.height + pulse * 2);
+
+                        ctx.strokeStyle = "#ffffff";
+                        ctx.lineWidth = 4;
+                        ctx.beginPath();
+                        ctx.moveTo(block.x + 13, blockY + 13);
+                        ctx.lineTo(block.x + 29, blockY + 29);
+                        ctx.moveTo(block.x + 29, blockY + 13);
+                        ctx.lineTo(block.x + 13, blockY + 29);
+                        ctx.stroke();
+
+                    } else {
+                        ctx.fillStyle = "#eab308";
+                        ctx.fillRect(block.x - 2, blockY - 2, block.width + 4, block.height + 4);
+
+                        ctx.fillStyle = "#EF3340";
+                        ctx.fillRect(block.x, blockY, block.width, block.height / 2);
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(block.x, blockY + block.height / 2, block.width, block.height / 2);
+
+                        ctx.fillStyle = "#eab308";
+                        ctx.beginPath();
+                        ctx.arc(block.x + 16, blockY + 20, 7, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = "#EF3340";
+                        ctx.beginPath();
+                        ctx.arc(block.x + 19, blockY + 20, 6, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.fillStyle = "#FFFFFF";
+                        ctx.fillRect(block.x + 24, blockY + 12, 3, 3);
+                        ctx.fillRect(block.x + 28, blockY + 16, 3, 3);
+                        ctx.fillRect(block.x + 24, blockY + 22, 3, 3);
+                    }
+                });
+
+                // 5. DRAW PLAYABLE CHARACTER (SG MARIO)
+                const p = this.player;
+                ctx.save();
+                ctx.translate(p.x + p.width / 2, p.y + p.height / 2);
+                if (p.facing === 'left') {
+                    ctx.scale(-1, 1);
+                }
+
+                ctx.fillStyle = "#fbcfe8";
+                ctx.beginPath();
+                ctx.arc(0, -6, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = "#EF3340";
+                ctx.beginPath();
+                ctx.ellipse(0, -14, 12, 6, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.fillRect(2, -14, 12, 3);
+
+                ctx.fillStyle = "#000000";
+                ctx.fillRect(4, -8, 2, 4);
+                ctx.fillStyle = "#1e293b";
+                ctx.fillRect(2, -4, 8, 3);
+
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(-8, 0, 16, 16);
+                ctx.fillStyle = "#EF3340";
+                ctx.fillRect(-11, 0, 3, 10);
+                ctx.fillRect(8, 0, 3, 10);
+
+                ctx.fillStyle = "#eab308";
+                ctx.fillRect(-5, 2, 3, 3);
+                ctx.fillRect(2, 2, 3, 3);
+
+                ctx.fillStyle = "#FFFFFF";
+                ctx.fillRect(-8, 14, 16, 6);
+
+                const runOffset = Math.sin(p.animFrame) * 6;
+                ctx.fillStyle = "#111827";
+                if (!p.grounded) {
+                    ctx.fillRect(-9, 18, 6, 5);
+                    ctx.fillRect(3, 16, 6, 5);
+                } else {
+                    ctx.fillRect(-9 + runOffset / 2, 19, 6, 5);
+                    ctx.fillRect(3 - runOffset / 2, 19, 6, 5);
+                }
+
+                ctx.restore();
+                ctx.restore();
+            },
+
+            endGame(victory, reasonText = "") {
+                this.playing = false;
+                clearInterval(this.timerInterval);
+                audio.stopBgm();
+
+                const screen = document.getElementById("end-screen");
+                const icon = document.getElementById("end-icon");
+                const title = document.getElementById("end-title");
+                const subtitle = document.getElementById("end-subtitle");
+                const finalScore = document.getElementById("end-score");
+                const finalTime = document.getElementById("end-time");
+                const accuracy = document.getElementById("end-accuracy");
+
+                screen.classList.remove("hidden");
+
+                if (victory) {
+                    audio.playVictory();
+                    icon.innerText = "👑🇸🇬🏆";
+                    title.innerText = "MAJULAH SG HERO!";
+                    subtitle.innerText = "You passed the elite National Day test with flying colors!";
+                } else {
+                    icon.innerText = "💔🦁";
+                    title.innerText = reasonText.toUpperCase();
+                    subtitle.innerText = "Do not give up! Stand strong for the next National attempt!";
+                }
+
+                finalScore.innerText = this.score;
+                finalTime.innerText = `${120 - this.timeLeft}s elapsed`;
+                accuracy.innerText = `${this.answeredCount} / 50`;
+            }
+        };
+
+        // ----------------- CONTROLLERS & LISTENERS -----------------
+        window.addEventListener("keydown", (e) => {
+            if (e.code === "ArrowLeft" || e.code === "KeyA") game.keys.left = true;
+            if (e.code === "ArrowRight" || e.code === "KeyD") game.keys.right = true;
+            if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") {
+                game.keys.space = true;
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener("keyup", (e) => {
+            if (e.code === "ArrowLeft" || e.code === "KeyA") game.keys.left = false;
+            if (e.code === "ArrowRight" || e.code === "KeyD") game.keys.right = false;
+            if (e.code === "Space" || e.code === "ArrowUp" || e.code === "KeyW") game.keys.space = false;
+        });
+
+        // Touch Device Event Handlers
+        function bindTouch(elementId, keyState) {
+            const btn = document.getElementById(elementId);
+            btn.addEventListener("touchstart", (e) => {
+                e.preventDefault();
+                game.keys[keyState] = true;
+            });
+            btn.addEventListener("touchend", (e) => {
+                e.preventDefault();
+                game.keys[keyState] = false;
+            });
+        }
+        bindTouch("touch-left", "left");
+        bindTouch("touch-right", "right");
+        bindTouch("touch-jump", "space");
+
+        // UI Click Events
+        document.getElementById("btn-start").onclick = () => {
+            game.start();
+        };
+
+        document.getElementById("btn-restart").onclick = () => {
+            game.start();
+        };
+
+        // Sound Toggle
+        document.getElementById("btn-audio").onclick = () => {
+            audio.muted = !audio.muted;
+            const icon = document.getElementById("icon-audio");
+            if (audio.muted) {
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />`;
+                audio.stopBgm();
+            } else {
+                icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072M18.364 5.636a9 9 0 010 12.728M12 18.75V5.25L8.25 9H4.5A1.5 1.5 0 003 10.5v3a1.5 1.5 0 001.5 1.5h3.75L12 18.75z" />`;
+                audio.startBgm();
+            }
+        };
+
+        // Preload layout rendering
+        game.render();
+    </script>
+</body>
+</html>
