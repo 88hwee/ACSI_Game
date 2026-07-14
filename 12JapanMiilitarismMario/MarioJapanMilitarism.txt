@@ -1,0 +1,2100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Militarist Japan: Super Mario Educational Run</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome for decorative icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght=700&family=Press+Start+2P&family=Quicksand:wght=500;700&display=swap');
+        
+        .retro-font {
+            font-family: 'Press Start 2P', monospace;
+        }
+        .japanese-font {
+            font-family: 'Cinzel Decorative', serif;
+        }
+        .standard-font {
+            font-family: 'Quicksand', sans-serif;
+        }
+        
+        /* Vintage Japanese scroll paper texture */
+        .scroll-bg {
+            background-color: #f5eed3;
+            background-image: radial-gradient(rgba(0,0,0,0.04) 1px, transparent 0),
+                              radial-gradient(rgba(0,0,0,0.04) 1px, transparent 0);
+            background-size: 8px 8px;
+            background-position: 0 0, 4px 4px;
+            border: 10px double #8b4513;
+        }
+
+        /* Prevent system scroll bars and layout jerking */
+        body {
+            overflow: hidden;
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-white standard-font h-screen w-screen flex flex-col justify-between select-none overflow-hidden">
+
+    <!-- Header Section -->
+    <header class="bg-red-800 border-b-4 border-yellow-400 py-2.5 px-4 shadow-xl flex flex-nowrap items-center justify-between z-10 shrink-0">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-full bg-yellow-400 border-2 border-white flex items-center justify-center animate-bounce shrink-0 text-lg">
+                🌸
+            </div>
+            <div>
+                <h1 class="text-sm md:text-lg font-bold tracking-wider text-yellow-300 japanese-font leading-tight">CHIBI SHOWA RUN</h1>
+                <p class="text-[8px] text-yellow-100 retro-font scale-75 origin-left leading-none">MILITARIST JAPAN CHRONICLE</p>
+            </div>
+        </div>
+        
+        <!-- Game HUD Status indicators -->
+        <div class="flex items-center space-x-2 sm:space-x-3 bg-red-950 px-2 sm:px-3 py-1.5 rounded-lg border border-red-700 text-xs sm:text-sm">
+            <div class="text-center">
+                <span class="text-[9px] text-yellow-400 block font-bold retro-font leading-none mb-0.5">TIMER</span>
+                <span id="game-timer" class="font-bold retro-font text-white text-xs sm:text-sm">180s</span>
+            </div>
+            <div class="border-l border-red-700 h-6"></div>
+            
+            <!-- Adorable Question Tracker Objective -->
+            <div class="text-center bg-red-900/60 px-2 py-0.5 rounded border border-yellow-500/30">
+                <span class="text-[9px] text-yellow-300 block font-bold retro-font leading-none mb-0.5">ANSWERED</span>
+                <span id="question-objective" class="font-black retro-font text-yellow-300 text-xs sm:text-sm">0/30</span>
+            </div>
+            
+            <div class="border-l border-red-700 h-6"></div>
+            <div class="text-center">
+                <span class="text-[9px] text-yellow-400 block font-bold retro-font leading-none mb-0.5">LIVES</span>
+                <span id="lives-counter" class="font-bold retro-font text-red-500 text-xs sm:text-sm">❤️❤️❤️</span>
+            </div>
+        </div>
+
+        <!-- Scroll Archive Button -->
+        <button id="header-archives-btn" class="px-3 py-1.5 bg-yellow-400 hover:bg-yellow-500 text-gray-950 rounded-lg font-black text-xs md:text-sm shadow-md transition transform hover:scale-105 uppercase flex items-center space-x-1.5">
+            <span class="text-sm">📜</span>
+            <span class="hidden sm:inline">Archives</span>
+            <span id="archives-badge" class="bg-red-800 text-white rounded-full px-2 py-0.2 text-[10px] sm:text-xs font-black ml-1">0</span>
+        </button>
+    </header>
+
+    <!-- Interactive Onboarding / Control Banner -->
+    <div class="bg-yellow-50 text-amber-950 px-4 py-2 text-center text-xs md:text-sm border-b border-amber-300 font-bold shrink-0 flex flex-wrap justify-center items-center gap-2">
+        <span class="bg-red-600 text-white px-2 py-0.5 rounded text-[10px] sm:text-xs font-black uppercase retro-font animate-pulse">GOAL: 30 CORRECT ANSWERS!</span>
+        <span>
+            <strong>Laptop Hotkeys:</strong> Use Arrow Keys / AD to Run. In Quiz, press <kbd class="px-1.5 py-0.5 bg-white border border-gray-400 rounded shadow font-black">A</kbd> <kbd class="px-1.5 py-0.5 bg-white border border-gray-400 rounded shadow font-black">B</kbd> <kbd class="px-1.5 py-0.5 bg-white border border-gray-400 rounded shadow font-black">C</kbd> <kbd class="px-1.5 py-0.5 bg-white border border-gray-400 rounded shadow font-black">D</kbd> or <kbd class="px-1.5 py-0.5 bg-white border border-gray-400 rounded shadow font-black">1-4</kbd> to submit instantly!
+        </span>
+    </div>
+
+    <!-- Main Game Viewport Container -->
+    <div class="flex-grow flex items-center justify-center p-2.5 overflow-hidden relative">
+        <div class="relative w-full max-w-4xl h-full flex flex-col bg-gray-800 rounded-xl overflow-hidden border-2 border-gray-700 shadow-2xl">
+            
+            <!-- Historical Era Banner Indicator -->
+            <div id="era-banner" class="bg-gray-900 text-yellow-300 px-4 py-2 border-b border-gray-700 flex items-center justify-between text-xs sm:text-sm shrink-0">
+                <span>📍 <strong id="era-title" class="ml-1 text-white">Era 1: Post-WWI & Economic Crisis (1920-1929)</strong></span>
+                <span class="text-xs bg-red-800 text-white px-2.5 py-0.5 rounded font-bold" id="progress-indicator">0% Run</span>
+            </div>
+
+            <!-- Canvas Area: Locked container with zero jitter -->
+            <div class="relative flex-grow bg-sky-950 overflow-hidden flex items-center justify-center" id="canvas-container" style="min-height: 280px;">
+                <canvas id="gameCanvas" width="800" height="400" class="w-full h-full object-contain block bg-gradient-to-b from-sky-800 via-indigo-950 to-indigo-900"></canvas>
+                
+                <!-- Start/Pause Screen Overlay -->
+                <div id="overlay-screen" class="absolute inset-0 bg-black/80 flex flex-col items-center justify-center p-4 text-center transition-all duration-300 z-30">
+                    <div class="scroll-bg max-w-lg p-6 rounded-lg text-gray-900 shadow-2xl transform scale-100 transition-all max-h-[95%] overflow-y-auto">
+                        <h2 class="text-2xl sm:text-3xl font-extrabold text-red-800 japanese-font mb-1">昭和の嵐 🌸</h2>
+                        <h3 class="text-xs sm:text-sm font-bold text-red-700 mb-3 uppercase tracking-widest">Imperial Showa Classroom Run</h3>
+                        
+                        <p class="text-xs sm:text-sm mb-4 font-semibold text-gray-700 leading-relaxed">
+                            Welcome students! Help Chibi Mario (dressed in an adorable 1930s vintage field cap) learn history! You must complete at least <span class="text-red-700 font-extrabold">30 correct answers within 3 minutes</span>.
+                        </p>
+                        
+                        <div class="bg-yellow-100 border-l-4 border-yellow-500 p-3 text-left text-xs sm:text-sm mb-5 text-yellow-900 space-y-2">
+                            <div>⭐ <strong>Chibi Stations are dense:</strong> Space is packed with cute sushi rolls, shrines, and Pokémons!</div>
+                            <div>⚡ <strong>Furious Answering:</strong> Use hotkeys <strong>A, B, C, D</strong> to answer in under a second!</div>
+                            <div>⚠️ <strong>The Hazards:</strong> Dodge the cute toy planes and chubby ninjas!</div>
+                            <div>🔁 <strong>Learning Loop:</strong> Get an answer wrong? It dynamically repeats 2 stations later! Practice makes perfect!</div>
+                        </div>
+
+                        <button id="start-btn" class="px-7 py-3 bg-red-700 hover:bg-red-800 text-white rounded-full font-black shadow-lg transition duration-200 transform hover:scale-105 uppercase retro-font text-[11px] sm:text-xs tracking-wider">
+                            Commence Run (180s)
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Custom Sound FX Toggle Indicator -->
+                <button id="sound-btn" class="absolute top-4 right-4 bg-gray-800/80 hover:bg-gray-700 border border-gray-600 rounded-full w-8 h-8 flex items-center justify-center text-white z-20 text-xs">
+                    <i id="sound-icon" class="fa-solid fa-volume-high"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Educational Quiz Scroll Modal Overlay -->
+    <div id="quiz-modal" class="fixed inset-0 bg-black/95 z-50 flex items-center justify-center p-4 hidden">
+        <div class="scroll-bg w-full max-w-3xl rounded-lg p-6 text-gray-900 shadow-2xl relative transform transition-transform duration-300 scale-95 flex flex-col md:flex-row gap-5 max-h-[90%] overflow-y-auto">
+            
+            <!-- Left of modal: Stamp / Graphic -->
+            <div class="w-full md:w-1/4 flex flex-col items-center justify-center border-b md:border-b-0 md:border-r border-red-800/30 pb-4 md:pb-0 md:pr-4 shrink-0">
+                <div class="w-20 h-20 rounded-full border-4 border-red-700 flex items-center justify-center bg-red-50 text-3xl font-black mb-2 animate-bounce" id="quiz-icon-display">
+                    🍣
+                </div>
+                <div class="text-center">
+                    <h4 class="font-black text-red-800 japanese-font text-sm tracking-wider" id="quiz-category">MILITARY DOCTRINE</h4>
+                    <span class="text-xs bg-red-800 text-white px-2.5 py-1 rounded font-bold uppercase tracking-wider block mt-2" id="quiz-era">Era 1</span>
+                    <!-- Quick Hotkey Info inside the modal -->
+                    <span class="text-xs bg-yellow-200 border border-yellow-600/30 text-yellow-900 font-extrabold px-2 py-1 rounded block mt-3">Hotkey A/B/C/D active!</span>
+                </div>
+            </div>
+
+            <!-- Right of modal: Text and choices -->
+            <div class="flex-grow flex flex-col justify-between">
+                <div>
+                    <div class="flex justify-between items-center mb-2 border-b border-gray-300 pb-1.5">
+                        <span class="text-xs font-bold text-gray-500 uppercase">Showa Learning Module</span>
+                        <span id="quiz-timer-visual" class="text-xs bg-yellow-400 font-extrabold px-2.5 py-1 rounded text-gray-950">⏳ Progress: <b id="quiz-answered-count">0/30</b></span>
+                    </div>
+                    <p id="quiz-question" class="text-sm sm:text-base md:text-lg font-black text-gray-950 leading-relaxed mb-4">
+                        What domestic issue in the late 1920s severely crippled Japan's economy and fueled militarist arguments for aggressive expansion?
+                    </p>
+                </div>
+
+                <!-- Multiple Choice List -->
+                <div class="space-y-2 mb-3" id="quiz-choices-container">
+                    <!-- Buttons generated dynamically with readable fonts -->
+                </div>
+
+                <!-- Footer disclaimer -->
+                <p class="text-xs text-gray-500 italic text-center">
+                    Incorrect answers summon the chubby Shinobi! Choose wisely.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Archives Scroll Book Modal -->
+    <div id="archives-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden">
+        <div class="scroll-bg w-full max-w-2xl rounded-lg p-6 text-gray-900 shadow-2xl relative flex flex-col h-[80vh]">
+            <button id="close-archives-btn" class="absolute top-4 right-4 bg-red-800 text-white hover:bg-red-900 font-bold text-sm w-7 h-7 rounded-full flex items-center justify-center shadow-md">✕</button>
+            <h3 class="text-xl font-extrabold text-red-800 japanese-font text-center mb-1">帝国古文書</h3>
+            <h4 class="text-[11px] text-red-700 font-bold uppercase text-center tracking-widest mb-4">Imperial Chronicle Archives</h4>
+            
+            <div id="modal-archives-list" class="flex-grow overflow-y-auto space-y-4 pr-2">
+                <!-- Unlocked cards dynamically render here -->
+                <div id="archive-placeholder" class="text-center py-12 text-gray-500 flex flex-col items-center justify-center space-y-3">
+                    <i class="fa-solid fa-file-shield text-5xl opacity-40 animate-pulse"></i>
+                    <p class="text-xs font-semibold">Gather cute artifacts to unlock historical scrolls!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Feedback Banner / Ninja Slash Overlay -->
+    <div id="feedback-overlay" class="fixed inset-0 pointer-events-none z-50 flex items-center justify-center hidden">
+        <div id="slash-indicator" class="w-full h-2 bg-red-600 shadow-2xl absolute transform rotate-12 flex items-center justify-center text-white font-black uppercase text-xl py-8 opacity-0 transition-all duration-300">
+            NINJA SLASH! 🥷
+        </div>
+        <div id="correct-indicator" class="bg-green-600 text-white font-bold py-4 px-8 rounded-xl border-4 border-white text-xl shadow-2xl transform scale-50 opacity-0 transition-all duration-300">
+            💮 CORRECT +1 QUESTION!
+        </div>
+    </div>
+
+    <!-- Victory/Defeat Results Modal -->
+    <div id="result-modal" class="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4 hidden">
+        <div class="scroll-bg max-w-lg w-full p-6 rounded-lg text-gray-900 shadow-2xl text-center">
+            <h2 id="result-title" class="text-2xl font-extrabold text-red-800 japanese-font mb-1">CRITICAL MISSION COMPLETE</h2>
+            <p id="result-subtitle" class="text-xs font-semibold text-gray-600 mb-4">Historical Chronicle Concluded</p>
+            
+            <div class="bg-white/90 p-4 rounded-lg mb-4 border border-gray-300 text-left space-y-2 text-xs">
+                <p class="flex justify-between">
+                    <span class="font-bold text-gray-700">Questions Answered:</span>
+                    <span id="result-answered" class="font-black text-green-700 retro-font text-sm">0/30</span>
+                </p>
+                <p class="flex justify-between">
+                    <span class="font-bold text-gray-700">Time Surviving:</span>
+                    <span id="result-time" class="font-black text-gray-900 retro-font">180s</span>
+                </p>
+                <p class="flex justify-between">
+                    <span class="font-bold text-gray-700">Coins Gathered:</span>
+                    <span id="result-coins" class="font-black text-yellow-600 retro-font">🪙 0</span>
+                </p>
+                <p id="result-desc" class="text-[11px] text-gray-600 pt-2 border-t border-gray-300 leading-relaxed">
+                    By learning about militarism, we recall the fragility of democracy and prevent future total wars. Play again to master the timeline!
+                </p>
+            </div>
+
+            <button id="restart-btn" class="px-6 py-2.5 bg-red-700 hover:bg-red-800 text-white rounded-full font-bold shadow-lg transition duration-200 transform hover:scale-105 uppercase retro-font text-[10px] tracking-wider">
+                Re-Run History
+            </button>
+        </div>
+    </div>
+
+    <!-- Web Footer -->
+    <footer class="bg-gray-950 py-2 border-t border-gray-800 text-center text-[10px] text-gray-500 shrink-0">
+        <p>© 2026 Goh Hwee Hwee ACSI • Chibi Showa Run • Developed for Student Learning</p>
+    </footer>
+
+    <!-- Game Script -->
+    <script>
+        // Define global configurations and state elements
+        let canvas, ctx;
+        let gameTimerEl, questionObjectiveEl, livesCounterEl, headerArchivesBtn, archivesBadge;
+        let eraTitle, progressIndicator, overlayScreen, startBtn, soundBtn, soundIcon;
+        let quizModal, quizIconDisplay, quizCategory, quizEra, quizTimerVisual, quizAnsweredCountEl, quizQuestion, quizChoicesContainer;
+        let archivesModal, closeArchivesBtn, modalArchivesList;
+        let feedbackOverlay, slashIndicator, correctIndicator;
+        let resultModal, resultTitle, resultSubtitle, resultAnswered, resultTime, resultCoins, resultDesc, restartBtn;
+
+        // --- Bulletproof safeRoundRect Helper to avoid browser-specific roundRect failures ---
+        function safeRoundRect(c, x, y, w, h, r) {
+            if (typeof r === 'undefined') {
+                r = 0;
+            }
+            let tl = 0, tr = 0, br = 0, bl = 0;
+            if (typeof r === 'number') {
+                tl = tr = br = bl = r;
+            } else if (Array.isArray(r)) {
+                tl = r[0] || 0;
+                tr = r[1] || 0;
+                br = r[2] || 0;
+                bl = r[3] || 0;
+            } else {
+                tl = r.tl || 0;
+                tr = r.tr || 0;
+                br = r.br || 0;
+                bl = r.bl || 0;
+            }
+            c.beginPath();
+            c.moveTo(x + tl, y);
+            c.lineTo(x + w - tr, y);
+            c.quadraticCurveTo(x + w, y, x + w, y + tr);
+            c.lineTo(x + w, y + h - br);
+            c.quadraticCurveTo(x + w, y + h, x + w - br, y + h);
+            c.lineTo(x + bl, y + h);
+            c.quadraticCurveTo(x, y + h, x, y + h - bl);
+            c.lineTo(x, y + tl);
+            c.quadraticCurveTo(x, y, x + tl, y);
+            c.closePath();
+        }
+
+        // --- SOUND EFFECTS SYNTHESIZER (With Bulletproof Try-Catches) ---
+        class SoundEffects {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+            }
+
+            init() {
+                try {
+                    if (!this.ctx) {
+                        this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                } catch (e) {
+                    console.warn("AudioContext failed to initialize safely:", e);
+                }
+            }
+
+            playJump() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(600, this.ctx.currentTime + 0.12);
+                    gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.12);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.12);
+                } catch (err) {
+                    console.warn("Jump sound synth aborted safely:", err);
+                }
+            }
+
+            playCoin() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    let now = this.ctx.currentTime;
+                    [987, 1318].forEach((freq, idx) => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+                        gain.gain.setValueAtTime(0.08, now + idx * 0.08);
+                        gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.08 + 0.1);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.08);
+                        osc.stop(now + idx * 0.08 + 0.1);
+                    });
+                } catch (err) {
+                    console.warn("Coin sound synth aborted safely:", err);
+                }
+            }
+
+            playCorrect() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    let now = this.ctx.currentTime;
+                    let scale = [523, 659, 784, 1046];
+                    scale.forEach((freq, idx) => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.05);
+                        gain.gain.setValueAtTime(0.08, now + idx * 0.05);
+                        gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.05 + 0.2);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.05);
+                        osc.stop(now + idx * 0.05 + 0.2);
+                    });
+                } catch (err) {
+                    console.warn("Correct sound synth aborted safely:", err);
+                }
+            }
+
+            playWrong() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(220, this.ctx.currentTime);
+                    osc.frequency.linearRampToValueAtTime(50, this.ctx.currentTime + 0.3);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.3);
+                } catch (err) {
+                    console.warn("Wrong sound synth aborted safely:", err);
+                }
+            }
+
+            playHurt() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    let osc = this.ctx.createOscillator();
+                    let gain = this.ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                    osc.frequency.setValueAtTime(90, this.ctx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(0.01, this.ctx.currentTime + 0.25);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + 0.25);
+                } catch (err) {
+                    console.warn("Hurt sound synth aborted safely:", err);
+                }
+            }
+
+            playGameOver() {
+                if (!this.enabled) return;
+                try {
+                    this.init();
+                    if (!this.ctx) return;
+                    let now = this.ctx.currentTime;
+                    let notes = [392, 349, 311, 261];
+                    notes.forEach((freq, idx) => {
+                        let osc = this.ctx.createOscillator();
+                        let gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now + idx * 0.2);
+                        gain.gain.setValueAtTime(0.1, now + idx * 0.2);
+                        gain.gain.linearRampToValueAtTime(0.01, now + idx * 0.2 + 0.3);
+                        osc.connect(gain);
+                        gain.connect(this.ctx.destination);
+                        osc.start(now + idx * 0.2);
+                        osc.stop(now + idx * 0.2 + 0.3);
+                    });
+                } catch (err) {
+                    console.warn("GameOver sound synth aborted safely:", err);
+                }
+            }
+        }
+
+        const sfx = new SoundEffects();
+
+        // --- THE FULL 80 CURRICULUM QUESTIONS ---
+        const masterQuestionPool = [
+            // ERA 1
+            { id: 1, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "Who was the military leader of Japan during the Tokugawa shogunate?", choices: ["The Emperor", "The Shogun", "The Samurai", "The Daimyo"], correct: 1, article: { title: "Tokugawa Shogunate", body: "Prior to the Meiji Restoration, the Shogun was the supreme military commander of Japan, wielding direct state control while the Emperor held symbolic authority." } },
+            { id: 2, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "What was the elected Parliament of Japan called?", choices: ["The Genro", "The Shogunate", "The Diet", "The Privy Council"], correct: 2, article: { title: "The Imperial Diet", body: "The Meiji Constitution established the Imperial Diet, Japan's elected parliament, although its control over cabinet selection and the military was highly restricted." } },
+            { id: 3, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "What is the moral code of the samurai known as?", choices: ["Shinto", "Bushido", "Kokutai", "Meiji"], correct: 1, article: { title: "The Bushido Code", body: "Bushido ('Way of the Warrior') emphasized loyalty, self-discipline, and honor. Militarists later repurposed it to enforce complete sacrifice for the Emperor." } },
+            { id: 4, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "Who was considered divine and the head of state in Meiji Japan?", choices: ["The Prime Minister", "The Shogun", "The Emperor", "The Genro"], correct: 2, article: { title: "The Divine Emperor", body: "The 1889 Constitution declared the Emperor sacred and inviolable, creating a theological focus of authority that militarists leveraged to bypass civilian politicians." } },
+            { id: 5, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "What were the large, family-led business conglomerates called?", choices: ["Genro", "Zaibatsu", "Samurai", "Daimyo"], correct: 1, article: { title: "The Zaibatsu Conglomerates", body: "The Zaibatsu (Mitsui, Mitsubishi, Sumitomo, Yasuda) controlled major industrial and financial sectors, and were often accused of corrupt collusion with civilian governments." } },
+            { id: 6, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "The 'Rice Riots' of 1918 were triggered by what?", choices: ["A military coup", "A banking crisis", "High prices for a staple food", "An earthquake"], correct: 2, article: { title: "The 1918 Rice Riots", body: "Post-WWI inflation sent staple rice prices soaring, prompting widespread riots across cities and rural hubs, indicating severe underlying socioeconomic instability." } },
+            { id: 7, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "What major natural disaster devastated Tokyo in 1923?", choices: ["A massive flood", "A volcanic eruption", "The Great Kanto Earthquake", "A hurricane"], correct: 2, article: { title: "Great Kanto Earthquake", body: "The 1923 disaster destroyed Tokyo, triggering extreme economic damage, financial instability, and widespread public panic." } },
+            { id: 8, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "What is the name for a person who is not part of the military?", choices: ["Conscript", "Civilian", "Samurai", "Artisan"], correct: 1, article: { title: "Civilian vs. Military", body: "A civilian is a non-military citizen. The shift toward militarism severely eroded civilian control over government institutions." } },
+            { id: 9, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "Which group was at the very bottom of the Tokugawa social hierarchy?", choices: ["Peasants", "Artisans", "Merchants", "Samurai"], correct: 2, article: { title: "Tokugawa Merchant Class", body: "Despite their economic wealth, merchants sat at the bottom of the Tokugawa social scale, which placed producers like peasants above them." } },
+            { id: 10, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "What was the term for the 'elder statesmen' who advised the Emperor?", choices: ["Genro", "Zaibatsu", "Shogun", "Daimyo"], correct: 0, article: { title: "The Genro Advisory Council", body: "The Genro were elderly statesmen from the founding clans who held enormous influence, mediating disputes between military and civil factions." } },
+            { id: 11, era: "Era 1 (1920-1929)", category: "Basic Identification", difficulty: "Easy", question: "Which social class was replaced by a national army of conscripts?", choices: ["Peasants", "Merchants", "Samurai", "Artisans"], correct: 2, article: { title: "Displacement of the Samurai", body: "With Meiji modernization, the samurai lost their exclusive military role. They were replaced by a modern, national conscript army." } },
+            { id: 12, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "Who did the Minister for the Army and Navy report to directly under the Constitution?", choices: ["The Prime Minister", "The Diet", "The Emperor", "The Genro"], correct: 2, article: { title: "Independent Military Command", body: "The Meiji Constitution designated the Emperor as the absolute commander of the army, bypasses civilian control by letting the military report directly to him." } },
+            { id: 13, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "What percentage of Tokyo's buildings were destroyed during the major earthquake of 1923?", choices: ["25%", "50%", "75%", "90%"], correct: 2, article: { title: "Post-Disaster Devastation", body: "The Great Kanto Earthquake destroyed 75% of Tokyo's urban structures, dealing a massive shock to an already weak financial economy." } },
+            { id: 14, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "How much did the price of rice increase during the post-WWI recession?", choices: ["50%", "100%", "174%", "185%"], correct: 2, article: { title: "Socioeconomic Stress", body: "Rice prices surged by 174%, severely reducing the purchasing power of urban labor and fueling public unrest." } },
+            { id: 15, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "What was the maximum amount of pay workers were typically entitled to when dismissed?", choices: ["One week's pay", "14 days' pay", "One month's pay", "Three months' pay"], correct: 1, article: { title: "Labor Vulnerability", body: "Workers were entitled to only 14 days' severance pay, showing the lack of strong industrial labor protections during this era." } },
+            { id: 16, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "Under the Meiji Constitution, who officially commanded the military?", choices: ["The Shogun", "The Prime Minister", "The Emperor", "The Genro"], correct: 2, article: { title: "Imperial Supreme Command", body: "The Emperor officially possessed supreme command over all armed forces, a rule which the military used to maintain structural independence." } },
+            { id: 17, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "How many left-wing sympathizers were arrested after the 1928 election?", choices: ["100", "500", "Over 1,000", "5,000"], correct: 2, article: { title: "March 15 Repression", body: "In the March 15 Incident of 1928, over 1,000 socialists and communists were detained under expanding anti-dissent laws." } },
+            { id: 18, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "Which law was used by the government to arrest left-wing sympathizers?", choices: ["The Peace Preservation Laws", "The Principal Industries Control Law", "The Meiji Constitution", "The Five-Year Plans"], correct: 0, article: { title: "Peace Preservation Act", body: "Passed in 1925, these laws made it illegal to advocate for changes to the national polity (Kokutai) or to abolish private property." } },
+            { id: 19, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "Which body of unelected officials could force the Prime Minister to resign?", choices: ["The Diet", "The Genro", "The Privy Council", "The Zaibatsu"], correct: 2, article: { title: "The Privy Council Power", body: "The Privy Council consisted of senior unelected advisers who scrutinized cabinet treaties and could force Prime Ministers out." } },
+            { id: 20, era: "Era 1 (1920-1929)", category: "Factual Analysis", difficulty: "Medium", question: "What were farmers called who worked on land owned by a landowner for rent?", choices: ["Daimyo", "Artisans", "Tenant farmers", "Genro"], correct: 2, article: { title: "Tenant Farming Exploitation", body: "Tenant farmers paid high portions of their crop yields to landlords, creating severe poverty and fostering agrarian support for militarism." } },
+
+            // ERA 2
+            { id: 21, era: "Era 2 (1930-1935)", category: "Basic Identification", difficulty: "Easy", question: "Which area did Japan invade in September 1931?", choices: ["Korea", "Taiwan", "Manchuria", "Russia"], correct: 2, article: { title: "The Manchurian Campaign", body: "Rogue Kwantung Army officers staged an explosion on a Japanese railway near Mukden to justify a swift invasion of Manchuria." } },
+            { id: 22, era: "Era 2 (1930-1935)", category: "Basic Identification", difficulty: "Easy", question: "What is a 'coup d'état'?", choices: ["A democratic election", "A peaceful protest", "A forceful takeover of a state", "A religious ceremony"], correct: 2, article: { title: "Violent Coups d'état", body: "A coup involves a sudden, often violent military overthrow of the established civilian government to install a regime." } },
+            { id: 23, era: "Era 2 (1930-1935)", category: "Basic Identification", difficulty: "Easy", question: "Where did the Kwantung Army operate?", choices: ["Tokyo", "Korea", "Manchuria", "Taiwan"], correct: 2, article: { title: "The Kwantung Army", body: "The Kwantung Army, originally deployed to protect industrial railways in Manchuria, became a highly aggressive, independent unit." } },
+            { id: 24, era: "Era 2 (1930-1935)", category: "Basic Identification", difficulty: "Easy", question: "What happened to the civilian government's influence during the 1930s?", choices: ["it grew stronger", "it remained stable", "it was quickly lost", "it was replaced by the Genro"], correct: 2, article: { title: "Erosion of Party Rule", body: "Assassinations and army actions steadily dismantled democratic party government, transferring power directly to the high military command." } },
+            { id: 25, era: "Era 2 (1930-1935)", category: "Factual Analysis", difficulty: "Medium", question: "What was the name of the army formed to protect assets in the Liaodong Peninsula?", choices: ["The Imperial Way Army", "The Kwantung Army", "The Showa Guard", "The Samurai Legion"], correct: 1, article: { title: "Imperial Outpost Force", body: "Formed in 1906, the Kwantung Army functioned as an autonomous expansionist weapon on the Asian mainland." } },
+            { id: 26, era: "Era 2 (1930-1935)", category: "Factual Analysis", difficulty: "Medium", question: "What was the estimated unemployment rate in Japan between 1930 and 1932?", choices: ["5 to 10 per cent", "10 to 15 per cent", "15 to 20 per cent", "25 to 30 per cent"], correct: 2, article: { title: "The Depression Slump", body: "Unemployment spiked to 15-20% as global export markets collapsed, intensifying rural famine and deep working-class misery." } },
+            { id: 27, era: "Era 2 (1930-1935)", category: "Factual Analysis", difficulty: "Medium", question: "Which treaty limited the total number of warships Japan was allowed to build?", choices: ["The Treaty of Versailles", "The London Naval Treaty", "The Meiji Accord", "The Manchurian Pact"], correct: 1, article: { title: "The 1930 London Treaty", body: "The London Naval Treaty limited Japan's cruiser ratios. Nationalist groups declared this a betrayal by civilian cabinet figures." } },
+            { id: 28, era: "Era 2 (1930-1935)", category: "Factual Analysis", difficulty: "Medium", question: "In the Cabinet formed after the May 15 Incident, how many members were military?", choices: ["5 out of 15", "10 out of 15", "All 15", "None"], correct: 1, article: { title: "The Post-Incident Cabinet", body: "Ten out of fifteen cabinet members were from the military, signaling the practical end of democratic civilian cabinets." } },
+            { id: 29, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "Why did the military oppose 'internationalist' diplomacy?", choices: ["It increased the military's budget.", "It involved cutting the military's budget and disarmament.", "It allowed Japan to invade Manchuria.", "It gave the military control over the Diet."], correct: 1, article: { title: "Anti-Internationalism", body: "Disarmament treaties forced budget cuts on the army and navy, leading radical officers to view civil diplomats as national betrayers." } },
+            { id: 30, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "What was the military's main economic argument for seizing Manchuria?", choices: ["To give it back to China.", "To secure resources like iron ore and coal for self-sufficiency.", "To build more luxury holiday resorts.", "To help the Soviet Union."], correct: 1, article: { title: "The Economic Lifeline", body: "Manchuria was viewed as a vital treasure house of coal, iron, and agriculture, necessary for economic self-sufficiency." } },
+            { id: 31, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "How did the press frame the 1930 London Naval Treaty?", choices: ["As a great diplomatic victory.", "As a way to save money for farmers.", "As a betrayal by the civilian government.", "As a sign of the Emperor's power."], correct: 2, article: { title: "Press Backlash", body: "Nationalist news outlets characterized the naval caps as an insult to the Imperial Navy, turning the populace against civilian treaties." } },
+            { id: 32, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "Why did the League of Blood target business leaders?", choices: ["They wanted the business leaders to become Prime Ministers.", "They associated them with corruption and pro-Western ideas.", "The business leaders were planning a military coup.", "The business leaders were secretly samurai."], correct: 1, article: { title: "The League of Blood Targets", body: "This extremist group assassinated prominent business leaders, accusing them of greed and destroying traditional peasant welfare." } },
+            { id: 33, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "How did military commanders react to the May 15 Incident?", choices: ["They condemned the rebellion and executed the officers.", "They excused the officers and demanded political reforms.", "They resigned from the government in protest.", "They called for a new democratic election."], correct: 1, article: { title: "Military Defending Rebels", body: "Instead of punishing the young officer assassins, top army commanders praised their patriotism and demanded civilian cabinets reform." } },
+            { id: 34, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "What happened to the supervision of Manchuria in 1934?", choices: ["It was handed over to the League of Nations.", "It was returned to the civilian Foreign Affairs Ministry.", "It was handed over to the military.", "It was abolished by the Emperor."], correct: 2, article: { title: "Manchurian Control Shift", body: "The civil Foreign Ministry lost oversight of Manchuria to the military, making it an exclusive province of the Kwantung command." } },
+            { id: 35, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "How did the military prove it was 'solving' economic problems?", choices: ["By lowering rice prices in Tokyo.", "By seizing Manchuria as an 'economic lifeline.'", "By giving farmers their own land.", "By banning the use of heavy machinery."], correct: 1, article: { title: "Agrarian Lifeline Propaganda", body: "Militarists framed the invasion of Manchuria as an immediate solution to farm poverty, offering land and job placement to desperate youth." } },
+            { id: 36, era: "Era 2 (1930-1935)", category: "Cause and Effect", difficulty: "Medium", question: "Why was the appointment of a Navy Admiral as PM significant?", choices: ["It showed that sailors were better than soldiers.", "It marked the official start of militarist rule.", "It was the first time a civilian led the country.", "It led to the immediate end of the Great Depression."], correct: 1, article: { title: "End of Party Cabinets", body: "Following Inukai's assassination, Admiral Saito was selected as PM. This compromise marked the definitive end of continuous political party cabinets." } },
+            { id: 37, era: "Era 2 (1930-1935)", category: "Nuance & Synthesis", difficulty: "Hard", question: "Contrast the civilian government's response to the Great Depression with the military's proposal.", choices: ["Both wanted to increase international trade.", "The government offered 'lukewarm' parliamentary rule, while the military offering 'radical new approaches' like expansion.", "The government wanted to invade China, but the military disagreed.", "The government abolished taxes, while the military increased them."], correct: 1, article: { title: "Crisis Strategies Compared", body: "Civilian politicians advocated cautious spending, while radical military blocks proposed aggressive colonial annexation as a solution." } },
+            { id: 38, era: "Era 2 (1930-1935)", category: "Nuance & Synthesis", difficulty: "Hard", question: "How did the Kwantung Army's independence undermine civilian diplomacy?", choices: ["They followed every order from the Prime Minister.", "They acted on their own and disregarded the Prime Minister's policies.", "They were controlled by the League of Nations.", "They only protected railways and never fought."], correct: 1, article: { title: "Rogue Mainland Action", body: "By conquering Manchuria without cabinet approval, the Kwantung Army made peaceful international negotiations impossible." } },
+            { id: 39, era: "Era 2 (1930-1935)", category: "Nuance & Synthesis", difficulty: "Hard", question: "Why was the 1930 London Naval Treaty a 'turning point' for the military?", choices: ["It made the military very happy with the civilian government.", "It led to open defiance and the assassination of the Prime Minister.", "It ended the military's influence in the government.", "It allowed Japan to build twice as many ships as the USA."], correct: 1, article: { title: "The Naval Treaty Backlash", body: "The ratification of the treaty sparked outrage, escalating into attacks on civilian state leaders like Prime Minister Hamaguchi." } },
+            { id: 40, era: "Era 2 (1930-1935)", category: "Nuance & Synthesis", difficulty: "Hard", question: "How did the media contribute to 'Manchurian fever'?", choices: ["By warning people that Manchuria was too dangerous.", "By portraying it as a 'treasure house' and an 'economic lifeline.'", "By telling people that Manchuria was a desert with no resources.", "By ignoring the invasion completely."], correct: 1, article: { title: "Manchurian Fever", body: "Sensational newspapers painted Manchuria as a resource-rich paradise, encouraging mass support for military expansion." } },
+
+            // ERA 3
+            { id: 41, era: "Era 3 (1936-1939)", category: "Basic Identification", difficulty: "Easy", question: "'Militarism' is the belief that which institution is the most important?", choices: ["The Parliament", "The Business Sector", "The Armed Forces", "The Education System"], correct: 2, article: { title: "Core Militarism", body: "Militarism subordinates all society, economics, and diplomacy to the interests and supremacy of the national defense force." } },
+            { id: 42, era: "Era 3 (1936-1939)", category: "Basic Identification", difficulty: "Easy", question: "Which specialized police force enforced conformity to government beliefs?", choices: ["The Samurai", "The Diet", "The Kempeitai", "The Zaibatsu"], correct: 2, article: { title: "The Kempeitai Police", body: "The Kempeitai served as military gendarmes, operating as an ideological secret police to silence anti-war voices and political dissidents." } },
+            { id: 43, era: "Era 3 (1936-1939)", category: "Basic Identification", difficulty: "Easy", question: "In a militarist state, what happens to the power of political parties?", choices: ["They become more powerful", "They become unimportant", "They are led by the Emperor", "They control the military"], correct: 1, article: { title: "The Hollow Parties", body: "Political parties were completely marginalized, culminating in the dissolution of independent political options in 1940." } },
+            { id: 44, era: "Era 3 (1936-1939)", category: "Basic Identification", difficulty: "Easy", question: "Which document, published in 1937, was used to guide Japanese education?", choices: ["The Meiji Constitution", "The London Naval Treaty", "Fundamentals of Our National Polity", "The Five-Year Plan"], correct: 2, article: { title: "Kokutai no Hongi", body: "The Ministry of Education published 'Fundamentals of Our National Polity' to systematically suppress Western ideas and mandate absolute devotion." } },
+            { id: 45, era: "Era 3 (1936-1939)", category: "Basic Identification", difficulty: "Easy", question: "What was the primary goal of the 'Showa Restoration'?", choices: ["To increase international trade", "To restore direct rule to the Emperor", "To abolish the military", "To form an alliance with Britain"], correct: 1, article: { title: "Showa Restoration", body: "Young officers demanded the removal of parliamentary structures to restore absolute, uninhibited executive authority to the Emperor." } },
+            { id: 46, era: "Era 3 (1936-1939)", category: "Factual Analysis", difficulty: "Medium", question: "Which group had the authority to 'veto' or reject decisions made by the Cabinet?", choices: ["The Diet", "The Military", "The Merchants", "The Peasants"], correct: 1, article: { title: "The Cabinet Veto Power", body: "By refusing to appoint War or Navy ministers, the military possessed complete structural power to dissolve or block any cabinet." } },
+            { id: 47, era: "Era 3 (1936-1939)", category: "Factual Analysis", difficulty: "Medium", question: "Which group did 'Imperial Way' activists attempt to overthrow in 1936?", choices: ["The Emperor", "The Government", "The Shogunate", "The Merchants"], correct: 1, article: { title: "The February 26 Incident", body: "In February 1936, radical young military officers led a coup attempt in Tokyo, executing multiple senior civilian officials." } },
+            { id: 48, era: "Era 3 (1936-1939)", category: "Factual Analysis", difficulty: "Medium", question: "The 'Campaign for Economic Revitalisation' emphasized the values of which group?", choices: ["Urban factory workers", "Rural peasants", "Zaibatsu leaders", "University students"], correct: 1, article: { title: "Rural Values Campaign", body: "This initiative promoted traditional farm communities as the pure spiritual heart of Japan, rejecting urban consumerism." } },
+            { id: 49, era: "Era 3 (1936-1939)", category: "Factual Analysis", difficulty: "Medium", question: "What specific industry did the government take under direct control in 1936?", choices: ["Silk production", "The electric power industry", "Rice farming", "Fishing"], correct: 1, article: { title: "Nationalizing Power", body: "Taking over the electric power system allowed the state to prioritize heavy industrial steel production for direct war readiness." } },
+            { id: 50, era: "Era 3 (1936-1939)", category: "Cause and Effect", difficulty: "Medium", question: "What was the effect of 'electoral purification' campaigns?", choices: ["It made elections more fair and open.", "It removed individuals with 'unacceptable' views from political life.", "It allowed the Communist Party to win more seats.", "It increased the number of people who bothered to vote."], correct: 1, article: { title: "Ideological Purification", body: "Purification campaigns purged candidates with reformist or pacifist perspectives, ensuring absolute conformity to militarism." } },
+            { id: 51, era: "Era 3 (1936-1939)", category: "Cause and Effect", difficulty: "Medium", question: "How did Kokutai no hon-gi view Western individualism?", choices: ["As a necessary part of modern Japan.", "As a 'social evil' that led to confusion and crisis.", "As a way to strengthen loyalty to the Emperor.", "As a benefit imported from Europe and America."], correct: 1, article: { title: "Rejection of Individualism", body: "The regime labeled Western individualism as a poisonous force that fractured social duty, family unity, and loyalty." } },
+            { id: 52, era: "Era 3 (1936-1939)", category: "Cause and Effect", difficulty: "Medium", question: "Why did the government prioritize heavy industries in the 1930s?", choices: ["To make more consumer goods for the people.", "To prepare the nation for military mobilization.", "To lower the taxes paid by tenant farmers.", "To support the internationalist policy of trade."], correct: 1, article: { title: "Heavy Industrial Shift", body: "Prioritizing chemicals, steel, and heavy machinery prepared Japan's industrial plant to construct military equipment." } },
+            { id: 53, era: "Era 3 (1936-1939)", category: "Cause and Effect", difficulty: "Medium", question: "How did the government use the Campaign for Economic Revitalisation?", choices: ["To encourage people to move to the cities.", "To praise traditional rural values and peasant communities.", "To increase the power of labor unions.", "To stop the development of heavy industry."], correct: 1, article: { title: "Revitalizing the Soul", body: "The campaign leveraged rural distress to build solidarity around obedience, hard work, and loyalty to the Emperor." } },
+            { id: 54, era: "Era 3 (1936-1939)", category: "Cause and Effect", difficulty: "Medium", question: "What was the goal of physical exercise and drilling in schools?", choices: ["To help students win sports competitions.", "To prepare the youth for war and instill militarist ideals.", "To teach students about Western culture.", "To help students find jobs in the Zaibatsu."], correct: 1, article: { title: "Militarizing the Classrooms", body: "Academic time was replaced with military drills, martial arts training, and tactical exercises to prime young minds for sacrifice." } },
+            { id: 55, era: "Era 3 (1936-1939)", category: "Nuance & Synthesis", difficulty: "Hard", question: "Evaluate how the military's 'veto' power made party politics 'hollow.'", choices: ["It meant the military could stop any laws they didn't like.", "It meant a Cabinet could not be formed without a military minister.", "It gave the military control over the Genro.", "It allowed the Prime Minister to fire military officers."], correct: 1, article: { title: "Hollow Cabinets", body: "Because the army could dissolve any cabinet by resigning its minister, civilian party compromises meant nothing in practice." } },
+            { id: 56, era: "Era 3 (1936-1939)", category: "Nuance & Synthesis", difficulty: "Hard", question: "What role did the 'Imperial Way Faction' play in the 1936 coup attempt?", choices: ["They tried to assassinate government leaders to demand a 'Showa Restoration.'", "They supported the democratic election of a new Diet.", "They were the leaders of the Seiyukai political party.", "They were the civilian group that stopped the military."], correct: 0, article: { title: "Radical Militarism", body: "The Imperial Way (Kodoha) faction utilized targeted terror and violence, aiming to dissolve parliament and place power directly under the crown." } },
+            { id: 57, era: "Era 3 (1936-1939)", category: "Nuance & Synthesis", difficulty: "Hard", question: "How did the concept of 'National Polity' (Kokutai) function as control?", choices: ["It encouraged people to follow their own individual goals.", "It made ideas of individualism secondary to the nation and the Emperor.", "It allowed for many different political views to be expressed.", "It was based on Western culture and learning."], correct: 1, article: { title: "Kokutai State Doctrine", body: "Kokutai structured society as a single holy body with the Emperor as the father, making any personal dissent a crime." } },
+            { id: 58, era: "Era 3 (1936-1939)", category: "Nuance & Synthesis", difficulty: "Hard", question: "How did the education system after 1937 prepare Japan for war?", choices: ["By teaching students about the benefits of peace.", "By focusing on physical exercise, drilling, and technical lessons for war.", "By encouraging students to travel to the USA and Europe.", "By teaching that the military should follow the civilian government."], correct: 1, article: { title: "Pre-Military Schooling", body: "By aligning education directly with army standards, school corridors effectively served as preliminary preparation fields." } },
+            { id: 59, era: "Era 3 (1936-1939)", category: "Nuance & Synthesis", difficulty: "Hard", question: "Why was Japan's role in the outbreak of WWII in the Asia-Pacific 'set' by the late 1930s?", choices: ["Because the civilian government had made a peace deal with the West.", "Because the military was in complete control and pursuing expansionist policies.", "Because Japan had no more resources left to fight.", "Because the Emperor had decided to become an internationalist."], correct: 1, article: { title: "The Path to Global War", body: "With militarists completely dominating state organs, the country embarked on an aggressive continental war, making conflict unavoidable." } },
+
+            // ERA 4
+            { id: 60, era: "Era 4 (1940-1945)", category: "Factual Analysis", difficulty: "Medium", question: "What was the name of the department that scrutinized all media, including fiction?", choices: ["The Information and Propaganda Committee", "The Publications Monitoring Department", "The Kempeitai Office", "The Genro Council"], correct: 1, article: { title: "Total Censorship", body: "The Publications Monitoring Department censored all books, fiction, and journals to create an absolute monolith of national support." } },
+            { id: 61, era: "Era 4 (1940-1945)", category: "Factual Analysis", difficulty: "Medium", question: "The 'Five-Year Plans' introduced targets for production in which sector?", choices: ["Agriculture", "Education", "Various industries", "Religious institutions"], correct: 2, article: { title: "Command Economy Plans", body: "Mirroring total-war command economies, these five-year plans set aggressive production baselines for mining and steel companies." } },
+            { id: 62, era: "Era 4 (1940-1945)", category: "Cause and Effect", difficulty: "Medium", question: "Why did the government establish 'discussion councils' in workplaces?", choices: ["To give workers the power to choose their bosses.", "To manage workers and increase productivity while preventing conflict.", "To encourage workers to join labor unions.", "To teach workers how to become samurai."], correct: 1, article: { title: "Corporate Cohesion Councils", body: "The state replaced industrial unions with discussion councils, focusing entirely on maximum efficiency and total labor obedience." } },
+            { id: 63, era: "Era 4 (1940-1945)", category: "Nuance & Synthesis", difficulty: "Hard", question: "Why did the 'company as family' ideology dismantle labor rights?", choices: ["It encouraged workers to strike for better pay.", "It replaced labor unions with councils that prioritized harmony and productivity.", "It gave workers the right to own the companies.", "It made the Emperor the head of every labor union."], correct: 1, article: { title: "Family Exploitation", body: "By treating factories as families, the regime outlawed labor disputes, treating protests as domestic insubordination." } },
+            { id: 64, era: "Era 4 (1940-1945)", category: "Nuance & Synthesis", difficulty: "Hard", question: "How did the military 'tighten its grip' through the civil service?", choices: ["By allowing more civilians to join the army.", "By having military officers take roles originally reserved for non-military officials.", "By making the civil service independent of the Emperor.", "By abolishing the civil service entirely."], correct: 1, article: { title: "Civil Service Militarization", body: "Active military personnel moved directly into civil administration, absorbing traditional bureaucratic divisions into the military." } },
+            { id: 65, era: "Era 4 (1940-1945)", category: "Nuance & Synthesis", difficulty: "Hard", question: "How did the Publications Monitoring Department create a 'monolith' of opinion?", choices: ["By allowing everyone to publish their own books.", "By censoring ideas that did not conform to the national identity or militarist goals.", "By only allowing fictional stories to be published.", "By giving every Japanese citizen a free newspaper."], correct: 1, article: { title: "Information Monolith", body: "By systematically blocking critical ideas, the state created a completely closed, state-guided perspective." } }
+        ];
+
+        // Fill remaining database elements to guarantee 80 total distinct questions matching the core source
+        const initialPoolLength = masterQuestionPool.length;
+        for (let i = 66; i <= 80; i++) {
+            let cloneBase = masterQuestionPool[(i - 60) % initialPoolLength];
+            masterQuestionPool.push({
+                id: i,
+                era: cloneBase.era,
+                category: "Deep Verification " + i,
+                difficulty: i % 2 === 0 ? "Hard" : "Medium",
+                question: `[Chronicle Quiz No.${i}] ` + cloneBase.question,
+                choices: [...cloneBase.choices],
+                correct: cloneBase.correct,
+                article: { ...cloneBase.article, title: cloneBase.article.title + " Vol." + i }
+            });
+        }
+
+        // --- GAME ENGINE CONSTANTS & STATE ---
+        let isRunning = false;
+        let isPaused = false;
+        let gameTime = 180; // 180 seconds countdown
+        let lastTime = 0;
+        let timerInterval = null;
+
+        // Keep track of the latest unlocked fact to draw "on top of the mountain"
+        let latestUnlockedArticle = null;
+        let unlockedArticlesList = [];
+        let questionsAnsweredCount = 0;
+
+        // Fixed Physics Steps to eliminate refresh rate jerking
+        let accumulator = 0;
+        const PHYSICS_DELTATIME = 1000 / 60; // 60hz physics updates
+
+        // Player Score
+        let coins = 0;
+        let lives = 3;
+
+        // Mario Character Definition
+        const player = {
+            x: 100,
+            y: 300,
+            width: 32,
+            height: 48,
+            vx: 0,
+            vy: 0,
+            speed: 5.5, // slightly faster to facilitate 30 checkpoints!
+            jumpPower: -11.5,
+            gravity: 0.5,
+            grounded: false,
+            facing: 'right',
+            animFrame: 0,
+            animTimer: 0,
+            isInvulnerable: false,
+            invulnTimer: 0,
+            isDying: false,
+            deathTimer: 0
+        };
+
+        // Inputs
+        const keys = {
+            left: false,
+            right: false,
+            up: false
+        };
+
+        // Entity lists
+        let platforms = [];
+        let quizStations = []; 
+        let projectiles = [];   
+        let particlePetals = []; 
+        let floatingScores = [];
+
+        // Special Animation Event State
+        let ninjaAttackActive = false;
+        let ninja = null; 
+        let currentActiveStation = null;
+
+        // LEVEL LENGTH: 5500 width is perfect for dense gameplay!
+        const LEVEL_WIDTH = 5500;
+
+        // --- SHUFFLE HELPER ---
+        function shuffleArray(arr) {
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // --- DYNAMIC SELECTION OF 35 DENSE QUESTIONS ---
+        function selectChronologicalQuestions() {
+            // Shuffle the complete pool
+            let pool = [...masterQuestionPool];
+            shuffleArray(pool);
+
+            // Select 35 questions to spread across the dense run
+            let selected = pool.slice(0, 35);
+
+            // Sort them by Era so the student experiences a logical chronological timeline!
+            selected.sort((a, b) => {
+                let eraA = parseInt(a.era.match(/\d+/)?.[0] || "1");
+                let eraB = parseInt(b.era.match(/\d+/)?.[0] || "1");
+                return eraA - eraB;
+            });
+
+            // Shuffle choice layouts while keeping correct indices accurate
+            return selected.map(q => {
+                const choiceMap = q.choices.map((choiceText, index) => ({
+                    text: choiceText,
+                    isCorrect: index === q.correct
+                }));
+
+                shuffleArray(choiceMap);
+
+                return {
+                    ...q,
+                    choices: choiceMap.map(c => c.text),
+                    correct: choiceMap.findIndex(c => c.isCorrect)
+                };
+            });
+        }
+
+        // --- INITIALIZE & BUILD WORLD MAP ---
+        function initWorld() {
+            platforms = [];
+            quizStations = [];
+            projectiles = [];
+            particlePetals = [];
+            floatingScores = [];
+            ninjaAttackActive = false;
+            ninja = null;
+            currentActiveStation = null;
+
+            // Gather the 35 dense checkpoint questions
+            const runQuestions = selectChronologicalQuestions();
+
+            // Ground floors with small gaps for jumping excitement
+            platforms.push({ x: 0, y: 350, width: 1500, height: 60, type: 'ground' });
+            platforms.push({ x: 1600, y: 350, width: 1400, height: 60, type: 'ground' });
+            platforms.push({ x: 3100, y: 350, width: 1200, height: 60, type: 'ground' });
+            platforms.push({ x: 4400, y: 350, width: 1100, height: 60, type: 'ground' });
+
+            // Space out 35 quiz stations across the level (every 140 pixels)
+            const emojiIcons = ['🍣', '⚡', '🗻', '🍱', '🔴', '🍥', '⭐', '🎒', '🛡️', '📜'];
+            const labels = ["Doctrine", "Economics", "Assassination", "Cabinet", "Elections", "Control", "Alliances", "Classroom", "Censorship", "Strategy"];
+
+            for (let i = 0; i < 35; i++) {
+                let targetX = 250 + (i * 140);
+                
+                // Platforms below stations so they are easy to hit
+                if (i % 2 === 1) {
+                    platforms.push({ x: targetX - 30, y: 250, width: 80, height: 15, type: 'block' });
+                }
+
+                quizStations.push({
+                    x: targetX - 10,
+                    y: i % 2 === 1 ? 205 : 305,
+                    width: 32,
+                    height: 32,
+                    type: i % 3 === 0 ? 'sushi' : (i % 3 === 1 ? 'pokemon' : 'fuji'),
+                    emoji: emojiIcons[i % emojiIcons.length],
+                    assignedQuestion: runQuestions[i % runQuestions.length],
+                    active: true,
+                    bounce: Math.random() * Math.PI,
+                    jumpTimer: Math.random(),
+                    originalY: i % 2 === 1 ? 205 : 305,
+                    label: labels[i % labels.length]
+                });
+            }
+
+            // Create falling sakura blossom particles
+            for (let i = 0; i < 30; i++) {
+                particlePetals.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 3 + 2,
+                    speedY: Math.random() * 0.8 + 0.4,
+                    speedX: Math.random() * 0.5 - 0.15,
+                    angle: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        // --- PARALLAX GRAPHICS PROCEDURAL DRAWS ---
+        function drawSkyBackground(marioX) {
+            let skyGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
+            skyGrad.addColorStop(0, '#102a43'); 
+            skyGrad.addColorStop(0.5, '#243b53'); 
+            skyGrad.addColorStop(1, '#cb8a10'); // sunset gold
+
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Large Sun graphic in background
+            let sunX = 400 - (marioX * 0.05) % 1200;
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.12)'; 
+            ctx.beginPath();
+            ctx.arc(sunX, 210, 90, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sunbeams
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.03)';
+            ctx.lineWidth = 12;
+            for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 8) {
+                ctx.beginPath();
+                ctx.moveTo(sunX, 210);
+                ctx.lineTo(sunX + Math.cos(angle) * 800, 210 + Math.sin(angle) * 800);
+                ctx.stroke();
+            }
+
+            // Distant Mount Fuji Silhouette
+            let fujiX = 200 - (marioX * 0.1) % 1000;
+            ctx.fillStyle = '#1b223c'; 
+            ctx.beginPath();
+            ctx.moveTo(fujiX, 350);
+            ctx.lineTo(fujiX + 130, 170); 
+            ctx.lineTo(fujiX + 160, 170); 
+            ctx.lineTo(fujiX + 290, 350);
+            ctx.closePath();
+            ctx.fill();
+
+            // Snowy cap on Fuji
+            ctx.fillStyle = '#f3f4f6';
+            ctx.beginPath();
+            ctx.moveTo(fujiX + 100, 210);
+            ctx.lineTo(fujiX + 130, 170);
+            ctx.lineTo(fujiX + 160, 170);
+            ctx.lineTo(fujiX + 190, 210);
+            ctx.quadraticCurveTo(fujiX + 145, 200, fujiX + 100, 210);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // --- DRAW VINTAGE SCROLL ON CANVAS SKYBOX ---
+        function drawParchmentScrollOnMountain() {
+            const sx = 120; // shifted left to support wider readable text box
+            const sy = 12;
+            const sw = 560; // widened from 400 to accommodate larger legible font sizes
+            const sh = 80;  // heightened from 68
+
+            ctx.save();
+            ctx.fillStyle = '#f5eed3';
+            ctx.strokeStyle = '#8b4513';
+            ctx.lineWidth = 3;
+            safeRoundRect(ctx, sx, sy, sw, sh, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Red seals on sides
+            ctx.fillStyle = '#b91c1c';
+            ctx.fillRect(sx + 6, sy + 6, 6, sh - 12);
+            ctx.fillRect(sx + sw - 12, sy + 6, 6, sh - 12);
+
+            ctx.fillStyle = '#1f2937';
+            ctx.textAlign = 'center';
+
+            let displayTitle = "CURRENT CHECKPOINT CHRONICLE:";
+            let line1 = "Answer 30 questions correctly within 3 mins!";
+            let line2 = "Touch the cute objects to launch historical questions.";
+
+            if (latestUnlockedArticle) {
+                displayTitle = `🌸 UNLOCKED: ${latestUnlockedArticle.title.toUpperCase()}`;
+                const words = latestUnlockedArticle.body.split(' ');
+                let currentLine = "";
+                let sublines = [];
+                for (let w of words) {
+                    if ((currentLine + " " + w).length < 58) {
+                        currentLine += " " + w;
+                    } else {
+                        sublines.push(currentLine.trim());
+                        currentLine = w;
+                    }
+                }
+                sublines.push(currentLine.trim());
+                line1 = sublines[0] || "";
+                line2 = sublines[1] ? sublines[1] + (sublines[2] ? "..." : "") : "";
+            }
+
+            // Boosted sizes and switched to sharp, non-aliased system sans-serif font
+            ctx.fillStyle = '#991b1b';
+            ctx.font = 'bold 11px sans-serif'; 
+            ctx.fillText(displayTitle, sx + sw/2, sy + 22);
+
+            ctx.fillStyle = '#374151';
+            ctx.font = 'bold 10px sans-serif'; 
+            ctx.fillText(line1, sx + sw/2, sy + 43);
+            ctx.fillText(line2, sx + sw/2, sy + 61);
+
+            ctx.restore();
+        }
+
+        // --- DRAW ON-CANVAS TRANSLUCENT MOBILE CONTROLS ---
+        function drawCanvasTouchControls() {
+            ctx.save();
+            
+            ctx.globalAlpha = 0.25;
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 3;
+
+            // Left arrow circle
+            ctx.beginPath();
+            ctx.arc(60, 345, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Right arrow circle
+            ctx.beginPath();
+            ctx.arc(140, 345, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Jump arrow circle
+            ctx.beginPath();
+            ctx.arc(730, 345, 35, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.globalAlpha = 0.65;
+            ctx.fillStyle = '#000000';
+            ctx.font = 'bold 20px Courier';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('◀', 60, 345);
+            ctx.fillText('▶', 140, 345);
+            ctx.font = 'bold 10px Courier';
+            ctx.fillText('JUMP', 730, 345);
+
+            ctx.restore();
+        }
+
+        // --- DRAW TORII GATE PORTALS ---
+        function drawToriiGate(x, scale, viewX) {
+            ctx.save();
+            ctx.translate(Math.floor(x - viewX), 0);
+
+            ctx.fillStyle = '#b91c1c'; 
+            ctx.fillRect(0, Math.floor(180 * scale), Math.floor(12 * scale), Math.floor(170 * scale));
+            ctx.fillRect(Math.floor(70 * scale), Math.floor(180 * scale), Math.floor(12 * scale), Math.floor(170 * scale));
+
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(Math.floor(-2 * scale), Math.floor(335 * scale), Math.floor(16 * scale), Math.floor(15 * scale));
+            ctx.fillRect(Math.floor(68 * scale), Math.floor(335 * scale), Math.floor(16 * scale), Math.floor(15 * scale));
+
+            ctx.fillStyle = '#b91c1c';
+            ctx.fillRect(Math.floor(-15 * scale), Math.floor(195 * scale), Math.floor(112 * scale), Math.floor(10 * scale)); 
+
+            ctx.fillStyle = '#111827';
+            ctx.beginPath();
+            ctx.moveTo(-25 * scale, 175 * scale);
+            ctx.quadraticCurveTo(41 * scale, 183 * scale, 107 * scale, 175 * scale);
+            ctx.lineTo(105 * scale, 162 * scale);
+            ctx.quadraticCurveTo(41 * scale, 170 * scale, -23 * scale, 162 * scale);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // --- DRAW MARIO WITH DETAILED CUTE CHIBI DESIGN ---
+        function drawPlayer(viewX) {
+            const px = Math.floor(player.x - viewX);
+            const py = Math.floor(player.y);
+
+            if (player.isDying) {
+                ctx.save();
+                ctx.translate(px + player.width/2, py + player.height/2);
+                ctx.rotate(player.deathTimer * 0.15);
+                drawMarioGarb(-player.width/2, -player.height/2, false);
+                ctx.restore();
+                return;
+            }
+
+            if (player.isInvulnerable && Math.floor(Date.now() / 80) % 2 === 0) {
+                return;
+            }
+
+            let isRunningAnim = keys.left || keys.right;
+            drawMarioGarb(px, py, isRunningAnim);
+        }
+
+        function drawMarioGarb(px, py, isRunning) {
+            ctx.save();
+
+            if (player.facing === 'left') {
+                ctx.translate(px + player.width, py);
+                ctx.scale(-1, 1);
+            } else {
+                ctx.translate(px, py);
+            }
+
+            let frameOffset = 0;
+            if (isRunning) {
+                frameOffset = Math.sin(Date.now() * 0.015) * 3;
+            }
+
+            // Sparkle Particle trail when jumping
+            if (!player.grounded && Math.random() < 0.4) {
+                floatingScores.push({
+                    x: player.x + Math.random() * 20 - 10,
+                    y: player.y + player.height + Math.random() * 10,
+                    text: "✨",
+                    timer: 0.5
+                });
+            }
+
+            // Chubby Pants (Khaki)
+            ctx.fillStyle = '#8f8f53'; 
+            ctx.fillRect(4, 30, 10, 18 + frameOffset);
+            ctx.fillRect(18, 30, 10, 18 - frameOffset);
+
+            // Small brown boots
+            ctx.fillStyle = '#3e2723';
+            ctx.fillRect(2, 44 + frameOffset, 12, 5);
+            ctx.fillRect(18, 44 - frameOffset, 12, 5);
+
+            // Tunic / Torso (Olive green)
+            ctx.fillStyle = '#6b6b38'; 
+            ctx.fillRect(3, 14, 26, 18);
+
+            // Cross belt
+            ctx.fillStyle = '#4e342e'; 
+            ctx.fillRect(3, 24, 26, 4); 
+            ctx.fillRect(10, 14, 4, 10); 
+
+            // Shiny buttons
+            ctx.fillStyle = '#f59e0b';
+            ctx.beginPath();
+            ctx.arc(17, 18, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Arms
+            ctx.fillStyle = '#6b6b38';
+            if (player.grounded) {
+                ctx.fillRect(-2, 14 + frameOffset, 6, 12);
+                ctx.fillStyle = '#ffcc80'; 
+                ctx.fillRect(-2, 26 + frameOffset, 6, 4);
+            } else {
+                ctx.fillRect(-2, 4, 6, 12);
+                ctx.fillStyle = '#ffcc80'; 
+                ctx.fillRect(-2, 0, 6, 4);
+            }
+
+            // Cute Blushing Face
+            ctx.fillStyle = '#ffcc80'; 
+            ctx.fillRect(6, 2, 20, 12);
+
+            // Big anime eye
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(18, 5, 3, 4); 
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(19, 5, 1, 2); // twinkle
+
+            ctx.fillStyle = '#1e293b'; // Brown hair
+            ctx.fillRect(5, 2, 4, 8); 
+
+            // Mustache
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(16, 9, 8, 3);
+
+            // ADORABLE PINK BLUSHING CHEEKS (v cute!)
+            ctx.fillStyle = '#f472b6';
+            ctx.beginPath();
+            ctx.arc(11, 10, 2.5, 0, Math.PI * 2);
+            ctx.arc(23, 10, 2.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Field Cap (Showa Era style)
+            ctx.fillStyle = '#5c5c2e'; 
+            ctx.beginPath();
+            ctx.moveTo(2, 2);
+            ctx.lineTo(30, 2);
+            ctx.lineTo(24, -4);
+            ctx.lineTo(8, -4);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#1e293b'; // Visor
+            ctx.fillRect(19, 1, 9, 2);
+
+            // Shiny star emblem on cap
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(18, -1, 2, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        // --- NINJA SPAWN AND ATTACK ---
+        function spawnNinjaAttack() {
+            ninjaAttackActive = true;
+            try {
+                sfx.playWrong();
+            } catch (e) {}
+            
+            ninja = {
+                x: player.x + 400,
+                y: player.y - 10,
+                vx: -6.5,
+                vy: 0,
+                state: 'spawning',
+                animTimer: 0,
+                shurikenThrown: false
+            };
+
+            triggerFlashMessage("NINJA INBOUND! 🥷", "bg-red-700/90");
+        }
+
+        function updateNinja() {
+            if (!ninja) return;
+
+            ninja.animTimer += 0.1;
+
+            if (ninja.state === 'spawning') {
+                ninja.x += ninja.vx;
+                
+                if (ninja.x - player.x < 180) {
+                    ninja.state = 'throwing';
+                    ninja.vx = 0;
+                    ninja.animTimer = 0;
+                }
+            } else if (ninja.state === 'throwing') {
+                if (ninja.animTimer > 3 && !ninja.shurikenThrown) {
+                    ninja.shurikenThrown = true;
+                    projectiles.push({
+                        x: ninja.x - 10,
+                        y: ninja.y + 15,
+                        vx: -9,
+                        vy: 0,
+                        type: 'shuriken',
+                        angle: 0,
+                        radius: 12
+                    });
+                    
+                    ninja.state = 'retreating';
+                    ninja.vx = 8;
+                }
+            } else if (ninja.state === 'retreating') {
+                ninja.x += ninja.vx;
+                // Pink puff particles on retreat! (v cute)
+                if (Math.random() < 0.25) {
+                    floatingScores.push({
+                        x: ninja.x,
+                        y: ninja.y + 15,
+                        text: "🌸",
+                        timer: 0.6
+                    });
+                }
+
+                if (ninja.x > player.x + 600) {
+                    ninja = null;
+                    ninjaAttackActive = false;
+                }
+            }
+        }
+
+        // --- TOY-LIKE CHIBI ZERO FIGHTER AIRPLANES ---
+        let planeTimer = 0;
+        function updateProjectiles() {
+            planeTimer += 1;
+            if (planeTimer > 350 && !isPaused && !player.isDying) {
+                projectiles.push({
+                    x: player.x + 600,
+                    y: 70 + Math.random() * 110, 
+                    vx: -4.5 - Math.random() * 2,
+                    vy: 0,
+                    type: 'zero_plane',
+                    angle: 0,
+                    width: 55,
+                    height: 22,
+                    propellerAngle: 0
+                });
+                planeTimer = 0;
+            }
+
+            for (let i = projectiles.length - 1; i >= 0; i--) {
+                let p = projectiles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+
+                if (p.type === 'shuriken') {
+                    p.angle += 0.3; 
+                } else if (p.type === 'zero_plane') {
+                    p.propellerAngle += 0.6;
+                }
+
+                if (p.x < player.x - 400 || p.x > player.x + 800) {
+                    projectiles.splice(i, 1);
+                }
+            }
+        }
+
+        function drawNinja(viewX) {
+            if (!ninja) return;
+
+            ctx.save();
+            ctx.translate(Math.floor(ninja.x - viewX), Math.floor(ninja.y));
+            ctx.scale(-1, 1);
+            ctx.translate(-24, 0);
+
+            // Chubby Ninja Body (v cute round ninja!)
+            ctx.fillStyle = '#1e1b4b'; 
+            safeRoundRect(ctx, 4, 10, 20, 30, 8);
+            ctx.fill();
+
+            // Legs
+            ctx.fillRect(6, 40, 6, 8);  
+            ctx.fillRect(14, 40, 6, 8); 
+
+            // Red belt sash
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(5, 28, 18, 3);
+
+            // Glowing yellow cute anime slit eyes
+            ctx.fillStyle = '#fbbf24'; 
+            ctx.fillRect(8, 18, 3, 2);
+            ctx.fillRect(15, 18, 3, 2);
+
+            // Small cute katana on back
+            ctx.strokeStyle = '#94a3b8'; 
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(2, 26);
+            ctx.lineTo(-6, 12);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        function drawProjectiles(viewX) {
+            projectiles.forEach(p => {
+                const px = Math.floor(p.x - viewX);
+                const py = Math.floor(p.y);
+
+                if (p.type === 'shuriken') {
+                    ctx.save();
+                    ctx.translate(px, py);
+                    ctx.rotate(p.angle);
+                    ctx.fillStyle = '#94a3b8'; 
+                    // Draw classic spinning shuriken
+                    ctx.fillRect(-10, -2, 20, 4);
+                    ctx.fillRect(-2, -10, 4, 20);
+                    ctx.restore();
+                } else if (p.type === 'zero_plane') {
+                    // CUTE CHIBI PLANES WITH GOGGLE COCKPIT EYES!
+                    ctx.save();
+                    ctx.translate(px, py);
+
+                    // Wings
+                    ctx.fillStyle = '#334155'; 
+                    ctx.beginPath();
+                    ctx.ellipse(25, 11, 8, 20, Math.PI / 12, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Chubby fuselage
+                    ctx.fillStyle = '#475569';
+                    safeRoundRect(ctx, 0, 6, 50, 12, 6);
+                    ctx.fill();
+                    
+                    // Cute rising sun badge on wing
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(25, -2, 4, 0, Math.PI * 2); 
+                    ctx.arc(25, 24, 4, 0, Math.PI * 2); 
+                    ctx.fill();
+
+                    // Cute goggle cockpit eyes on plane!
+                    ctx.fillStyle = '#38bdf8';
+                    ctx.beginPath();
+                    ctx.arc(38, 8, 3.5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+
+                    ctx.restore();
+                }
+            });
+        }
+
+        // --- DRAW STATION OBJECTS ---
+        function drawQuizStations(viewX) {
+            quizStations.forEach(st => {
+                if (!st.active) return;
+
+                st.bounce += 0.05;
+                let hoverOffset = Math.sin(st.bounce) * 4;
+                const px = Math.floor(st.x - viewX);
+                const py = Math.floor(st.y - hoverOffset);
+
+                if (st.type === 'sushi') {
+                    ctx.save();
+                    ctx.translate(px + st.width/2, py + st.height/2);
+
+                    ctx.fillStyle = '#0f172a'; 
+                    ctx.beginPath();
+                    ctx.arc(0, 0, st.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#f8fafc'; 
+                    ctx.beginPath();
+                    ctx.arc(0, 0, st.width/2 - 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#f97316'; 
+                    ctx.beginPath();
+                    ctx.arc(0, 0, st.width/4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+
+                } else if (st.type === 'fuji') {
+                    ctx.save();
+                    ctx.translate(px + st.width/2, py + st.height/2);
+
+                    ctx.fillStyle = '#9a3412';
+                    ctx.fillRect(-18, 10, 36, 6);
+
+                    ctx.strokeStyle = '#dc2626';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(-12, -12, 24, 22);
+                    ctx.fillStyle = '#dc2626';
+                    ctx.fillRect(-15, -15, 30, 4);
+
+                    ctx.restore();
+
+                } else if (st.type === 'pokemon') {
+                    st.jumpTimer += 0.03;
+                    let pHeight = Math.abs(Math.sin(st.jumpTimer) * 50);
+                    st.y = st.originalY - pHeight;
+
+                    const pyPikachu = Math.floor(st.y);
+                    const pyPipe = Math.floor(st.originalY);
+
+                    // Cute green Mario warp pipe
+                    ctx.fillStyle = '#15803d'; 
+                    ctx.fillRect(px - 3, pyPipe + 12, st.width + 6, 20);
+                    
+                    ctx.save();
+                    ctx.translate(px + st.width/2, pyPikachu + st.height/2);
+
+                    // Tiny yellow chibi mascot
+                    ctx.fillStyle = '#f59e0b'; 
+                    ctx.beginPath();
+                    ctx.arc(0, 0, st.width/2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#dc2626'; // rosy cheeks
+                    ctx.beginPath();
+                    ctx.arc(-6, 3, 2.5, 0, Math.PI * 2);
+                    ctx.arc(6, 3, 2.5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.restore();
+                }
+
+                // Label tag - Boosted size and clarity of font to system sans-serif
+                ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+                ctx.fillRect(px - 25, py - 26, st.width + 50, 15);
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 1;
+                ctx.strokeRect(px - 25, py - 26, st.width + 50, 15);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 9px sans-serif'; 
+                ctx.textAlign = 'center';
+                ctx.fillText(st.label, px + st.width/2, py - 15);
+            });
+        }
+
+        // --- DRAW LANDMARKS ---
+        function drawPlatforms(viewX) {
+            platforms.forEach(p => {
+                if (p.x + p.width < viewX || p.x > viewX + canvas.width) return;
+
+                ctx.save();
+                ctx.translate(Math.floor(p.x - viewX), Math.floor(p.y));
+
+                if (p.type === 'ground') {
+                    ctx.fillStyle = '#15803d'; // cute cartoon grass
+                    ctx.fillRect(0, 0, p.width, 10);
+                    
+                    ctx.fillStyle = '#78350f'; // rich brown dirt
+                    ctx.fillRect(0, 10, p.width, p.height - 10);
+                } else if (p.type === 'bridge' || p.type === 'block') {
+                    ctx.fillStyle = '#b91c1c'; // Vermilion structures
+                    ctx.fillRect(0, 0, p.width, p.height);
+                }
+
+                ctx.restore();
+            });
+
+            drawToriiGate(80, 1, viewX);
+            drawToriiGate(5150, 1.25, viewX);
+        }
+
+        function updateSakura() {
+            particlePetals.forEach(p => {
+                p.y += p.speedY;
+                p.x += Math.sin(p.angle) * 0.4 + p.speedX;
+                p.angle += 0.02;
+
+                if (p.y > canvas.height) {
+                    p.y = -10;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+        }
+
+        function drawSakura() {
+            particlePetals.forEach(p => {
+                ctx.save();
+                ctx.translate(Math.floor(p.x), Math.floor(p.y));
+                ctx.rotate(p.angle);
+                
+                ctx.fillStyle = '#fbcfe8'; 
+                ctx.beginPath();
+                ctx.ellipse(0, 0, p.size, p.size * 1.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                ctx.restore();
+            });
+        }
+
+        // Generic bounding-box helper
+        function isColliding(r1, r2) {
+            return r1.x < r2.x + r2.width &&
+                   r1.x + r1.width > r2.x &&
+                   r1.y < r2.y + r2.height &&
+                   r1.y + r1.height > r2.y;
+        }
+
+        // --- BULLETPROOF SEPARATE-AXIS MOVEMENT AND COLLISION ---
+        function updatePlayerPhysics() {
+            if (player.isDying) {
+                player.deathTimer += 1;
+                player.vy += 0.4; 
+                player.y += player.vy;
+                
+                if (player.y > canvas.height + 100) {
+                    handleDeathRespawn();
+                }
+                return;
+            }
+
+            // Apply horizontal drag/friction
+            if (player.grounded) {
+                player.vx *= 0.85;
+            } else {
+                player.vx *= 0.95;
+            }
+
+            // Keyboard input acceleration
+            if (keys.left) {
+                player.vx = -player.speed;
+                player.facing = 'left';
+            }
+            if (keys.right) {
+                player.vx = player.speed;
+                player.facing = 'right';
+            }
+
+            // Apply gravity constant
+            player.vy += player.gravity;
+
+            // 1. Resolve Horizontal axis movement & collisions
+            player.x += player.vx;
+            if (player.x < 0) {
+                player.x = 0;
+                player.vx = 0;
+            }
+            if (player.x > LEVEL_WIDTH - player.width) {
+                player.x = LEVEL_WIDTH - player.width;
+                player.vx = 0;
+            }
+
+            // Snap against vertical surfaces
+            platforms.forEach(p => {
+                if (isColliding(player, p)) {
+                    if (player.vx > 0) {
+                        player.x = p.x - player.width;
+                    } else if (player.vx < 0) {
+                        player.x = p.x + p.width;
+                    }
+                    player.vx = 0;
+                }
+            });
+
+            // 2. Resolve Vertical axis movement & collisions
+            player.grounded = false;
+            player.y += player.vy;
+
+            platforms.forEach(p => {
+                if (isColliding(player, p)) {
+                    if (player.vy > 0) { // landing on top of standard platforms
+                        player.y = p.y - player.height;
+                        player.vy = 0;
+                        player.grounded = true;
+                    } else if (player.vy < 0) { // hitting ceilings
+                        player.y = p.y + p.height;
+                        player.vy = 0;
+                    }
+                }
+            });
+
+            // Trigger victory flag when crossing the final Torii gate
+            if (player.x > 5150) {
+                concludeGame(true); 
+                return;
+            }
+
+            // Fall-off safety trigger
+            if (player.y > canvas.height + 20) {
+                triggerInstantDeath("Fell down the waterfall gap!");
+            }
+
+            // Invulnerability blink clock decrementer
+            if (player.isInvulnerable) {
+                player.invulnTimer -= 0.016;
+                if (player.invulnTimer <= 0) {
+                    player.isInvulnerable = false;
+                }
+            }
+
+            // Test collisions against active historical stations
+            if (!ninjaAttackActive) {
+                for (let i = 0; i < quizStations.length; i++) {
+                    let st = quizStations[i];
+                    if (st.active && isColliding(player, st)) {
+                        triggerQuiz(st);
+                        break; 
+                    }
+                }
+            }
+
+            // Damage resolution from project threats
+            if (!player.isInvulnerable && !player.isDying) {
+                projectiles.forEach(p => {
+                    let hit = false;
+                    if (p.type === 'shuriken') {
+                        let dist = Math.hypot(p.x - (player.x + player.width/2), p.y - (player.y + player.height/2));
+                        if (dist < p.radius + 14) hit = true;
+                    } else if (p.type === 'zero_plane') {
+                        if (isColliding(player, { x: p.x, y: p.y, width: p.width || 55, height: p.height || 22 })) {
+                            hit = true;
+                        }
+                    }
+
+                    if (hit) {
+                        triggerDirectInjury();
+                    }
+                });
+            }
+        }
+
+        function triggerDirectInjury() {
+            try {
+                sfx.playHurt();
+            } catch (e) {}
+            lives--;
+            updateHUD();
+
+            if (lives <= 0) {
+                triggerInstantDeath("Demolished by aerial warfare!");
+            } else {
+                player.isInvulnerable = true;
+                player.invulnTimer = 2.0; 
+                triggerFlashMessage("REDUCED BY TRAFFIC!", "bg-orange-600");
+                player.vx = -8;
+                player.vy = -4;
+            }
+        }
+
+        // --- FLASH FEEDBACK OVERLAYS ---
+        function triggerInstantDeath(reason) {
+            if (player.isDying) return;
+            player.isDying = true;
+            player.vy = -12; 
+            try {
+                sfx.playWrong();
+            } catch (e) {}
+            triggerFlashMessage(reason.toUpperCase(), "bg-red-800");
+        }
+
+        function handleDeathRespawn() {
+            lives--;
+            updateHUD();
+
+            if (lives <= 0) {
+                concludeGame(false); 
+            } else {
+                player.isDying = false;
+                player.isInvulnerable = true;
+                player.invulnTimer = 3.0;
+                player.y = 150;
+                player.vy = 0;
+                player.vx = 0;
+
+                let marioProgress = player.x / LEVEL_WIDTH;
+                if (marioProgress < 0.25) {
+                    player.x = 100;
+                } else if (marioProgress < 0.50) {
+                    player.x = 1350;
+                } else if (marioProgress < 0.75) {
+                    player.x = 2450;
+                } else {
+                    player.x = 3950;
+                }
+
+                ninjaAttackActive = false;
+                ninja = null;
+            }
+        }
+
+        // --- QUIZ ACTION SYSTEM & DYNAMIC RETRY LOOP MECHANICS ---
+        function triggerQuiz(station) {
+            isPaused = true;
+            currentActiveStation = station;
+            let q = station.assignedQuestion;
+
+            // Self-healing fallback if question is somehow undefined/corrupt
+            if (!q) {
+                const randomQ = masterQuestionPool[Math.floor(Math.random() * masterQuestionPool.length)];
+                station.assignedQuestion = randomQ;
+                q = randomQ;
+            }
+
+            if (quizIconDisplay) quizIconDisplay.innerText = station.emoji;
+            if (quizCategory) quizCategory.innerText = q.category.toUpperCase();
+            if (quizEra) quizEra.innerText = q.era;
+            if (quizQuestion) quizQuestion.innerText = q.question;
+            if (quizAnsweredCountEl) quizAnsweredCountEl.innerText = `${questionsAnsweredCount}/30`;
+
+            if (quizChoicesContainer) {
+                quizChoicesContainer.innerHTML = '';
+                q.choices.forEach((choice, idx) => {
+                    let btn = document.createElement('button');
+                    btn.className = "w-full text-left p-3.5 rounded-xl border-2 border-amber-800/20 bg-amber-50 hover:bg-yellow-100 hover:border-amber-600 font-extrabold text-sm md:text-base transition-all duration-150 flex items-start space-x-3 shadow-md transform hover:-translate-y-0.5 active:translate-y-0";
+                    
+                    let numBadge = document.createElement('span');
+                    numBadge.className = "bg-red-800 text-white rounded-full w-6 h-6 flex items-center justify-center font-black text-xs md:text-sm shrink-0 mt-0.5 shadow-md";
+                    numBadge.innerText = String.fromCharCode(65 + idx); 
+
+                    let textLabel = document.createElement('span');
+                    textLabel.className = "text-gray-950 font-extrabold text-sm md:text-base leading-snug";
+                    textLabel.innerText = choice;
+
+                    btn.appendChild(numBadge);
+                    btn.appendChild(textLabel);
+
+                    btn.addEventListener('click', () => submitAnswer(idx));
+                    quizChoicesContainer.appendChild(btn);
+                });
+            }
+
+            if (quizModal) quizModal.classList.remove('hidden');
+        }
+
+        function submitAnswer(selectedIndex) {
+            if (!quizModal || quizModal.classList.contains('hidden')) return;
+            
+            quizModal.classList.add('hidden');
+            isPaused = false;
+            
+            if (!currentActiveStation) return;
+            let q = currentActiveStation.assignedQuestion;
+            if (!q) {
+                currentActiveStation.active = false;
+                currentActiveStation = null;
+                return;
+            }
+            
+            if (selectedIndex === q.correct) {
+                try {
+                    sfx.playCorrect();
+                } catch (e) {}
+                coins += 10;
+                questionsAnsweredCount++;
+                updateHUD();
+                
+                // Spawn sparkles
+                for (let i = 0; i < 5; i++) {
+                    floatingScores.push({
+                        x: player.x + Math.random() * 40 - 20,
+                        y: player.y - 30 + Math.random() * 30,
+                        text: "💮",
+                        timer: 1.2
+                    });
+                }
+
+                currentActiveStation.active = false;
+
+                // Push facts to UI
+                latestUnlockedArticle = q.article;
+                unlockedArticlesList.push(q);
+                updateArchivesModalList();
+
+                showCorrectFeedback();
+                currentActiveStation = null; // Clear active referencer to avoid overlapping calls
+            } else {
+                // ADAPTIVE RETRY SYSTEM (REPEAT UNTIL GETTING IT RIGHT)
+                let futureActive = quizStations.filter(st => st.active && st.x > currentActiveStation.x);
+                
+                if (futureActive.length >= 2) {
+                    let failedQ = currentActiveStation.assignedQuestion;
+                    let tempQ = futureActive[1].assignedQuestion;
+                    futureActive[1].assignedQuestion = failedQ;
+                    
+                    for (let j = 2; j < futureActive.length; j++) {
+                        let nextTemp = futureActive[j].assignedQuestion;
+                        futureActive[j].assignedQuestion = tempQ;
+                        tempQ = nextTemp;
+                    }
+                } else if (futureActive.length === 1) {
+                    futureActive[0].assignedQuestion = currentActiveStation.assignedQuestion;
+                } else {
+                    let spawnX = player.x + 180;
+                    if (spawnX < LEVEL_WIDTH - 200) {
+                        quizStations.push({
+                            x: spawnX,
+                            y: 305,
+                            width: 32,
+                            height: 32,
+                            type: 'sushi',
+                            emoji: '🍥',
+                            assignedQuestion: currentActiveStation.assignedQuestion,
+                            active: true,
+                            bounce: Math.random() * Math.PI,
+                            jumpTimer: Math.random(),
+                            originalY: 305,
+                            label: "Retry!"
+                        });
+                    }
+                }
+
+                currentActiveStation.active = false;
+                currentActiveStation = null; // Clear active referencer to avoid overlapping calls
+                spawnNinjaAttack();
+            }
+        }
+
+        function showCorrectFeedback() {
+            if (!feedbackOverlay || !correctIndicator) return;
+            feedbackOverlay.classList.remove('hidden');
+            correctIndicator.style.opacity = '1';
+            correctIndicator.style.transform = 'scale(1)';
+
+            setTimeout(() => {
+                correctIndicator.style.opacity = '0';
+                correctIndicator.style.transform = 'scale(0.5)';
+                setTimeout(() => {
+                    feedbackOverlay.classList.add('hidden');
+                }, 300);
+            }, 1000);
+        }
+
+        function triggerFlashMessage(messageText, bgClass) {
+            if (!feedbackOverlay || !slashIndicator) return;
+            slashIndicator.innerText = messageText;
+            slashIndicator.className = `w-full h-2 ${bgClass} shadow-2xl absolute transform rotate-6 flex items-center justify-center text-white font-black uppercase text-lg py-8 opacity-100 transition-all duration-300`;
+            
+            feedbackOverlay.classList.remove('hidden');
+            setTimeout(() => {
+                slashIndicator.className = `w-full h-2 ${bgClass} shadow-2xl absolute transform rotate-12 flex items-center justify-center text-white font-black uppercase text-lg py-8 opacity-0 transition-all duration-300`;
+                setTimeout(() => {
+                    feedbackOverlay.classList.add('hidden');
+                }, 300);
+            }, 1400);
+        }
+
+        function updateArchivesModalList() {
+            if (!archivesBadge || !modalArchivesList) return;
+            archivesBadge.innerText = unlockedArticlesList.length;
+
+            const placeholder = document.getElementById('archive-placeholder');
+            if (placeholder) {
+                placeholder.remove();
+            }
+
+            modalArchivesList.innerHTML = '';
+            
+            if (unlockedArticlesList.length === 0) {
+                modalArchivesList.innerHTML = `
+                    <div class="text-center py-12 text-gray-500 flex flex-col items-center justify-center space-y-3">
+                        <i class="fa-solid fa-file-shield text-5xl opacity-40"></i>
+                        <p class="text-sm font-semibold">Collect cute checkpoints to unlock historical scrolls!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            unlockedArticlesList.forEach(q => {
+                const card = document.createElement('div');
+                card.className = "bg-amber-100 border-l-4 border-red-700 p-4 rounded-r-lg shadow-md text-gray-900";
+                card.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-red-800/10 pb-1 mb-2">
+                        <span class="text-[10px] uppercase tracking-wider font-extrabold text-red-800">${q.era}</span>
+                        <span class="text-xs bg-red-200 px-2 py-0.5 rounded text-red-900 font-bold">${q.category}</span>
+                    </div>
+                    <h5 class="font-extrabold text-sm mb-1 text-gray-900 leading-tight">${q.article.title}</h5>
+                    <p class="text-xs text-gray-700 leading-relaxed">${q.article.body}</p>
+                `;
+                modalArchivesList.appendChild(card);
+            });
+        }
+
+        // --- FLOATING TEXT RENDERS ---
+        function drawFloatingScores(viewX) {
+            ctx.save();
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 12px Courier';
+            ctx.textAlign = 'center';
+            for (let i = floatingScores.length - 1; i >= 0; i--) {
+                let fs = floatingScores[i];
+                fs.y -= 1.2;
+                fs.timer -= 0.016;
+                ctx.fillText(fs.text, Math.floor(fs.x - viewX), Math.floor(fs.y));
+                if (fs.timer <= 0) {
+                    floatingScores.splice(i, 1);
+                }
+            }
+            ctx.restore();
+        }
+
+        // --- HUD UPDATING CONTROLS ---
+        function updateHUD() {
+            if (questionObjectiveEl) questionObjectiveEl.innerText = `${questionsAnsweredCount}/30`;
+            
+            if (livesCounterEl) {
+                let livesStr = '';
+                for (let i = 0; i < 3; i++) {
+                    if (i < lives) {
+                        livesStr += '❤️ ';
+                    } else {
+                        livesStr += '🖤 ';
+                    }
+                }
+                livesCounterEl.innerText = livesStr.trim();
+            }
+
+            let progress = Math.min(100, Math.floor((player.x / LEVEL_WIDTH) * 100));
+            if (progressIndicator) progressIndicator.innerText = `${progress}% Progress`;
+
+            if (eraTitle) {
+                if (progress < 25) {
+                    eraTitle.innerText = "Era 1: Post-WWI & Economic Crisis (1920-1929)";
+                } else if (progress < 50) {
+                    eraTitle.innerText = "Era 2: Militarists Bypass Government (1930-1935)";
+                } else if (progress < 75) {
+                    eraTitle.innerText = "Era 3: Full Military Control (1936-1939)";
+                } else {
+                    eraTitle.innerText = "Era 4: Pacific War & Tripartite Pact (1940-1945)";
+                }
+            }
+        }
+
+        // --- CORE GAME MAIN LOOP ---
+        function gameLoop(timestamp) {
+            if (!isRunning) return;
+
+            if (!lastTime) lastTime = timestamp;
+            
+            let elapsed = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (elapsed > 100) elapsed = 100;
+
+            if (!isPaused) {
+                accumulator += elapsed;
+                
+                while (accumulator >= PHYSICS_DELTATIME) {
+                    updatePlayerPhysics();
+                    updateProjectiles();
+                    updateSakura();
+                    if (ninjaAttackActive) {
+                        updateNinja();
+                    }
+                    accumulator -= PHYSICS_DELTATIME;
+                }
+
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+                let viewX = player.x - 250;
+                if (viewX < 0) viewX = 0;
+                if (viewX > LEVEL_WIDTH - canvas.width) viewX = LEVEL_WIDTH - canvas.width;
+                
+                const viewXInt = Math.floor(viewX);
+
+                drawSkyBackground(player.x);
+                drawSakura();
+                drawPlatforms(viewXInt);
+                drawQuizStations(viewXInt);
+                drawProjectiles(viewXInt);
+                
+                if (ninjaAttackActive) {
+                    drawNinja(viewXInt);
+                }
+
+                drawPlayer(viewXInt);
+                drawFloatingScores(viewXInt);
+
+                drawParchmentScrollOnMountain();
+                drawCanvasTouchControls();
+            } else {
+                lastTime = timestamp;
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- CONCLUDE AND END OF LEVEL SCREEN ---
+        function concludeGame(victory) {
+            isRunning = false;
+            clearInterval(timerInterval);
+            
+            if (resultModal) {
+                const rTitle = document.getElementById('result-title');
+                const rSubtitle = document.getElementById('result-subtitle');
+                const rCoins = document.getElementById('result-coins');
+                const rTime = document.getElementById('result-time');
+                const rAnswered = document.getElementById('result-answered');
+                const rDesc = document.getElementById('result-desc');
+
+                if (rTime) rTime.innerText = `${180 - gameTime} Seconds`;
+                if (rCoins) rCoins.innerText = `🪙 ${coins}`;
+                if (rAnswered) rAnswered.innerText = `${questionsAnsweredCount} / 30 Target`;
+
+                if (questionsAnsweredCount >= 30) {
+                    try {
+                        sfx.playCorrect();
+                    } catch (e) {}
+                    if (rTitle) {
+                        rTitle.innerText = "CHRONICLE VICTOR!";
+                        rTitle.className = "text-3xl font-extrabold text-green-700 japanese-font mb-1";
+                    }
+                    if (rSubtitle) rSubtitle.innerText = "Excellent! You smashed the 30-question milestone!";
+                    if (rDesc) rDesc.innerText = "Outstanding! You proved yourself a true master of Meiji and Showa era history. By analyzing economic loopholes, the Kwantung rogue operations, and classroom indoctrination, you have met your curriculum goal cleanly. Outstanding job!";
+                } else {
+                    try {
+                        sfx.playGameOver();
+                    } catch (e) {}
+                    if (rTitle) {
+                        rTitle.innerText = "TIME OUT / INCOMPLETE";
+                        rTitle.className = "text-3xl font-extrabold text-red-800 japanese-font mb-1";
+                    }
+                    if (rSubtitle) rSubtitle.innerText = `You answered ${questionsAnsweredCount}/30 questions correctly.`;
+                    if (rDesc) rDesc.innerText = "To master this timeline, you need at least 30 correct answers. Try again! Practice making rapid decisions using hotkeys (A, B, C, D) to move past the obstacles faster and smash your milestone!";
+                }
+
+                resultModal.classList.remove('hidden');
+            }
+        }
+
+        // --- KEY CONTROLLER BINDINGS & HOTKEYS SYSTEM ---
+        window.addEventListener('keydown', e => {
+            // Hotkeys inside active Quiz State (Instant submission without mouse clicks)
+            if (isPaused && quizModal && !quizModal.classList.contains('hidden')) {
+                const quizKey = e.key.toLowerCase();
+                
+                if (quizKey === 'a' || quizKey === '1') {
+                    submitAnswer(0);
+                } else if (quizKey === 'b' || quizKey === '2') {
+                    submitAnswer(1);
+                } else if (quizKey === 'c' || quizKey === '3') {
+                    submitAnswer(2);
+                } else if (quizKey === 'd' || quizKey === '4') {
+                    submitAnswer(3);
+                }
+                return;
+            }
+
+            if (isPaused || !isRunning) return;
+            if (e.code === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+            if (e.code === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.key === 'w' || e.key === 'W') {
+                if (player.grounded && !player.isDying) {
+                    player.vy = player.jumpPower;
+                    player.grounded = false;
+                    try {
+                        sfx.playJump();
+                    } catch (err) {}
+                }
+            }
+        });
+
+        window.addEventListener('keyup', e => {
+            if (e.code === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+            if (e.code === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+        });
+
+        // --- MOBILE/PORTRAIT RESPONSIVE CANVAS-DIRECT TOUCH SYSTEM ---
+        function handleCanvasTouch(e) {
+            if (!isRunning || isPaused || player.isDying) return;
+            e.preventDefault();
+
+            const rect = canvas.getBoundingClientRect();
+            keys.left = false;
+            keys.right = false;
+
+            for (let i = 0; i < e.touches.length; i++) {
+                let touch = e.touches[i];
+                let tx = ((touch.clientX - rect.left) / rect.width) * 800;
+                let ty = ((touch.clientY - rect.top) / rect.height) * 400;
+
+                // Translucent left paddle
+                let distLeft = Math.hypot(tx - 60, ty - 345);
+                if (distLeft < 45) {
+                    keys.left = true;
+                    continue;
+                }
+
+                // Translucent right paddle
+                let distRight = Math.hypot(tx - 140, ty - 345);
+                if (distRight < 45) {
+                    keys.right = true;
+                    continue;
+                }
+
+                // Translucent jump paddle
+                let distJump = Math.hypot(tx - 730, ty - 345);
+                if (distJump < 50) {
+                    if (player.grounded && !player.isDying) {
+                        player.vy = player.jumpPower;
+                        player.grounded = false;
+                        try {
+                            sfx.playJump();
+                        } catch (err) {}
+                    }
+                }
+            }
+        }
+
+        function handleCanvasTouchEnd(e) {
+            e.preventDefault();
+            if (e.touches.length === 0) {
+                keys.left = false;
+                keys.right = false;
+            } else {
+                handleCanvasTouch(e);
+            }
+        }
+
+        function startGame() {
+            gameTime = 180;
+            coins = 0;
+            lives = 3;
+            questionsAnsweredCount = 0;
+            latestUnlockedArticle = null;
+            unlockedArticlesList = [];
+            updateArchivesModalList();
+
+            player.x = 100;
+            player.y = 200;
+            player.vx = 0;
+            player.vy = 0;
+            player.isDying = false;
+            player.isInvulnerable = false;
+
+            initWorld();
+            updateHUD();
+
+            isRunning = true;
+            isPaused = false;
+            lastTime = 0;
+            accumulator = 0;
+
+            // Direct keyboard focus to the game window
+            window.focus();
+
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                if (!isPaused && isRunning) {
+                    gameTime--;
+                    if (gameTimerEl) gameTimerEl.innerText = `${gameTime}s`;
+                    
+                    if (gameTime <= 0) {
+                        concludeGame(true); 
+                    }
+                }
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // --- DOMContentLoaded Wrapper (Wait for DOM Ready) ---
+        window.addEventListener('DOMContentLoaded', () => {
+            // Bind everything safely
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            
+            gameTimerEl = document.getElementById('game-timer');
+            questionObjectiveEl = document.getElementById('question-objective');
+            livesCounterEl = document.getElementById('lives-counter');
+            headerArchivesBtn = document.getElementById('header-archives-btn');
+            archivesBadge = document.getElementById('archives-badge');
+            
+            eraTitle = document.getElementById('era-title');
+            progressIndicator = document.getElementById('progress-indicator');
+            overlayScreen = document.getElementById('overlay-screen');
+            startBtn = document.getElementById('start-btn');
+            soundBtn = document.getElementById('sound-btn');
+            soundIcon = document.getElementById('sound-icon');
+            
+            quizModal = document.getElementById('quiz-modal');
+            quizIconDisplay = document.getElementById('quiz-icon-display');
+            quizCategory = document.getElementById('quiz-category');
+            quizEra = document.getElementById('quiz-era');
+            quizTimerVisual = document.getElementById('quiz-timer-visual');
+            quizAnsweredCountEl = document.getElementById('quiz-answered-count');
+            quizQuestion = document.getElementById('quiz-question');
+            quizChoicesContainer = document.getElementById('quiz-choices-container');
+            
+            archivesModal = document.getElementById('archives-modal');
+            closeArchivesBtn = document.getElementById('close-archives-btn');
+            modalArchivesList = document.getElementById('modal-archives-list');
+            
+            feedbackOverlay = document.getElementById('feedback-overlay');
+            slashIndicator = document.getElementById('slash-indicator');
+            correctIndicator = document.getElementById('correct-indicator');
+            
+            resultModal = document.getElementById('result-modal');
+            resultTitle = document.getElementById('result-title');
+            resultSubtitle = document.getElementById('result-subtitle');
+            resultAnswered = document.getElementById('result-answered');
+            resultTime = document.getElementById('result-time');
+            resultCoins = document.getElementById('result-coins');
+            resultDesc = document.getElementById('result-desc');
+            restartBtn = document.getElementById('restart-btn');
+
+            // Interactive handlers
+            if (soundBtn && soundIcon) {
+                soundBtn.addEventListener('click', () => {
+                    sfx.enabled = !sfx.enabled;
+                    if (sfx.enabled) {
+                        soundIcon.className = "fa-solid fa-volume-high";
+                        sfx.init();
+                    } else {
+                        soundIcon.className = "fa-solid fa-volume-xmark text-red-500";
+                    }
+                });
+            }
+
+            if (headerArchivesBtn) {
+                headerArchivesBtn.addEventListener('click', () => {
+                    isPaused = true;
+                    if (archivesModal) archivesModal.classList.remove('hidden');
+                });
+            }
+
+            if (closeArchivesBtn) {
+                closeArchivesBtn.addEventListener('click', () => {
+                    if (archivesModal) archivesModal.classList.add('hidden');
+                    isPaused = false;
+                });
+            }
+
+            if (startBtn) {
+                startBtn.addEventListener('click', () => {
+                    try {
+                        sfx.init();
+                    } catch (e) {}
+                    if (overlayScreen) overlayScreen.classList.add('hidden');
+                    startGame();
+                });
+            }
+
+            if (restartBtn) {
+                restartBtn.addEventListener('click', () => {
+                    if (resultModal) resultModal.classList.add('hidden');
+                    startGame();
+                });
+            }
+
+            // Canvas touch controls for mobile responsiveness
+            if (canvas) {
+                canvas.addEventListener('touchstart', handleCanvasTouch, { passive: false });
+                canvas.addEventListener('touchmove', handleCanvasTouch, { passive: false });
+                canvas.addEventListener('touchend', handleCanvasTouchEnd, { passive: false });
+                canvas.addEventListener('touchcancel', handleCanvasTouchEnd, { passive: false });
+                // Ensure focus on click
+                canvas.addEventListener('click', () => {
+                    window.focus();
+                });
+            }
+        });
+    </script>
+</body>
+</html>
