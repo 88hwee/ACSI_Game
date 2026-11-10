@@ -293,9 +293,7 @@
         ];
 
         // Canvas & Game State Variables
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-
+        let canvas, ctx;
         let gameRunning = false;
         let score = 0;
         let lives = 5;
@@ -305,8 +303,8 @@
         let answeredCount = 0;
         
         let player = {
-            x: canvas.width / 2 - 25,
-            y: canvas.height - 60,
+            x: 300,
+            y: 500,
             width: 50,
             height: 40,
             speed: 7,
@@ -316,21 +314,42 @@
         let bullets = [];
         let aliens = [];
         let particles = [];
-        let keys = {};
+
+        // Attach event listeners safely on window load
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('gameCanvas');
+            ctx = canvas.getContext('2d');
+            player.x = canvas.width / 2 - 25;
+            player.y = canvas.height - 60;
+
+            const startBtn = document.getElementById('startButton');
+            const restartBtn = document.getElementById('restartButton');
+
+            if (startBtn) {
+                startBtn.addEventListener('click', startGame);
+            }
+            if (restartBtn) {
+                restartBtn.addEventListener('click', startGame);
+            }
+        });
 
         // Shuffle helper
         function shuffleArray(array) {
-            for (let i = array.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [array[i], array[j]] = [array[j], array[i]];
+        function createExplosion(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: (Math.random() - 0.5) * 6,
+                    vy: (Math.random() - 0.5) * 6,
+                    radius: Math.random() * 3 + 1,
+                    color: color,
+                    alpha: 1.0
+                });
             }
-            return array;
         }
 
-        let shuffledQuestions = [];
-
         function startGame() {
-            // Ensure proper initialization of game arrays and state
             shuffledQuestions = shuffleArray([...questionsData]);
             score = 0;
             lives = 5;
@@ -619,6 +638,26 @@
         function resetGame() {
             startGame();
         }
+
+        // Attach event listeners safely on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            const startBtn = document.getElementById('startButton');
+            const restartBtn = document.getElementById('restartButton');
+
+            if (startBtn) {
+                startBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    startGame();
+                });
+            }
+
+            if (restartBtn) {
+                restartBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    resetGame();
+                });
+            }
+        });
     </script>
 </body>
 </html>
