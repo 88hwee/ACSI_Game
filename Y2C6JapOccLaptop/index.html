@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Alien Trivia Defender - LKY & WWII Revision</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            overflow-x: hidden;
+            touch-action: manipulation;
+        }
+        canvas {
+            display: block;
+            background: radial-gradient(circle at center, #1e1b4b 0%, #020617 100%);
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.3);
+            border-radius: 0.75rem;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-between p-4 bg-slate-950 text-slate-100">
+
+    <!-- Header / Stats Bar -->
+    <header class="w-full max-w-6xl flex items-center justify-between bg-slate-900/90 backdrop-blur-md px-6 py-3 rounded-2xl border border-slate-800 shadow-xl mb-4">
+        <div class="flex items-center space-x-4">
+            <h1 class="text-xl font-extrabold bg-gradient-to-r from-indigo-400 to-cyan-400 bg-clip-text text-transparent">Alien Trivia Defender</h1>
+            <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-1 rounded-full border border-indigo-500/30">Laptop Edition</span>
+        </div>
+        <div class="flex items-center space-x-6 text-sm">
+            <span>⏱️ Time: <strong id="timerDisplay" class="text-cyan-400 text-lg">02:00</strong></span>
+            <span>❤️ Lives: <strong id="livesDisplay" class="text-rose-400 text-lg">5</strong></span>
+            <span>⭐ Score: <strong id="scoreDisplay" class="text-emerald-400 text-lg">0</strong></span>
+            <span>🎯 Progress: <strong id="progressDisplay" class="text-indigo-400 text-lg">0/40</strong></span>
+        </div>
+    </header>
+
+    <!-- Main Game & Question Container: Optimized Side-by-Side for Laptops -->
+    <main class="w-full max-w-6xl flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        
+        <!-- Question and Options Panel (Left on Laptop for easy reading) -->
+        <div class="w-full lg:col-span-5 bg-slate-900/90 backdrop-blur-md p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between h-[560px]">
+            <div>
+                <div class="flex justify-between items-center mb-4">
+                    <span class="text-xs uppercase tracking-wider text-cyan-400 font-bold px-2.5 py-1 bg-cyan-950/60 rounded-md border border-cyan-800/50">Revision Target</span>
+                    <span id="questionCategory" class="text-xs bg-slate-800 text-slate-300 px-2.5 py-1 rounded-md">WWII & LKY History</span>
+                </div>
+                <h3 id="questionText" class="text-lg font-semibold text-white mb-6 leading-relaxed">Press 'Start Mission' to begin your revision test!</h3>
+            </div>
+            
+            <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800 text-center">
+                <p class="text-xs text-cyan-300 font-semibold mb-1">🎮 Laptop Controls:</p>
+                <p class="text-xs text-slate-300 leading-relaxed">Move ship using <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-cyan-300 font-mono">A</kbd> / <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-cyan-300 font-mono">D</kbd> or <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-cyan-300 font-mono">←</kbd> / <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-cyan-300 font-mono">→</kbd>. Shoot laser or click alien pods with <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-cyan-300 font-mono">Spacebar</kbd> / <kbd class="px-2 py-1 bg-slate-800 rounded border border-slate-700 text-cyan-300 font-mono">Mouse Click</kbd>.</p>
+            </div>
+        </div>
+
+        <!-- Canvas Game Area (Right on Laptop) -->
+        <div class="relative w-full lg:col-span-7 h-[560px]">
+            <canvas id="gameCanvas" width="700" height="560" class="w-full h-full rounded-2xl border border-slate-800 shadow-2xl"></canvas>
+            
+            <!-- Overlay screens -->
+            <div id="startScreen" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center rounded-2xl z-10">
+                <div class="w-16 h-16 bg-gradient-to-tr from-indigo-500 to-cyan-400 rounded-2xl flex items-center justify-center shadow-lg mb-4 text-3xl">🚀</div>
+                <h2 class="text-3xl font-extrabold text-white mb-3">Alien Trivia Defender</h2>
+                <p class="text-slate-300 max-w-md mb-8 text-sm leading-relaxed">Shoot the floating alien pod holding the correct answer to the history question! Wrong answers repeat questions to reinforce revision. You have 2 minutes and 5 lives.</p>
+                <button onclick="startGame()" class="px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition transform hover:scale-105">Start Mission</button>
+            </div>
+
+            <div id="gameOverScreen" class="absolute inset-0 bg-slate-950/95 backdrop-blur-md hidden flex flex-col items-center justify-center p-8 text-center rounded-2xl z-10">
+                <h2 id="gameOverTitle" class="text-3xl font-extrabold text-rose-400 mb-2">Mission Over</h2>
+                <p id="gameOverMessage" class="text-slate-300 mb-6 text-sm">Great effort reviewing the facts!</p>
+                <div class="text-lg font-semibold mb-6 text-emerald-400 bg-emerald-950/40 px-6 py-2 rounded-xl border border-emerald-800/50">Final Score: <span id="finalScore">0</span></div>
+                <button onclick="resetGame()" class="px-8 py-3.5 bg-gradient-to-r from-indigo-500 to-cyan-500 text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition transform hover:scale-105">Play Again</button>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full max-w-6xl text-center text-xs text-slate-500 mt-4">
+        Alien Trivia Defender &bull; Laptop Optimized Interactive Revision Game &bull; 40 Questions Bank
+    </footer>
+
+    <!-- Game Logic Script -->
+    <script>
+        // Full 40 Questions Data Bank loaded from artifact
+        const questionsData = [
+            {
+                "question": "How old was Lee Kuan Yew when Japanese air raids on Singapore commenced on December 8, 1941?",
+                "correctAnswer": "Eighteen years old.",
+                "options": ["Eighteen years old.", "Twenty-one years old.", "Twenty-three years old.", "Thirty-eight years old."]
+            },
+            {
+                "question": "Which educational institution was Lee Kuan Yew attending when World War II reached Singapore?",
+                "correctAnswer": "Raffles College.",
+                "options": ["Raffles College.", "Geylang English School.", "Singapore Swimming Club.", "Victoria Bridge School."]
+            },
+            {
+                "question": "What military auxiliary unit did Lee Kuan Yew volunteer for shortly after the air raids began?",
+                "correctAnswer": "Medical Auxiliary Service.",
+                "options": ["Straits Settlements Volunteer Force.", "Medical Auxiliary Service.", "Singapore Fortress Signals Company.", "Manchester Regiment."]
+            },
+            {
+                "question": "What items were provided to Lee Kuan Yew and his fellow volunteers instead of standard military uniforms?",
+                "correctAnswer": "Tin helmet and armband.",
+                "options": ["Steel boots and rifle.", "Tin helmet and armband.", "Green tunic and trousers.", "Brown cap and gas mask."]
+            },
+            {
+                "question": "What was the approximate monthly allowance paid to Lee Kuan Yew for his work in the volunteer unit?",
+                "correctAnswer": "Sixty dollars.",
+                "options": ["Twenty dollars.", "Forty dollars.", "Sixty dollars.", "Eighty dollars."]
+            },
+            {
+                "question": "On what date was Lee Kuan Yew's Medical Auxiliary Service unit disbanded?",
+                "correctAnswer": "February 12, 1942.",
+                "options": ["December 8, 1941.", "February 9, 1942.", "February 12, 1942.", "February 15, 1942."]
+            },
+            {
+                "question": "Whom did Lee Kuan Yew encounter while cycling home who offered him their weapons, looking demoralized?",
+                "correctAnswer": "Australian soldiers.",
+                "options": ["Australian soldiers.", "British commanders.", "Indian infantrymen.", "Japanese prisoners."]
+            },
+            {
+                "question": "Who was Koh Teong Koo?",
+                "correctAnswer": "A rickshaw puller.",
+                "options": ["A colonial tax collector.", "A rickshaw puller.", "A medical doctor.", "A battalion commander."]
+            },
+            {
+                "question": "In which Chinese province was Koh Teong Koo originally born before arriving in Singapore in 1934?",
+                "correctAnswer": "Fujian province.",
+                "options": ["Guangdong province.", "Fujian province.", "Shandong province.", "Zhejiang province."]
+            },
+            {
+                "question": "Who hired Koh Teong Koo in 1937 to work for the Lee family?",
+                "correctAnswer": "Madam Chua Jim Neo.",
+                "options": ["Lee Kuan Yew himself.", "Lee Suan Yew.", "Madam Chua Jim Neo.", "Lieutenant-General Percival."]
+            },
+            {
+                "question": "What thoughtful gesture did Koh Teong Koo frequently do for the Lee children when taking them to school?",
+                "correctAnswer": "Give them cut fruits.",
+                "options": ["Buy them sweet pastries.", "Give them cut fruits.", "Carry their heavy books.", "Sing traditional folk songs."]
+            },
+            {
+                "question": "Where did Madam Chua Jim Neo send Koh Teong Koo when he fell sick?",
+                "correctAnswer": "KK Hospital.",
+                "options": ["Singapore General Hospital.", "Raffles College Clinic.", "KK Hospital.", "Tan Tock Seng Hospital."]
+            },
+            {
+                "question": "How long did Lee Kuan Yew hide in Koh Teong Koo's quarters to escape the Sook Ching collection centers?",
+                "correctAnswer": "For two days.",
+                "options": ["For twenty-four hours.", "For two days.", "For one full week.", "For nearly a month."]
+            },
+            {
+                "question": "What practical agricultural and domestic skills did Koh Teong Koo teach Lee Suan Yew?",
+                "correctAnswer": "Rearing poultry and growing crops.",
+                "options": ["Building wooden shelters.", "Rearing poultry and growing crops.", "Operating radio transmitters.", "Purifying drinking water."]
+            },
+            {
+                "question": "In what year did Koh Teong Koo pass away in China?",
+                "correctAnswer": "1998.",
+                "options": ["1981.", "1990.", "1998.", "2002."]
+            },
+            {
+                "question": "What was Goh Keng Swee's age when World War II broke out in Singapore?",
+                "correctAnswer": "Twenty-three years old.",
+                "options": ["Eighteen years old.", "Twenty-one years old.", "Twenty-three years old.", "Thirty-eight years old."]
+            },
+            {
+                "question": "What civilian job did Goh Keng Swee hold under the colonial government before joining the volunteer force?",
+                "correctAnswer": "Tax collector.",
+                "options": ["Tax collector.", "Sanitary inspector.", "School teacher.", "Hospital administrator."]
+            },
+            {
+                "question": "Which branch of the Straits Settlements Volunteer Force (SSVF) was Goh Keng Swee assigned to?",
+                "correctAnswer": "Signals company.",
+                "options": ["Manchester Regiment.", "Signals company.", "Medical auxiliary unit.", "Anti-malarial unit."]
+            },
+            {
+                "question": "Where was Goh Keng Swee stationed to carry out his duties of manning and operating communications?",
+                "correctAnswer": "The Battle Box at Fort Canning.",
+                "options": ["Geylang English School.", "The Battle Box at Fort Canning.", "Pierce Road headquarters.", "Raffles College hostel."]
+            },
+            {
+                "question": "What view did Goh Keng Swee have while on sentry duty atop Fort Canning on February 9, 1942?",
+                "correctAnswer": "A grandstand view of aerial bombing.",
+                "options": ["A grandstand view of aerial bombing.", "A clear view of naval battles off Changi.", "A peaceful view of the southern islands.", "An unobstructed view of the Causeway."]
+            },
+            {
+                "question": "How old was E. W. Barker when war came to Singapore?",
+                "correctAnswer": "Twenty-one years old.",
+                "options": ["Eighteen years old.", "Twenty-one years old.", "Twenty-three years old.", "Thirty-eight years old."]
+            },
+            {
+                "question": "What specific tasks did E. W. Barker undertake after volunteering and joining the health department?",
+                "correctAnswer": "Inspected bombsites and worked on anti-malaria duties.",
+                "options": ["Inspected bombsites and worked on anti-malaria duties.", "Built frontline trenches and laid barbed wire.", "Coded secret military telegraph messages.", "Delivered rations to troops at the northern front."]
+            },
+            {
+                "question": "How old was David Marshall when Japanese planes began bombing Singapore in December 1941?",
+                "correctAnswer": "Thirty-eight years old.",
+                "options": ["Twenty-one years old.", "Twenty-three years old.", "Thirty-eight years old.", "Forty-five years old."]
+            },
+            {
+                "question": "Which company and battalion was David Marshall initially assigned to within the SSVF?",
+                "correctAnswer": "B Company, 1st Singapore Battalion.",
+                "options": ["D Company, Singapore Fortress Signals.", "B Company, 1st Singapore Battalion.", "A Company, Raffles College Unit.", "C Company, Manchester Regiment."]
+            },
+            {
+                "question": "What initial sector was assigned to the 1st Singapore Battalion to defend?",
+                "correctAnswer": "Southern beaches from Bedok to Tanjong Rhu.",
+                "options": ["The northern causeway border.", "Southern beaches from Bedok to Tanjong Rhu.", "The central hills around Pierce Road.", "The western jungle pathways."]
+            },
+            {
+                "question": "Where was Geylang English School utilized during the military preparations?",
+                "correctAnswer": "As headquarters for the 1st Singapore Battalion.",
+                "options": ["As a civilian evacuation shelter.", "As headquarters for the 1st Singapore Battalion.", "As an emergency military hospital.", "As a storage depot for army rations."]
+            },
+            {
+                "question": "Why was David Marshall's unit eventually moved away from the southern coast in February 1942?",
+                "correctAnswer": "The Japanese were attacking from the north.",
+                "options": ["The southern sector was fully secured.", "The Japanese were attacking from the north.", "The school building was heavily bombed.", "The British command ordered a complete retreat."]
+            },
+            {
+                "question": "What action did David Marshall famously take under heavy mortar fire at Pierce Road that amazed his comrades?",
+                "correctAnswer": "Walking around with a bucket of tea.",
+                "options": ["He repaired a broken radio wire.", "He carried a wounded soldier to safety.", "Walking around with a bucket of tea.", "He negotiated a brief ceasefire."]
+            },
+            {
+                "question": "What new role was given to David Marshall after his display of bravery under fire?",
+                "correctAnswer": "Company runner.",
+                "options": ["Company runner.", "Platoon commander.", "Communications officer.", "Battalion scout."]
+            },
+            {
+                "question": "When did the British forces officially surrender to the Japanese in Singapore?",
+                "correctAnswer": "February 15, 1942.",
+                "options": ["February 9, 1942.", "February 12, 1942.", "February 15, 1942.", "March 8, 1942."]
+            },
+            {
+                "question": "According to the introductory commentary, how does Singapore's modern attitude toward World War II occupiers differ from some of its neighbors?",
+                "correctAnswer": "It nurtures no sense of grievance.",
+                "options": ["It demands heavy financial reparations.", "It nurtures no sense of grievance.", "It maintains strict diplomatic isolation.", "It celebrates annual victory parades."]
+            },
+            {
+                "question": "Which ethnic group formed three-quarters of Singapore's population during WWII and was targeted by the Japanese for suspected loyalties?",
+                "correctAnswer": "Chinese Singaporeans.",
+                "options": ["Malay Singaporeans.", "Indian Singaporeans.", "Chinese Singaporeans.", "Eurasian Singaporeans."]
+            },
+            {
+                "question": "What specific personal traits did the Japanese occupiers use to single out the leadership class for execution during Sook Ching?",
+                "correctAnswer": "Soft hands and wearing glasses.",
+                "options": ["Tall stature and military uniform.", "Soft hands and wearing glasses.", "Speaking fluent English and Dutch.", "Owning extensive commercial property."]
+            },
+            {
+                "question": "How did Lee Kuan Yew approach historical wrongs and past sins, according to the commentary?",
+                "correctAnswer": "He put reason ahead of emotion.",
+                "options": ["He demanded formal apologies.", "He put reason ahead of emotion.", "He sought permanent legal retribution.", "He erased them from school history books."]
+            },
+            {
+                "question": "When did Koh Teong Koo arrive in Singapore?",
+                "correctAnswer": "1934.",
+                "options": ["1930.", "1934.", "1937.", "1941."]
+            },
+            {
+                "question": "What street was Lee Kuan Yew's family home located on since 1935, from which he cycled to Raffles College?",
+                "correctAnswer": "Norfolk Road.",
+                "options": ["Pierce Road.", "Holland Road.", "Norfolk Road.", "Stevens Road."]
+            },
+            {
+                "question": "What feeling did Lee Kuan Yew describe experiencing when he joined the Medical Auxiliary Service amidst the bombing?",
+                "correctAnswer": "Barely suppressed excitement and thrill.",
+                "options": ["Absolute terror and despair.", "Deep regret and frustration.", "Barely suppressed excitement and thrill.", "Complete indifference and boredom."]
+            },
+            {
+                "question": "Which of the following founding figures was a tax collector under the colonial War Tax Department before joining the SSVF?",
+                "correctAnswer": "Goh Keng Swee.",
+                "options": ["Lee Kuan Yew.", "Goh Keng Swee.", "E. W. Barker.", "David Marshall."]
+            },
+            {
+                "question": "What event prompted Koh Teong Koo to hide Lee Kuan Yew in his labourers' quarters?",
+                "correctAnswer": "The Sook Ching massacre collection center orders.",
+                "options": ["The massive aerial bombardment on December 8.", "The Sook Ching massacre collection center orders.", "The disbandment of the Medical Auxiliary Service.", "The formal surrender of British forces at Fort Canning."]
+            },
+            {
+                "question": "Why did Lee Suan Yew remark that Koh Teong Koo's actions altered history?",
+                "correctAnswer": "Because Koh saved Lee Kuan Yew from execution.",
+                "options": ["Because Koh helped defend the southern beaches.", "Because Koh saved Lee Kuan Yew from execution.", "Because Koh managed vital communications at the Battle Box.", "Because Koh supplied food during the food shortages."]
+            }
+        ];
+
+        // Canvas & Game State Variables
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let gameRunning = false;
+        let score = 0;
+        let lives = 5;
+        let timeLeft = 120; // 2 minutes
+        let timerInterval = null;
+        let currentQuestionIndex = 0;
+        let answeredCount = 0;
+        
+        let player = {
+            x: canvas.width / 2 - 25,
+            y: canvas.height - 60,
+            width: 50,
+            height: 40,
+            speed: 7,
+            dx: 0
+        };
+
+        let bullets = [];
+        let aliens = [];
+        let particles = [];
+        let keys = {};
+
+        // Shuffle helper
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        let shuffledQuestions = [];
+
+        function startGame() {
+            shuffledQuestions = shuffleArray([...questionsData]);
+            score = 0;
+            lives = 5;
+            timeLeft = 120;
+            currentQuestionIndex = 0;
+            answeredCount = 0;
+            
+            document.getElementById('startScreen').classList.add('hidden');
+            document.getElementById('gameOverScreen').classList.add('hidden');
+            
+            updateUI();
+            setupCurrentQuestion();
+
+            gameRunning = true;
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimerDisplay();
+                if (timeLeft <= 0) {
+                    endGame("Time's Up!", "Great job exploring the history revision!");
+                }
+            }, 1000);
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function updateTimerDisplay() {
+            const mins = Math.floor(timeLeft / 60).toString().padStart(2, '0');
+            const secs = (timeLeft % 60).toString().padStart(2, '0');
+            document.getElementById('timerDisplay').innerText = `${mins}:${secs}`;
+        }
+
+        function updateUI() {
+            document.getElementById('livesDisplay').innerText = lives;
+            document.getElementById('scoreDisplay').innerText = score;
+            document.getElementById('progressDisplay').innerText = `${answeredCount}/${questionsData.length}`;
+        }
+
+        function setupCurrentQuestion() {
+            if (currentQuestionIndex >= shuffledQuestions.length) {
+                endGame("Mission Complete!", "Fantastic! You have mastered all revision questions!");
+                return;
+            }
+
+            const qObj = shuffledQuestions[currentQuestionIndex];
+            document.getElementById('questionText').innerText = qObj.question;
+            
+            let randomizedOptions = shuffleArray([...qObj.options]);
+            
+            aliens = [];
+            const spacing = canvas.width / (randomizedOptions.length + 1);
+
+            randomizedOptions.forEach((opt, idx) => {
+                const alienX = spacing * (idx + 1) - 60;
+                const alienY = 70 + (idx % 2) * 60; // staggered height for laptop view
+                
+                aliens.push({
+                    x: alienX,
+                    y: alienY,
+                    width: 120,
+                    height: 55,
+                    text: opt,
+                    isCorrect: (opt === qObj.correctAnswer),
+                    speedX: (idx % 2 === 0 ? 1 : -1) * 1.2
+                });
+            });
+        }
+
+        function selectAnswer(selected, correct) {
+            if (!gameRunning) return;
+
+            if (selected === correct) {
+                // Correct answer
+                score += 100;
+                answeredCount++;
+                currentQuestionIndex++;
+                createExplosion(player.x + 25, player.y, '#10b981');
+                updateUI();
+                setupCurrentQuestion();
+            } else {
+                // Incorrect answer: repeat question rule
+                lives--;
+                updateUI();
+                triggerFlash('bg-rose-900/30');
+                if (lives <= 0) {
+                    endGame("Mission Failed", "You ran out of lives! Review the facts and try again.");
+                } else {
+                    // Question repeats automatically since currentQuestionIndex is unchanged
+            // Draw Aliens (Trivia Pods) Optimized for Laptop
+            aliens.forEach(a => {
+                ctx.fillStyle = '#0f172a';
+                ctx.strokeStyle = a.isCorrect ? '#38bdf8' : '#6366f1';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.roundRect(a.x, a.y, a.width, a.height, 12);
+                ctx.fill();
+                ctx.stroke();
+
+                // Alien saucer dome
+                ctx.fillStyle = '#06b6d4';
+                ctx.beginPath();
+                ctx.arc(a.x + a.width / 2, a.y + 14, 9, Math.PI, 0, false);
+                ctx.fill();
+
+                // Text snippet on alien pod
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = '12px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                let shortText = a.text.length > 22 ? a.text.substring(0, 20) + '...' : a.text;
+                ctx.fillText(shortText, a.x + a.width / 2, a.y + 38);
+            });
+            }
+        }
+
+        // Keyboard controls for player ship
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft' || e.key === 'a') player.dx = -player.speed;
+            if (e.key === 'ArrowRight' || e.key === 'd') player.dx = player.speed;
+            if (e.key === ' ' || e.key === 'ArrowUp') {
+                shootBullet();
+                e.preventDefault();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            if ((e.key === 'ArrowLeft' || e.key === 'a') && player.dx < 0) player.dx = 0;
+            if ((e.key === 'ArrowRight' || e.key === 'd') && player.dx > 0) player.dx = 0;
+        });
+
+        // Touch support for mobile dragging / tapping canvas
+        canvas.addEventListener('touchmove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const touchX = e.touches[0].clientX - rect.left;
+            player.x = touchX - player.width / 2;
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+            e.preventDefault();
+        }, { passive: false });
+
+        canvas.addEventListener('click', (e) => {
+            if (!gameRunning) return;
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            // Check if clicked directly on an alien pod
+            for (let j = aliens.length - 1; j >= 0; j--) {
+                let a = aliens[j];
+                if (clickX >= a.x && clickX <= a.x + a.width && clickY >= a.y && clickY <= a.y + a.height) {
+                    createExplosion(a.x + a.width / 2, a.y + a.height / 2, a.isCorrect ? '#10b981' : '#f43f5e');
+                    selectAnswer(a.text, shuffledQuestions[currentQuestionIndex].correctAnswer);
+                    return;
+                }
+            }
+
+            // Otherwise shoot laser bullet
+            shootBullet();
+        });
+
+        function shootBullet() {
+            if (!gameRunning) return;
+            bullets.push({
+                x: player.x + player.width / 2 - 3,
+                y: player.y,
+                width: 6,
+                height: 12,
+                speed: 8
+            });
+        }
+
+        function update() {
+            if (!gameRunning) return;
+
+            // Move player
+            player.x += player.dx;
+            if (player.x < 0) player.x = 0;
+            if (player.x > canvas.width - player.width) player.x = canvas.width - player.width;
+
+            // Move bullets
+            for (let i = bullets.length - 1; i >= 0; i--) {
+                bullets[i].y -= bullets[i].speed;
+                if (bullets[i].y < 0) {
+                    bullets.splice(i, 1);
+                    continue;
+                }
+
+                // Check collision with aliens
+                let bulletHit = false;
+                for (let j = aliens.length - 1; j >= 0; j--) {
+                    let a = aliens[j];
+                    if (
+                        bullets[i] &&
+                        bullets[i].x < a.x + a.width &&
+                        bullets[i].x + bullets[i].width > a.x &&
+                        bullets[i].y < a.y + a.height &&
+                        bullets[i].y + bullets[i].height > a.y
+                    ) {
+                        // Collision detected!
+                        bulletHit = true;
+                        createExplosion(a.x + a.width / 2, a.y + a.height / 2, a.isCorrect ? '#10b981' : '#f43f5e');
+                        selectAnswer(a.text, shuffledQuestions[currentQuestionIndex].correctAnswer);
+                        break;
+                    }
+                }
+                if (bulletHit) {
+                    bullets.splice(i, 1);
+                }
+            }
+
+            // Move aliens horizontally
+            aliens.forEach(a => {
+                a.x += a.speedX;
+                if (a.x <= 10 || a.x + a.width >= canvas.width - 10) {
+                    a.speedX *= -1;
+                }
+            });
+
+            // Update particles
+            for (let i = particles.length - 1; i >= 0; i--) {
+                let p = particles[i];
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.03;
+                if (p.alpha <= 0) particles.splice(i, 1);
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw background stars
+            ctx.fillStyle = '#ffffff';
+            for (let i = 0; i < 40; i++) {
+                let sx = (i * 37) % canvas.width;
+                let sy = (i * 53 + Date.now() * 0.02) % canvas.height;
+                ctx.globalAlpha = (i % 3) * 0.3 + 0.2;
+                ctx.fillRect(sx, sy, 2, 2);
+            }
+            ctx.globalAlpha = 1.0;
+
+            // Draw Player Ship
+            ctx.fillStyle = '#38bdf8';
+            ctx.beginPath();
+            ctx.moveTo(player.x + player.width / 2, player.y);
+            ctx.lineTo(player.x, player.y + player.height);
+            ctx.lineTo(player.x + player.width, player.y + player.height);
+            ctx.closePath();
+            ctx.fill();
+
+            // Draw Bullets
+            ctx.fillStyle = '#facc15';
+            bullets.forEach(b => {
+                ctx.fillRect(b.x, b.y, b.width, b.height);
+            });
+
+            // Draw Aliens (Trivia Pods)
+            aliens.forEach(a => {
+                ctx.fillStyle = '#1e293b';
+                ctx.strokeStyle = a.isCorrect ? '#38bdf8' : '#6366f1';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(a.x, a.y, a.width, a.height, 10);
+                ctx.fill();
+                ctx.stroke();
+
+                // Alien saucer dome
+                ctx.fillStyle = '#06b6d4';
+                ctx.beginPath();
+                ctx.arc(a.x + a.width / 2, a.y + 12, 8, Math.PI, 0, false);
+                ctx.fill();
+
+                // Text snippet on alien pod
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = '11px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                let shortText = a.text.length > 18 ? a.text.substring(0, 16) + '...' : a.text;
+                ctx.fillText(shortText, a.x + a.width / 2, a.y + 36);
+            });
+
+            // Draw Particles
+            particles.forEach(p => {
+                ctx.save();
+                ctx.globalAlpha = p.alpha;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+        }
+
+        function gameLoop() {
+            if (!gameRunning) return;
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame(title, message) {
+            gameRunning = false;
+            clearInterval(timerInterval);
+            document.getElementById('gameOverTitle').innerText = title;
+            document.getElementById('gameOverMessage').innerText = message;
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('gameOverScreen').classList.remove('hidden');
+        }
+
+        function resetGame() {
+            startGame();
+        }
+    </script>
+</body>
+</html>
