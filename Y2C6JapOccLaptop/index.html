@@ -413,34 +413,10 @@
                 // Incorrect answer: repeat question rule
                 lives--;
                 updateUI();
-                triggerFlash('bg-rose-900/30');
                 if (lives <= 0) {
                     endGame("Mission Failed", "You ran out of lives! Review the facts and try again.");
-                } else {
-                    // Question repeats automatically since currentQuestionIndex is unchanged
-            // Draw Aliens (Trivia Pods) Optimized for Laptop
-            aliens.forEach(a => {
-                ctx.fillStyle = '#0f172a';
-                ctx.strokeStyle = a.isCorrect ? '#38bdf8' : '#6366f1';
-                ctx.lineWidth = 2.5;
-                ctx.beginPath();
-                ctx.roundRect(a.x, a.y, a.width, a.height, 12);
-                ctx.fill();
-                ctx.stroke();
-
-                // Alien saucer dome
-                ctx.fillStyle = '#06b6d4';
-                ctx.beginPath();
-                ctx.arc(a.x + a.width / 2, a.y + 14, 9, Math.PI, 0, false);
-                ctx.fill();
-
-                // Text snippet on alien pod
-                ctx.fillStyle = '#f8fafc';
-                ctx.font = '12px Inter, sans-serif';
-                ctx.textAlign = 'center';
-                let shortText = a.text.length > 22 ? a.text.substring(0, 20) + '...' : a.text;
-                ctx.fillText(shortText, a.x + a.width / 2, a.y + 38);
-            });
+                }
+                // Question repeats automatically since currentQuestionIndex is unchanged
             }
         }
 
